@@ -1,9 +1,9 @@
 #
-# Copyright (C) 2025 by Codeflix-Bots@Github, < https://github.com/Codeflix-Bots >.
+# Copyright (C) 2025 by OTAKULUX-Bots@Github, < https://github.com/OTAKULUX-Bots >.
 #
-# This file is part of < https://github.com/Codeflix-Bots/FileStore > project,
+# This file is part of < https://t.me/OTAKULUX > project,
 # and is released under the MIT License.
-# Please see < https://github.com/Codeflix-Bots/FileStore/blob/master/LICENSE >
+# Please see < https://t.me/OTAKULUX/blob/master/LICENSE >
 #
 # All rights reserved.
 
@@ -49,14 +49,14 @@ async def cb_handler(client: Bot, query: CallbackQuery):
         )
 
 
-# Don't Remove Credit @CodeFlix_Bots, @rohit_1888
-# Ask Doubt on telegram @CodeflixSupport
+# Don't Remove Credit @OTAKULUX, @OTAKULUX
+# Ask Doubt on telegram @OTAKULUX
 #
-# Copyright (C) 2025 by Codeflix-Bots@Github, < https://github.com/Codeflix-Bots >.
+# Copyright (C) 2025 by OTAKULUX-Bots@Github, < https://github.com/OTAKULUX-Bots >.
 #
-# This file is part of < https://github.com/Codeflix-Bots/FileStore > project,
+# This file is part of < https://t.me/OTAKULUX > project,
 # and is released under the MIT License.
-# Please see < https://github.com/Codeflix-Bots/FileStore/blob/master/LICENSE >
+# Please see < https://t.me/OTAKULUX/blob/master/LICENSE >
 #
 # All rights reserved.
 #
@@ -210,14 +210,14 @@ async def cb_handler(client: Bot, query: CallbackQuery):
                 print(f"Error editing fsub message: {e}")
 
 
-# Don't Remove Credit @CodeFlix_Bots, @rohit_1888
-# Ask Doubt on telegram @CodeflixSupport
+# Don't Remove Credit @OTAKULUX, @OTAKULUX
+# Ask Doubt on telegram @OTAKULUX
 #
-# Copyright (C) 2025 by Codeflix-Bots@Github, < https://github.com/Codeflix-Bots >.
+# Copyright (C) 2025 by OTAKULUX-Bots@Github, < https://github.com/OTAKULUX-Bots >.
 #
-# This file is part of < https://github.com/Codeflix-Bots/FileStore > project,
+# This file is part of < https://t.me/OTAKULUX > project,
 # and is released under the MIT License.
-# Please see < https://github.com/Codeflix-Bots/FileStore/blob/master/LICENSE >
+# Please see < https://t.me/OTAKULUX/blob/master/LICENSE >
 #
 # All rights reserved.
 #

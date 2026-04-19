@@ -1,7 +1,7 @@
 ━━━━━━━━━━━━━━━━━━━━
 
 <h2 align="center">
-    ──「 ғɪʟᴇ sᴛᴏʀᴇ ᴘʀᴏ 」──
+    ──「 ᴏᴛᴀᴋᴜʟᴜx ᴘʀᴏ 」──
 </h2>
 
 <p align="center">
@@ -9,7 +9,7 @@
 </p>
 
 
-![Typing SVG](https://readme-typing-svg.herokuapp.com/?lines=FILE+SHARING+!;CREATED+BY+CODEFLIX+DEVELOPER!;A+ADVANCE+BOT+WITH+COOL+FEATURE!)
+![Typing SVG](https://readme-typing-svg.herokuapp.com/?lines=FILE+SHARING+!;CREATED+BY+OTAKULUX!;A+ADVANCE+BOT+WITH+COOL+FEATURE!)
 </p>
 
  ━━━━━━━━━━━━━━━━━
@@ -47,12 +47,12 @@
 * `DATABASE_URL` Your mongo db url
 * `DATABASE_NAME` Your mongo db session name
 * `ADMINS` Optional: A space separated list of user_ids of Admins, they can only create links
-* `START_MESSAGE` Optional: start message of bot, use HTML and <a href='https://github.com/codeflix-bots/filestore/blob/master/README.md#start_message'>fillings</a>
+* `START_MESSAGE` Optional: start message of bot, use HTML and <a href='https://t.me/OTAKULUX'>fillings</a>
 * `PROTECT_CONTENT` Optional: True if you need to prevent files from forwarding
 
 ### Token Variables
 
-* `SHORTLINK_URL` = Your shortner Url ( ex. "inshorturl.com")
+* `SHORTLINK_URL` = Your shortner Url ( ex. "linkshortify.com")
 * `SHORTLINK_API` = Your shortner API (ex. "PUIAQBIFrydvLhIzAOeGV8yZppu")
 </details>
 
@@ -100,7 +100,7 @@
 <h3>「 ᴏᴛʜᴇʀ ʙʀᴀɴᴄʜᴇs 」
 </h3>
 
-- <b>[ᴛᴏᴋᴇɴ](https://github.com/Codeflix-Bots/FileStore/tree/token)  ➻  [ᴡɪᴛʜᴏᴜᴛ sʜᴏʀᴛɴᴇʀ](https://github.com/Codeflix-Bots/FileStore/tree/Master) </b>
+- <b>[ᴛᴏᴋᴇɴ](https://t.me/OTAKULUX)  ➻  [ᴡɪᴛʜᴏᴜᴛ sʜᴏʀᴛɴᴇʀ](https://t.me/OTAKULUX) </b>
 
 <img src="https://user-images.githubusercontent.com/73097560/115834477-dbab4500-a447-11eb-908a-139a6edaec5c.gif">
 
@@ -113,25 +113,25 @@
     ─「 ᴅᴇᴩʟᴏʏ ᴏɴ ʜᴇʀᴏᴋᴜ 」─
 </h3>
 
-<p align="center"><a href="https://heroku.com/deploy?template=https://github.com/Codeflix-Bots/FileStore">
+<p align="center"><a href="https://heroku.com/deploy?template=https://t.me/OTAKULUX">
   <img src="https://www.herokucdn.com/deploy/button.svg" alt="Deploy On Heroku">
 </a></p>
 <h3 align="center">
     ─「 ᴅᴇᴩʟᴏʏ ᴏɴ ᴋᴏʏᴇʙ 」─
 </h3>
-<p align="center"><a href="https://app.koyeb.com/deploy?type=git&repository=github.com/Codeflix-Bots/FileStore&branch=master&name=master">
+<p align="center"><a href="https://app.koyeb.com/deploy?type=git&repository=https://t.me/OTAKULUX&branch=master&name=master">
   <img src="https://www.koyeb.com/static/images/deploy/button.svg" alt="Deploy On Koyeb">
 </a></p>
 <h3 align="center">
     ─「 ᴅᴇᴩʟᴏʏ ᴏɴ ʀᴀɪʟᴡᴀʏ 」─
 </h3>
-<p align="center"><a href="https://railway.app/deploy?template=https://github.com/Codeflix-Bots/FileStore">
+<p align="center"><a href="https://railway.app/deploy?template=https://t.me/OTAKULUX">
      <img height="45px" src="https://railway.app/button.svg">
 </a></p>
 <h3 align="center">
     ─「 ᴅᴇᴩʟᴏʏ ᴏɴ ʀᴇɴᴅᴇʀ 」─
 </h3>
-<p align="center"><a href="https://render.com/deploy?repo=https://github.com/Codeflix-Bots/FileStore">
+<p align="center"><a href="https://render.com/deploy?repo=https://t.me/OTAKULUX">
 <img src="https://render.com/images/deploy-to-render-button.svg" alt="Deploy to Render">
 </a></p>
 <h3 align="center">
@@ -139,7 +139,7 @@
 </h3>
 <p>
 <pre>
-git clone https://github.com/Codeflix-Bots/FileStore
+git clone https://t.me/OTAKULUX
 # Install Packages
 pip3 install -U -r requirements.txt
 Edit info.py with variables as given below then run bot
@@ -151,11 +151,11 @@ python3 bot.py
 <h3>「 ᴄʀᴇᴅɪᴛs 」
 </h3>
 
-- <b>[ᴄᴏᴅᴇғʟɪx ʙᴏᴛs](https://t.me/codeflix_bots)  ➻  [ᴜᴘᴅᴀᴛᴇs](https://t.me/codeflix_bots) </b>
-- <b>[ʏᴀᴛᴏ](https://github.com/sewxiy)  ➻  [sᴏᴍᴇᴛʜɪɴɢ](https://t.me/cosmic_freak) </b>
-- <b>[ʀᴏʜɪᴛ](https://github.com/rohit3607)  ➻  [sᴏᴍᴇᴛʜɪɴɢ](https://t.me/FILE_SHARINGBOTS/17) </b>
+- <b>[ᴏᴛᴀᴋᴜʟᴜx](https://t.me/OTAKULUX)  ➻  [ᴜᴘᴅᴀᴛᴇs](https://t.me/OTAKULUX) </b>
+- <b>[ᴏᴛᴀᴋᴜʟᴜx](https://t.me/OTAKULUX)  ➻  [sᴏᴍᴇᴛʜɪɴɢ](https://t.me/OTAKULUX) </b>
+- <b>[ᴏᴛᴀᴋᴜʟᴜx](https://t.me/OTAKULUX)  ➻  [sᴏᴍᴇᴛʜɪɴɢ](https://t.me/OTAKULUX) </b>
  
-<b>ᴀɴᴅ ᴀʟʟ [ᴛʜᴇ ᴄᴏɴᴛʀɪʙᴜᴛᴏʀs](https://telegram.me/codeflix-bots) ᴡʜᴏ ʜᴇʟᴩᴇᴅ ɪɴ ᴍᴀᴋɪɴɢ file store ʙᴏᴛ ᴜsᴇꜰᴜʟ & ᴩᴏᴡᴇʀꜰᴜʟ 🖤 </b>
+<b>ᴀɴᴅ ᴀʟʟ [ᴛʜᴇ ᴄᴏɴᴛʀɪʙᴜᴛᴏʀs](https://t.me/OTAKULUX) ᴡʜᴏ ʜᴇʟᴩᴇᴅ ɪɴ ᴍᴀᴋɪɴɢ OTAKULUX ʙᴏᴛ ᴜsᴇꜰᴜʟ & ᴩᴏᴡᴇʀꜰᴜʟ 🖤 </b>
 
 ## 📌  𝑵𝒐𝒕𝒆
 

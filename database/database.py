@@ -1,5 +1,5 @@
-#Codeflix_Botz
-#rohit_1888 on Tg
+#OTAKULUX_Botz
+#OTAKULUX on Tg
 
 import motor, asyncio
 import motor.motor_asyncio
@@ -32,7 +32,7 @@ def new_user(id):
         }
     }
 
-class Rohit:
+class OTAKULUX:
 
     def __init__(self, DB_URI, DB_NAME):
         self.dbclient = motor.motor_asyncio.AsyncIOMotorClient(DB_URI)
@@ -262,4 +262,4 @@ class Rohit:
         return result[0]["total"] if result else 0
 
 
-db = Rohit(DB_URI, DB_NAME)
+db = OTAKULUX(DB_URI, DB_NAME)

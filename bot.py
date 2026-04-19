@@ -1,12 +1,12 @@
 
-# Don't Remove Credit @CodeFlix_Bots, @rohit_1888
-# Ask Doubt on telegram @CodeflixSupport
+# Don't Remove Credit @OTAKULUX, @OTAKULUX
+# Ask Doubt on telegram @OTAKULUX
 #
-# Copyright (C) 2025 by Codeflix-Bots@Github, < https://github.com/Codeflix-Bots >.
+# Copyright (C) 2025 by OTAKULUX-Bots@Github, < https://github.com/OTAKULUX-Bots >.
 #
-# This file is part of < https://github.com/Codeflix-Bots/FileStore > project,
+# This file is part of < https://t.me/OTAKULUX > project,
 # and is released under the MIT License.
-# Please see < https://github.com/Codeflix-Bots/FileStore/blob/master/LICENSE >
+# Please see < https://t.me/OTAKULUX/blob/master/LICENSE >
 #
 # All rights reserved.
 #
@@ -20,7 +20,7 @@ from pyrogram.enums import ParseMode
 import sys
 import pytz
 from datetime import datetime
-#rohit_1888 on Tg
+#OTAKULUX on Tg
 from config import *
 from database.db_premium import *
 from database.database import *
@@ -51,7 +51,7 @@ def get_indian_time():
 
 
 name ="""
- BY CODEFLIX BOTS
+ BY OTAKULUX BOTS
 """
 
 def get_indian_time():
@@ -105,7 +105,7 @@ class Bot(Client):
 
         self.set_parse_mode(ParseMode.HTML)
         self.username = usr_bot_me.username
-        self.LOGGER(__name__).info(f"Bot Running..! Made by @Codeflix_Bots")   
+        self.LOGGER(__name__).info(f"Bot Running..! Made by @OTAKULUX")
 
         # Start Web Server
         app = web.AppRunner(await web_server())
@@ -113,7 +113,7 @@ class Bot(Client):
         await web.TCPSite(app, "0.0.0.0", PORT).start()
 
 
-        try: await self.send_message(OWNER_ID, text = f"<b><blockquote> Bᴏᴛ Rᴇsᴛᴀʀᴛᴇᴅ by @Codeflix_Bots</blockquote></b>")
+        try: await self.send_message(OWNER_ID, text = f"<b><blockquote> Bᴏᴛ Rᴇsᴛᴀʀᴛᴇᴅ by @OTAKULUX</blockquote></b>")
         except: pass
 
     async def stop(self, *args):
@@ -124,7 +124,7 @@ class Bot(Client):
         """Run the bot."""
         loop = asyncio.get_event_loop()
         loop.run_until_complete(self.start())
-        self.LOGGER(__name__).info("Bot is now running. Thanks to @rohit_1888")
+        self.LOGGER(__name__).info("Bot is now running. Thanks to @OTAKULUX")
         try:
             loop.run_forever()
         except KeyboardInterrupt:
@@ -133,10 +133,10 @@ class Bot(Client):
             loop.run_until_complete(self.stop())
 
 #
-# Copyright (C) 2025 by Codeflix-Bots@Github, < https://github.com/Codeflix-Bots >.
+# Copyright (C) 2025 by OTAKULUX-Bots@Github, < https://github.com/OTAKULUX-Bots >.
 #
-# This file is part of < https://github.com/Codeflix-Bots/FileStore > project,
+# This file is part of < https://t.me/OTAKULUX > project,
 # and is released under the MIT License.
-# Please see < https://github.com/Codeflix-Bots/FileStore/blob/master/LICENSE >
+# Please see < https://t.me/OTAKULUX/blob/master/LICENSE >
 #
 # All rights reserved.

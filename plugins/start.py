@@ -1,11 +1,11 @@
-# Don't Remove Credit @CodeFlix_Bots, @rohit_1888
-# Ask Doubt on telegram @CodeflixSupport
+# Don't Remove Credit @OTAKULUX, @OTAKULUX
+# Ask Doubt on telegram @OTAKULUX
 #
-# Copyright (C) 2025 by Codeflix-Bots@Github, < https://github.com/Codeflix-Bots >.
+# Copyright (C) 2025 by OTAKULUX-Bots@Github, < https://github.com/OTAKULUX-Bots >.
 #
-# This file is part of < https://github.com/Codeflix-Bots/FileStore > project,
+# This file is part of < https://t.me/OTAKULUX > project,
 # and is released under the MIT License.
-# Please see < https://github.com/Codeflix-Bots/FileStore/blob/master/LICENSE >
+# Please see < https://t.me/OTAKULUX/blob/master/LICENSE >
 #
 # All rights reserved.
 #
@@ -16,7 +16,7 @@ import random
 import sys
 import re
 import string 
-import string as rohit
+import string as OTAKULUX
 import time
 from datetime import datetime, timedelta
 from pyrogram import Client, filters, __version__
@@ -80,7 +80,7 @@ async def send_files(client: Client, message: Message, base64_string):
             except:
                 pass
 
-        codeflix_msgs = []
+        OTAKULUX_msgs = []
         # File auto-delete time in seconds
         FILE_AUTO_DELETE = await db.get_del_timer()
 
@@ -97,8 +97,7 @@ async def send_files(client: Client, message: Message, base64_string):
                     reply_markup=reply_markup,
                     protect_content=PROTECT_CONTENT
                 )
-                await asyncio.sleep(0.5)
-                codeflix_msgs.append(snt_msg)
+                OTAKULUX_msgs.append(snt_msg)
             except FloodWait as e:
                 await asyncio.sleep(e.x)
                 copied_msg = await msg.copy(
@@ -108,7 +107,7 @@ async def send_files(client: Client, message: Message, base64_string):
                     reply_markup=reply_markup,
                     protect_content=PROTECT_CONTENT
                 )
-                codeflix_msgs.append(copied_msg)
+                OTAKULUX_msgs.append(copied_msg)
             except:
                 pass
 
@@ -119,7 +118,7 @@ async def send_files(client: Client, message: Message, base64_string):
 
             await asyncio.sleep(FILE_AUTO_DELETE)
 
-            for snt_msg in codeflix_msgs:    
+            for snt_msg in OTAKULUX_msgs:
                 if snt_msg:
                     try:    
                         await snt_msg.delete()  
@@ -221,9 +220,9 @@ async def start_command(client: Client, message: Message):
     else:
         # Premium Start UI Redesign
         buttons = [
-            [InlineKeyboardButton("📢 Main Channel", url="https://t.me/Nova_Flix")],
-            [InlineKeyboardButton("🌀 Ongoing Anime", url="https://t.me/Nova_Flix/50")],
-            [InlineKeyboardButton("⚪ Anime Index", url="https://t.me/Nova_Flix/51")],
+            [InlineKeyboardButton("📢 Main Channel", url="https://t.me/OTAKULUX")],
+            [InlineKeyboardButton("🌀 Ongoing Anime", url="https://t.me/OTAKULUX/50")],
+            [InlineKeyboardButton("⚪ Anime Index", url="https://t.me/OTAKULUX/51")],
             [
                 InlineKeyboardButton("⚠️ About", callback_data="about"),
                 InlineKeyboardButton("💰 Promo", callback_data="premium")
@@ -264,8 +263,8 @@ async def start_command(client: Client, message: Message):
 
 
 #=====================================================================================##
-# Don't Remove Credit @CodeFlix_Bots, @rohit_1888
-# Ask Doubt on telegram @CodeflixSupport
+# Don't Remove Credit @OTAKULUX, @OTAKULUX
+# Ask Doubt on telegram @OTAKULUX
 
 
 
