@@ -16,7 +16,7 @@ import random
 import sys
 import re
 import string 
-import string as OTAKULUX
+import string
 import time
 from datetime import datetime, timedelta
 from pyrogram import Client, filters, __version__
@@ -126,7 +126,7 @@ async def send_files(client: Client, message: Message, base64_string):
                         print(f"Error deleting message {snt_msg.id}: {e}")
 
             try:
-                reload_url = f"https://t.me/OTAKULUX{client.username}?start={base64_string}"
+                reload_url = f"https://t.me/{client.username}?start={base64_string}"
                 keyboard = InlineKeyboardMarkup(
                     [[InlineKeyboardButton("ɢᴇᴛ ғɪʟᴇ ᴀɢᴀɪɴ!", url=reload_url)]]
                 )
@@ -143,7 +143,7 @@ async def send_files(client: Client, message: Message, base64_string):
 
 async def short_url(client: Client, message: Message, base64_string):
     try:
-        prem_link = f"https://t.me/OTAKULUX{client.username}?start=yu3elk{base64_string}7"
+        prem_link = f"https://t.me/{client.username}?start=yu3elk{base64_string}7"
         short_link = await get_shortlink(SHORTLINK_URL, SHORTLINK_API, prem_link)
 
         buttons = [
@@ -167,7 +167,7 @@ async def short_url(client: Client, message: Message, base64_string):
         pass
 
 
-@OTAKULUX.on_message(filters.command('start') & filters.private)
+@Bot.on_message(filters.command('start') & filters.private)
 async def start_command(client: Client, message: Message):
     user_id = message.from_user.id
     id = message.from_user.id
@@ -233,9 +233,9 @@ async def start_command(client: Client, message: Message):
 
         # Typing Simulation Lines
         line1 = "━━━━━━━━━━━━━━━━━━━\n"
-        line2 = f"Hey, {message.from_user.first_name} ✌🏻\n"
-        line3 = "I hope you're feeling the power of Shadow Monarch 😈\n\n"
-        line4 = "✨ I'm The Ultimate File Sharing Bot... 🎉\n"
+        line2 = f"Hey, {message.from_user.first_name} ✌🏻 ✨\n"
+        line3 = "I hope you're feeling the power of <b>Shadow Monarch</b> 😈\n\n"
+        line4 = "⚡ I'm The Ultimate File Sharing Bot... 🎉\n"
         line5 = "━━━━━━━━━━━━━━━━━━━"
 
         # Send initial message with first few lines
@@ -279,7 +279,7 @@ async def not_joined(client: Client, message: Message):
 
     for i, status in enumerate(status_list, 1):
         icon = "✅" if status['is_joined'] else "❌"
-        status_text += f"{i}. {icon} {status['name']} — {'Joined' if status['is_joined'] else 'Not Joined'}\n"
+        status_text += f"{i}. {icon} {status['name']} ⚡ {'Joined' if status['is_joined'] else 'Not Joined'}\n"
 
         if not status['is_joined']:
             buttons.append([InlineKeyboardButton(text=f"📢 {status['name']}", url=status['link'])])
@@ -293,12 +293,12 @@ async def not_joined(client: Client, message: Message):
 
     caption = (
         "━━━━━━━━━━━━━━━━━━━\n"
-        "HEY SAMA ×\n\n"
-        "🎉 Anime Files Are Ready !!\n\n"
+        "✨ HEY SAMA × ✨\n\n"
+        "🎉 <b>Anime Files Are Ready !!</b>\n\n"
         "⚠️ Hey! You haven't joined all required channels.\n"
-        "Join now to unlock your files instantly!\n\n"
+        "Join now to unlock your files instantly! ⚡\n\n"
         "━━━━━━━━━━━━━━━━━━━\n"
-        "📊 SUBSCRIPTION STATUS:\n\n"
+        "📊 <b>SUBSCRIPTION STATUS:</b>\n\n"
         f"{status_text}\n"
         "━━━━━━━━━━━━━━━━━━━"
     )
@@ -311,7 +311,7 @@ async def not_joined(client: Client, message: Message):
 
 #=====================================================================================##
 
-@OTAKULUX.on_message(filters.command('myplan') & filters.private)
+@Bot.on_message(filters.command('myplan') & filters.private)
 async def check_plan(client: Client, message: Message):
     user_id = message.from_user.id  # Get user ID from the message
 
@@ -323,7 +323,7 @@ async def check_plan(client: Client, message: Message):
 
 #=====================================================================================##
 # Command to add premium user
-@OTAKULUX.on_message(filters.command('addpremium') & filters.private & admin)
+@Bot.on_message(filters.command('addpremium') & filters.private & admin)
 async def add_premium_user_command(client, msg):
     if len(msg.command) != 4:
         await msg.reply_text(
@@ -373,7 +373,7 @@ async def add_premium_user_command(client, msg):
 
 
 # Command to remove premium user
-@OTAKULUX.on_message(filters.command('remove_premium') & filters.private & admin)
+@Bot.on_message(filters.command('remove_premium') & filters.private & admin)
 async def pre_remove_user(client: Client, msg: Message):
     if len(msg.command) != 2:
         await msg.reply_text("useage: /remove_premium user_id ")
@@ -387,7 +387,7 @@ async def pre_remove_user(client: Client, msg: Message):
 
 
 # Command to list active premium users
-@OTAKULUX.on_message(filters.command('premium_users') & filters.private & admin)
+@Bot.on_message(filters.command('premium_users') & filters.private & admin)
 async def list_premium_users_command(client, message):
     # Define IST timezone
     ist = timezone("Asia/Kolkata")
@@ -450,7 +450,7 @@ async def list_premium_users_command(client, message):
 
 #=====================================================================================##
 
-@OTAKULUX.on_message(filters.command("count") & filters.private & admin)
+@Bot.on_message(filters.command("count") & filters.private & admin)
 async def total_verify_count_cmd(client, message: Message):
     total = await db.get_total_verify_count()
     await message.reply_text(f"Tᴏᴛᴀʟ ᴠᴇʀɪғɪᴇᴅ ᴛᴏᴋᴇɴs ᴛᴏᴅᴀʏ: <b>{total}</b>")
@@ -458,7 +458,7 @@ async def total_verify_count_cmd(client, message: Message):
 
 #=====================================================================================##
 
-@OTAKULUX.on_message(filters.command('commands') & filters.private & admin)
+@Bot.on_message(filters.command('commands') & filters.private & admin)
 async def bcmd(bot: Bot, message: Message):        
     reply_markup = InlineKeyboardMarkup([[InlineKeyboardButton("• ᴄʟᴏsᴇ •", callback_data = "close")]])
     await message.reply(text=CMD_TXT, reply_markup = reply_markup, quote= True)

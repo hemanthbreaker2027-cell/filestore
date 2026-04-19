@@ -90,8 +90,8 @@ python3 bot.py
 
 ### 🤝 **CREDITS**
 
-- 👑 **[OTAKULUX](https://t.me/OTAKULUX)** - Lead Developer & Designer
-- 🌌 **[OTAKULUX NETWORK](https://t.me/OTAKULUX)** - Infrastructure & Assets
+- 👑 **[OTAKULUX](https://t.me/)** - Lead Developer & Designer
+- 🌌 **[OTAKULUX NETWORK](https://t.me/)** - Infrastructure & Assets
 - 🖤 **Contributors** - Everyone who helped optimize the code!
 
 ---

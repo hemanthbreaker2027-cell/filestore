@@ -50,14 +50,9 @@ def get_indian_time():
     return datetime.now(ist)
 
 
-name ="""
+name = """
  BY OTAKULUX BOTS
 """
-
-def get_indian_time():
-    """Returns the current time in IST."""
-    ist = pytz.timezone("Asia/Kolkata")
-    return datetime.now(ist)
 
 class Bot(Client):
     def __init__(self):

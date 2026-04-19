@@ -29,7 +29,7 @@ from database.database import *
 
 
 #BAN-USER-SYSTEM
-@OTAKULUX.on_message(filters.private & filters.command('ban') & admin)
+@Bot.on_message(filters.private & filters.command('ban') & admin)
 async def add_banuser(client: Client, message: Message):        
     pro = await message.reply("⏳ <i>Pʀᴏᴄᴇssɪɴɢ ʀᴇǫᴜᴇsᴛ...</i>", quote=True)
     banuser_ids = await db.get_ban_users()
@@ -73,7 +73,7 @@ async def add_banuser(client: Client, message: Message):
     else:
         await pro.edit(f"<b>❌ Nᴏ ᴜsᴇʀs ᴡᴇʀᴇ ʙᴀɴɴᴇᴅ.</b>\n\n{report}", reply_markup=reply_markup)
 
-@OTAKULUX.on_message(filters.private & filters.command('unban') & admin)
+@Bot.on_message(filters.private & filters.command('unban') & admin)
 async def delete_banuser(client: Client, message: Message):        
     pro = await message.reply("⏳ <i>Pʀᴏᴄᴇssɪɴɢ ʀᴇǫᴜᴇsᴛ...</i>", quote=True)
     banuser_ids = await db.get_ban_users()
@@ -114,7 +114,7 @@ async def delete_banuser(client: Client, message: Message):
 
     await pro.edit(f"<b>🚫 Uɴʙᴀɴ Rᴇᴘᴏʀᴛ:</b>\n\n{report}", reply_markup=reply_markup)
 
-@OTAKULUX.on_message(filters.private & filters.command('banlist') & admin)
+@Bot.on_message(filters.private & filters.command('banlist') & admin)
 async def get_banuser_list(client: Client, message: Message):        
     pro = await message.reply("⏳ <i>Fᴇᴛᴄʜɪɴɢ Bᴀɴ Lɪsᴛ...</i>", quote=True)
     banuser_ids = await db.get_ban_users()

@@ -34,7 +34,7 @@ REPLY_ERROR = "<code>Use this command as a reply to any telegram message without
 #=====================================================================================##
 
 
-@OTAKULUX.on_message(filters.private & filters.command('pbroadcast') & admin)
+@Bot.on_message(filters.private & filters.command('pbroadcast') & admin)
 async def send_pin_text(client: Bot, message: Message):
     if message.reply_to_message:
         query = await db.full_userbase()
@@ -86,7 +86,7 @@ Unsuccessful: <code>{unsuccessful}</code>"""
 #=====================================================================================##
 
 
-@OTAKULUX.on_message(filters.private & filters.command('broadcast') & admin)
+@Bot.on_message(filters.private & filters.command('broadcast') & admin)
 async def send_text(client: Bot, message: Message):
     if message.reply_to_message:
         query = await db.full_userbase()
@@ -147,7 +147,7 @@ Unsuccessful: <code>{unsuccessful}</code></b>"""
 
 # broadcast with auto-del
 
-@OTAKULUX.on_message(filters.private & filters.command('dbroadcast') & admin)
+@Bot.on_message(filters.private & filters.command('dbroadcast') & admin)
 async def delete_broadcast(client: Bot, message: Message):
     if message.reply_to_message:
         try:

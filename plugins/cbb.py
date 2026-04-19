@@ -14,7 +14,7 @@ from pyrogram.types import Message, InlineKeyboardMarkup, InlineKeyboardButton, 
 from database.database import *
 from helper_func import *
 
-@OTAKULUX.on_callback_query()
+@Bot.on_callback_query()
 async def cb_handler(client: Bot, query: CallbackQuery):
     data = query.data
 
@@ -182,7 +182,7 @@ async def cb_handler(client: Bot, query: CallbackQuery):
             status_text = ""
             for i, status in enumerate(status_list, 1):
                 icon = "✅" if status['is_joined'] else "❌"
-                status_text += f"{i}. {icon} {status['name']} — {'Joined' if status['is_joined'] else 'Not Joined'}\n"
+                status_text += f"{i}. {icon} {status['name']} ⚡ {'Joined' if status['is_joined'] else 'Not Joined'}\n"
                 if not status['is_joined']:
                     buttons.append([InlineKeyboardButton(text=f"📢 {status['name']}", url=status['link'])])
 
@@ -190,12 +190,12 @@ async def cb_handler(client: Bot, query: CallbackQuery):
 
             caption = (
                 "━━━━━━━━━━━━━━━━━━━\n"
-                "HEY SAMA ×\n\n"
-                "🎉 Anime Files Are Ready !!\n\n"
+                "✨ HEY SAMA × ✨\n\n"
+                "🎉 <b>Anime Files Are Ready !!</b>\n\n"
                 "⚠️ Hey! You haven't joined all required channels.\n"
-                "Join now to unlock your files instantly!\n\n"
+                "Join now to unlock your files instantly! ⚡\n\n"
                 "━━━━━━━━━━━━━━━━━━━\n"
-                "📊 SUBSCRIPTION STATUS:\n\n"
+                "📊 <b>SUBSCRIPTION STATUS:</b>\n\n"
                 f"{status_text}\n"
                 "━━━━━━━━━━━━━━━━━━━"
             )

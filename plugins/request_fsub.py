@@ -36,7 +36,7 @@ from database.database import *
 #
 
 #Request force sub mode commad,,,,,,
-@OTAKULUX.on_message(filters.command('fsub_mode') & filters.private & admin)
+@Bot.on_message(filters.command('fsub_mode') & filters.private & admin)
 async def change_force_sub_mode(client: Client, message: Message):
     temp = await message.reply("<b><i>ᴡᴀɪᴛ ᴀ sᴇᴄ..</i></b>", quote=True)
     channels = await db.show_channels()
@@ -64,7 +64,7 @@ async def change_force_sub_mode(client: Client, message: Message):
     )
 
 # This handler captures membership updates (like when a user leaves, banned)
-@OTAKULUX.on_chat_member_updated()
+@Bot.on_chat_member_updated()
 async def handle_Chatmembers(client, chat_member_updated: ChatMemberUpdated):    
     chat_id = chat_member_updated.chat.id
 
@@ -82,7 +82,7 @@ async def handle_Chatmembers(client, chat_member_updated: ChatMemberUpdated):
 
 
 # This handler will capture any join request to the channel/group where the bot is an admin
-@OTAKULUX.on_chat_join_request()
+@Bot.on_chat_join_request()
 async def handle_join_request(client, chat_join_request):
     chat_id = chat_join_request.chat.id
     user_id = chat_join_request.from_user.id
@@ -111,7 +111,7 @@ async def handle_join_request(client, chat_join_request):
 #
 
 # Add channel
-@OTAKULUX.on_message(filters.command('addchnl') & filters.private & admin)
+@Bot.on_message(filters.command('addchnl') & filters.private & admin)
 async def add_force_sub(client: Client, message: Message):
     temp = await message.reply("Wait a sec...", quote=True)
     args = message.text.split(maxsplit=1)
@@ -143,7 +143,7 @@ async def add_force_sub(client: Client, message: Message):
         try:
             link = await client.export_chat_invite_link(chat.id)
         except Exception:
-            link = f"https://t.me/OTAKULUX{chat.username}" if chat.username else f"https://t.me/OTAKULUX/{str(chat.id)[4:]}"
+            link = f"https://t.me/{chat.username}" if chat.username else f"https://t.me/OTAKULUX/{str(chat.id)[4:]}"
 
         await db.add_channel(chat_id)
         return await temp.edit(
@@ -171,7 +171,7 @@ async def add_force_sub(client: Client, message: Message):
 #
 
 # Delete channel
-@OTAKULUX.on_message(filters.command('delchnl') & filters.private & admin)
+@Bot.on_message(filters.command('delchnl') & filters.private & admin)
 async def del_force_sub(client: Client, message: Message):
     temp = await message.reply("<b><i>ᴡᴀɪᴛ ᴀ sᴇᴄ..</i></b>", quote=True)
     args = message.text.split(maxsplit=1)
@@ -199,7 +199,7 @@ async def del_force_sub(client: Client, message: Message):
         return await temp.edit(f"<b>❌ Channel not found in force-sub list:</b> <code>{ch_id}</code>")
 
 # View all channels
-@OTAKULUX.on_message(filters.command('listchnl') & filters.private & admin)
+@Bot.on_message(filters.command('listchnl') & filters.private & admin)
 async def list_force_sub_channels(client: Client, message: Message):
     temp = await message.reply("<b><i>ᴡᴀɪᴛ ᴀ sᴇᴄ..</i></b>", quote=True)
     channels = await db.show_channels()
@@ -231,7 +231,7 @@ async def list_force_sub_channels(client: Client, message: Message):
 #
 
 
-@OTAKULUX.on_message(filters.command('delreq') & filters.private & admin)
+@Bot.on_message(filters.command('delreq') & filters.private & admin)
 async def delete_requested_users(client, message: Message):
     if len(message.command) < 2:
         return await message.reply("⚠️ Usᴀɢᴇ: `/delreq <channel_id>`", quote=True)

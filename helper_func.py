@@ -89,7 +89,7 @@ async def get_sub_status(client, user_id):
 
             # Use username link if available to avoid unnecessary invite link creation
             if chat.username:
-                link = f"https://t.me/OTAKULUX{chat.username}"
+                link = f"https://t.me/{chat.username}"
             else:
                 # Only create invite link if not joined or not cached
                 if not is_joined:
@@ -211,7 +211,7 @@ async def get_message_id(client, message):
     elif message.forward_sender_name:
         return 0
     elif message.text:
-        pattern = "https://t.me/OTAKULUX(?:c/)?(.*)/(\d+)"
+        pattern = "https://t.me/(?:c/)?(.*)/(\d+)"
         matches = re.match(pattern,message.text)
         if not matches:
             return 0
