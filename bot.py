@@ -2,7 +2,7 @@
 # Don't Remove Credit @OTAKULUX, @OTAKULUX
 # Ask Doubt on telegram @OTAKULUX
 #
-# Copyright (C) 2025 by OTAKULUX-Bots@Github, < https://github.com/OTAKULUX-Bots >.
+# Copyright (C) 2025 by OTAKULUX@OTAKULUX, < https://github.com/OTAKULUX >.
 #
 # This file is part of < https://t.me/OTAKULUX > project,
 # and is released under the MIT License.
@@ -87,11 +87,11 @@ class Bot(Client):
         except Exception as e:
             self.LOGGER(__name__).warning(e)
             self.LOGGER(__name__).warning(f"Make Sure bot is Admin in DB Channel, and Double check the CHANNEL_ID Value, Current Value {CHANNEL_ID}")
-            self.LOGGER(__name__).info("\nBot Stopped. Join https://t.me/weebs_support for support")
+            self.LOGGER(__name__).info("\nBot Stopped. Join https://t.me/OTAKULUX for support")
             sys.exit()
 
         self.set_parse_mode(ParseMode.HTML)
-        self.LOGGER(__name__).info(f"Bot Running..!\n\nCreated by \nhttps://t.me/weebs_support")
+        self.LOGGER(__name__).info(f"Bot Running..!\n\nCreated by \nhttps://t.me/OTAKULUX")
         self.LOGGER(__name__).info(f"""       
 
 
@@ -133,7 +133,7 @@ class Bot(Client):
             loop.run_until_complete(self.stop())
 
 #
-# Copyright (C) 2025 by OTAKULUX-Bots@Github, < https://github.com/OTAKULUX-Bots >.
+# Copyright (C) 2025 by OTAKULUX@OTAKULUX, < https://github.com/OTAKULUX >.
 #
 # This file is part of < https://t.me/OTAKULUX > project,
 # and is released under the MIT License.

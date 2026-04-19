@@ -1,7 +1,7 @@
 # Don't Remove Credit @OTAKULUX, @OTAKULUX
 # Ask Doubt on telegram @OTAKULUX
 #
-# Copyright (C) 2025 by OTAKULUX-Bots@Github, < https://github.com/OTAKULUX-Bots >.
+# Copyright (C) 2025 by OTAKULUX@OTAKULUX, < https://github.com/OTAKULUX >.
 #
 # This file is part of < https://t.me/OTAKULUX > project,
 # and is released under the MIT License.
@@ -28,7 +28,7 @@ from database.database import *
 
 #=====================================================================================##
 
-@Bot.on_message(filters.command('stats') & admin)
+@OTAKULUX.on_message(filters.command('stats') & admin)
 async def stats(bot: Bot, message: Message):
     now = datetime.now()
     delta = now - bot.uptime
@@ -43,7 +43,7 @@ WAIT_MSG = "<b>Working....</b>"
 #=====================================================================================##
 
 
-@Bot.on_message(filters.command('users') & filters.private & admin)
+@OTAKULUX.on_message(filters.command('users') & filters.private & admin)
 async def get_users(client: Bot, message: Message):
     msg = await client.send_message(chat_id=message.chat.id, text=WAIT_MSG)
     users = await db.full_userbase()
@@ -52,7 +52,7 @@ async def get_users(client: Bot, message: Message):
 # Don't Remove Credit @OTAKULUX, @OTAKULUX
 # Ask Doubt on telegram @OTAKULUX
 #
-# Copyright (C) 2025 by OTAKULUX-Bots@Github, < https://github.com/OTAKULUX-Bots >.
+# Copyright (C) 2025 by OTAKULUX@OTAKULUX, < https://github.com/OTAKULUX >.
 #
 # This file is part of < https://t.me/OTAKULUX > project,
 # and is released under the MIT License.
@@ -65,7 +65,7 @@ async def get_users(client: Bot, message: Message):
 
 #AUTO-DELETE
 
-@Bot.on_message(filters.private & filters.command('dlt_time') & admin)
+@OTAKULUX.on_message(filters.private & filters.command('dlt_time') & admin)
 async def set_delete_time(client: Bot, message: Message):
     try:
         duration = int(message.command[1])
@@ -77,7 +77,7 @@ async def set_delete_time(client: Bot, message: Message):
     except (IndexError, ValueError):
         await message.reply("<b>Pʟᴇᴀsᴇ ᴘʀᴏᴠɪᴅᴇ ᴀ ᴠᴀʟɪᴅ ᴅᴜʀᴀᴛɪᴏɴ ɪɴ sᴇᴄᴏɴᴅs.</b> Usage: /dlt_time {duration}")
 
-@Bot.on_message(filters.private & filters.command('check_dlt_time') & admin)
+@OTAKULUX.on_message(filters.private & filters.command('check_dlt_time') & admin)
 async def check_delete_time(client: Bot, message: Message):
     duration = await db.get_del_timer()
 
@@ -88,7 +88,7 @@ async def check_delete_time(client: Bot, message: Message):
 # Don't Remove Credit @OTAKULUX, @OTAKULUX
 # Ask Doubt on telegram @OTAKULUX
 #
-# Copyright (C) 2025 by OTAKULUX-Bots@Github, < https://github.com/OTAKULUX-Bots >.
+# Copyright (C) 2025 by OTAKULUX@OTAKULUX, < https://github.com/OTAKULUX >.
 #
 # This file is part of < https://t.me/OTAKULUX > project,
 # and is released under the MIT License.

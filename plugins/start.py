@@ -1,7 +1,7 @@
 # Don't Remove Credit @OTAKULUX, @OTAKULUX
 # Ask Doubt on telegram @OTAKULUX
 #
-# Copyright (C) 2025 by OTAKULUX-Bots@Github, < https://github.com/OTAKULUX-Bots >.
+# Copyright (C) 2025 by OTAKULUX@OTAKULUX, < https://github.com/OTAKULUX >.
 #
 # This file is part of < https://t.me/OTAKULUX > project,
 # and is released under the MIT License.
@@ -126,7 +126,7 @@ async def send_files(client: Client, message: Message, base64_string):
                         print(f"Error deleting message {snt_msg.id}: {e}")
 
             try:
-                reload_url = f"https://t.me/{client.username}?start={base64_string}"
+                reload_url = f"https://t.me/OTAKULUX{client.username}?start={base64_string}"
                 keyboard = InlineKeyboardMarkup(
                     [[InlineKeyboardButton("ɢᴇᴛ ғɪʟᴇ ᴀɢᴀɪɴ!", url=reload_url)]]
                 )
@@ -143,7 +143,7 @@ async def send_files(client: Client, message: Message, base64_string):
 
 async def short_url(client: Client, message: Message, base64_string):
     try:
-        prem_link = f"https://t.me/{client.username}?start=yu3elk{base64_string}7"
+        prem_link = f"https://t.me/OTAKULUX{client.username}?start=yu3elk{base64_string}7"
         short_link = await get_shortlink(SHORTLINK_URL, SHORTLINK_API, prem_link)
 
         buttons = [
@@ -167,7 +167,7 @@ async def short_url(client: Client, message: Message, base64_string):
         pass
 
 
-@Bot.on_message(filters.command('start') & filters.private)
+@OTAKULUX.on_message(filters.command('start') & filters.private)
 async def start_command(client: Client, message: Message):
     user_id = message.from_user.id
     id = message.from_user.id
@@ -311,7 +311,7 @@ async def not_joined(client: Client, message: Message):
 
 #=====================================================================================##
 
-@Bot.on_message(filters.command('myplan') & filters.private)
+@OTAKULUX.on_message(filters.command('myplan') & filters.private)
 async def check_plan(client: Client, message: Message):
     user_id = message.from_user.id  # Get user ID from the message
 
@@ -323,7 +323,7 @@ async def check_plan(client: Client, message: Message):
 
 #=====================================================================================##
 # Command to add premium user
-@Bot.on_message(filters.command('addpremium') & filters.private & admin)
+@OTAKULUX.on_message(filters.command('addpremium') & filters.private & admin)
 async def add_premium_user_command(client, msg):
     if len(msg.command) != 4:
         await msg.reply_text(
@@ -373,7 +373,7 @@ async def add_premium_user_command(client, msg):
 
 
 # Command to remove premium user
-@Bot.on_message(filters.command('remove_premium') & filters.private & admin)
+@OTAKULUX.on_message(filters.command('remove_premium') & filters.private & admin)
 async def pre_remove_user(client: Client, msg: Message):
     if len(msg.command) != 2:
         await msg.reply_text("useage: /remove_premium user_id ")
@@ -387,7 +387,7 @@ async def pre_remove_user(client: Client, msg: Message):
 
 
 # Command to list active premium users
-@Bot.on_message(filters.command('premium_users') & filters.private & admin)
+@OTAKULUX.on_message(filters.command('premium_users') & filters.private & admin)
 async def list_premium_users_command(client, message):
     # Define IST timezone
     ist = timezone("Asia/Kolkata")
@@ -432,7 +432,7 @@ async def list_premium_users_command(client, message):
             # Add user details to the list
             premium_user_list.append(
                 f"UserID: <code>{user_id}</code>\n"
-                f"User: @{username}\n"
+                f"User: @OTAKULUX{username}\n"
                 f"Name: {mention}\n"
                 f"Expiry: {expiry_info}"
             )
@@ -450,7 +450,7 @@ async def list_premium_users_command(client, message):
 
 #=====================================================================================##
 
-@Bot.on_message(filters.command("count") & filters.private & admin)
+@OTAKULUX.on_message(filters.command("count") & filters.private & admin)
 async def total_verify_count_cmd(client, message: Message):
     total = await db.get_total_verify_count()
     await message.reply_text(f"Tᴏᴛᴀʟ ᴠᴇʀɪғɪᴇᴅ ᴛᴏᴋᴇɴs ᴛᴏᴅᴀʏ: <b>{total}</b>")
@@ -458,7 +458,7 @@ async def total_verify_count_cmd(client, message: Message):
 
 #=====================================================================================##
 
-@Bot.on_message(filters.command('commands') & filters.private & admin)
+@OTAKULUX.on_message(filters.command('commands') & filters.private & admin)
 async def bcmd(bot: Bot, message: Message):        
     reply_markup = InlineKeyboardMarkup([[InlineKeyboardButton("• ᴄʟᴏsᴇ •", callback_data = "close")]])
     await message.reply(text=CMD_TXT, reply_markup = reply_markup, quote= True)

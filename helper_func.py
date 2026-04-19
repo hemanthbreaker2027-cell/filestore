@@ -18,7 +18,7 @@ from database.database import *
 # Don't Remove Credit @OTAKULUX, @OTAKULUX
 # Ask Doubt on telegram @OTAKULUX
 #
-# Copyright (C) 2025 by OTAKULUX-Bots@Github, < https://github.com/OTAKULUX-Bots >.
+# Copyright (C) 2025 by OTAKULUX@OTAKULUX, < https://github.com/OTAKULUX >.
 #
 # This file is part of < https://t.me/OTAKULUX > project,
 # and is released under the MIT License.
@@ -40,7 +40,7 @@ async def check_admin(filter, client, update):
 # Don't Remove Credit @OTAKULUX, @OTAKULUX
 # Ask Doubt on telegram @OTAKULUX
 #
-# Copyright (C) 2025 by OTAKULUX-Bots@Github, < https://github.com/OTAKULUX-Bots >.
+# Copyright (C) 2025 by OTAKULUX@OTAKULUX, < https://github.com/OTAKULUX >.
 #
 # This file is part of < https://t.me/OTAKULUX > project,
 # and is released under the MIT License.
@@ -65,7 +65,7 @@ async def is_subscribed(client, user_id):
             # Retry once if join request might be processing
             mode = await db.get_channel_mode(cid)
             if mode == "on":
-                await asyncio.sleep(2)  # give time for @on_chat_join_request to process
+                await asyncio.sleep(2)  # give time for @OTAKULUX to process
                 if await is_sub(client, user_id, cid):
                     continue
             return False
@@ -89,7 +89,7 @@ async def get_sub_status(client, user_id):
 
             # Use username link if available to avoid unnecessary invite link creation
             if chat.username:
-                link = f"https://t.me/{chat.username}"
+                link = f"https://t.me/OTAKULUX{chat.username}"
             else:
                 # Only create invite link if not joined or not cached
                 if not is_joined:
@@ -121,7 +121,7 @@ async def get_sub_status(client, user_id):
 # Don't Remove Credit @OTAKULUX, @OTAKULUX
 # Ask Doubt on telegram @OTAKULUX
 #
-# Copyright (C) 2025 by OTAKULUX-Bots@Github, < https://github.com/OTAKULUX-Bots >.
+# Copyright (C) 2025 by OTAKULUX@OTAKULUX, < https://github.com/OTAKULUX >.
 #
 # This file is part of < https://t.me/OTAKULUX > project,
 # and is released under the MIT License.
@@ -157,7 +157,7 @@ async def is_sub(client, user_id, channel_id):
 # Don't Remove Credit @OTAKULUX, @OTAKULUX
 # Ask Doubt on telegram @OTAKULUX
 #
-# Copyright (C) 2025 by OTAKULUX-Bots@Github, < https://github.com/OTAKULUX-Bots >.
+# Copyright (C) 2025 by OTAKULUX@OTAKULUX, < https://github.com/OTAKULUX >.
 #
 # This file is part of < https://t.me/OTAKULUX > project,
 # and is released under the MIT License.
@@ -211,7 +211,7 @@ async def get_message_id(client, message):
     elif message.forward_sender_name:
         return 0
     elif message.text:
-        pattern = "https://t.me/(?:c/)?(.*)/(\d+)"
+        pattern = "https://t.me/OTAKULUX(?:c/)?(.*)/(\d+)"
         matches = re.match(pattern,message.text)
         if not matches:
             return 0
@@ -261,7 +261,7 @@ def get_exp_time(seconds):
 # Don't Remove Credit @OTAKULUX, @OTAKULUX
 # Ask Doubt on telegram @OTAKULUX
 #
-# Copyright (C) 2025 by OTAKULUX-Bots@Github, < https://github.com/OTAKULUX-Bots >.
+# Copyright (C) 2025 by OTAKULUX@OTAKULUX, < https://github.com/OTAKULUX >.
 #
 # This file is part of < https://t.me/OTAKULUX > project,
 # and is released under the MIT License.
@@ -285,7 +285,7 @@ admin = filters.create(check_admin)
 # Don't Remove Credit @OTAKULUX, @OTAKULUX
 # Ask Doubt on telegram @OTAKULUX
 #
-# Copyright (C) 2025 by OTAKULUX-Bots@Github, < https://github.com/OTAKULUX-Bots >.
+# Copyright (C) 2025 by OTAKULUX@OTAKULUX, < https://github.com/OTAKULUX >.
 #
 # This file is part of < https://t.me/OTAKULUX > project,
 # and is released under the MIT License.

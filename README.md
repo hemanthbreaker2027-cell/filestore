@@ -41,7 +41,7 @@
 ## ᴠᴀʀɪᴀʙʟᴇs
 * `API_HASH` Your API Hash from my.telegram.org
 * `APP_ID` Your API ID from my.telegram.org
-* `TG_BOT_TOKEN` Your bot token from @BotFather
+* `TG_BOT_TOKEN` Your bot token from @OTAKULUX
 * `OWNER_ID` Must enter Your Telegram Id
 * `CHANNEL_ID` Your Channel ID eg:- -100xxxxxxxx
 * `DATABASE_URL` Your mongo db url

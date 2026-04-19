@@ -1,7 +1,7 @@
 # Don't Remove Credit @OTAKULUX, @OTAKULUX
 # Ask Doubt on telegram @OTAKULUX
 #
-# Copyright (C) 2025 by OTAKULUX-Bots@Github, < https://github.com/OTAKULUX-Bots >.
+# Copyright (C) 2025 by OTAKULUX@OTAKULUX, < https://github.com/OTAKULUX >.
 #
 # This file is part of < https://t.me/OTAKULUX > project,
 # and is released under the MIT License.
@@ -34,7 +34,7 @@ REPLY_ERROR = "<code>Use this command as a reply to any telegram message without
 #=====================================================================================##
 
 
-@Bot.on_message(filters.private & filters.command('pbroadcast') & admin)
+@OTAKULUX.on_message(filters.private & filters.command('pbroadcast') & admin)
 async def send_pin_text(client: Bot, message: Message):
     if message.reply_to_message:
         query = await db.full_userbase()
@@ -86,7 +86,7 @@ Unsuccessful: <code>{unsuccessful}</code>"""
 #=====================================================================================##
 
 
-@Bot.on_message(filters.private & filters.command('broadcast') & admin)
+@OTAKULUX.on_message(filters.private & filters.command('broadcast') & admin)
 async def send_text(client: Bot, message: Message):
     if message.reply_to_message:
         query = await db.full_userbase()
@@ -136,7 +136,7 @@ Unsuccessful: <code>{unsuccessful}</code></b>"""
 # Don't Remove Credit @OTAKULUX, @OTAKULUX
 # Ask Doubt on telegram @OTAKULUX
 #
-# Copyright (C) 2025 by OTAKULUX-Bots@Github, < https://github.com/OTAKULUX-Bots >.
+# Copyright (C) 2025 by OTAKULUX@OTAKULUX, < https://github.com/OTAKULUX >.
 #
 # This file is part of < https://t.me/OTAKULUX > project,
 # and is released under the MIT License.
@@ -147,7 +147,7 @@ Unsuccessful: <code>{unsuccessful}</code></b>"""
 
 # broadcast with auto-del
 
-@Bot.on_message(filters.private & filters.command('dbroadcast') & admin)
+@OTAKULUX.on_message(filters.private & filters.command('dbroadcast') & admin)
 async def delete_broadcast(client: Bot, message: Message):
     if message.reply_to_message:
         try:
@@ -207,7 +207,7 @@ Unsuccessful: <code>{unsuccessful}</code></b>"""
 # Don't Remove Credit @OTAKULUX, @OTAKULUX
 # Ask Doubt on telegram @OTAKULUX
 #
-# Copyright (C) 2025 by OTAKULUX-Bots@Github, < https://github.com/OTAKULUX-Bots >.
+# Copyright (C) 2025 by OTAKULUX@OTAKULUX, < https://github.com/OTAKULUX >.
 #
 # This file is part of < https://t.me/OTAKULUX > project,
 # and is released under the MIT License.

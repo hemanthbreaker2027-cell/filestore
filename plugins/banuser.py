@@ -1,7 +1,7 @@
 # Don't Remove Credit @OTAKULUX, @OTAKULUX
 # Ask Doubt on telegram @OTAKULUX
 #
-# Copyright (C) 2025 by OTAKULUX-Bots@Github, < https://github.com/OTAKULUX-Bots >.
+# Copyright (C) 2025 by OTAKULUX@OTAKULUX, < https://github.com/OTAKULUX >.
 #
 # This file is part of < https://t.me/OTAKULUX > project,
 # and is released under the MIT License.
@@ -29,7 +29,7 @@ from database.database import *
 
 
 #BAN-USER-SYSTEM
-@Bot.on_message(filters.private & filters.command('ban') & admin)
+@OTAKULUX.on_message(filters.private & filters.command('ban') & admin)
 async def add_banuser(client: Client, message: Message):        
     pro = await message.reply("⏳ <i>Pʀᴏᴄᴇssɪɴɢ ʀᴇǫᴜᴇsᴛ...</i>", quote=True)
     banuser_ids = await db.get_ban_users()
@@ -73,7 +73,7 @@ async def add_banuser(client: Client, message: Message):
     else:
         await pro.edit(f"<b>❌ Nᴏ ᴜsᴇʀs ᴡᴇʀᴇ ʙᴀɴɴᴇᴅ.</b>\n\n{report}", reply_markup=reply_markup)
 
-@Bot.on_message(filters.private & filters.command('unban') & admin)
+@OTAKULUX.on_message(filters.private & filters.command('unban') & admin)
 async def delete_banuser(client: Client, message: Message):        
     pro = await message.reply("⏳ <i>Pʀᴏᴄᴇssɪɴɢ ʀᴇǫᴜᴇsᴛ...</i>", quote=True)
     banuser_ids = await db.get_ban_users()
@@ -114,7 +114,7 @@ async def delete_banuser(client: Client, message: Message):
 
     await pro.edit(f"<b>🚫 Uɴʙᴀɴ Rᴇᴘᴏʀᴛ:</b>\n\n{report}", reply_markup=reply_markup)
 
-@Bot.on_message(filters.private & filters.command('banlist') & admin)
+@OTAKULUX.on_message(filters.private & filters.command('banlist') & admin)
 async def get_banuser_list(client: Client, message: Message):        
     pro = await message.reply("⏳ <i>Fᴇᴛᴄʜɪɴɢ Bᴀɴ Lɪsᴛ...</i>", quote=True)
     banuser_ids = await db.get_ban_users()
