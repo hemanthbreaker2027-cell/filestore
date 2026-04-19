@@ -39,6 +39,14 @@ TG_BOT_WORKERS = int(os.environ.get("TG_BOT_WORKERS", "200"))
 START_PIC = os.environ.get("START_PIC", "https://telegra.ph/file/ec17880d61180d3312d6a.jpg")
 FORCE_PIC = os.environ.get("FORCE_PIC", "https://telegra.ph/file/e292b12890b8b4b9dcbd1.jpg")
 
+# Random Anime Banners
+ANIME_BANNERS = [
+    "https://telegra.ph/file/ec17880d61180d3312d6a.jpg", # Zoro
+    "https://telegra.ph/file/e292b12890b8b4b9dcbd1.jpg", # Solo Leveling
+    "https://telegra.ph/file/3e83c69804826b3cba066-16cffa90cd682570da.jpg", # Naruto/Other
+    "https://telegra.ph/file/ec17880d61180d3312d6a.jpg", # Add more as needed
+]
+
 #--------------------------------------------
 SHORTLINK_URL = os.environ.get("SHORTLINK_URL", "linkshortify.com")
 SHORTLINK_API = os.environ.get("SHORTLINK_API", "")

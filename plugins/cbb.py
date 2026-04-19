@@ -12,6 +12,7 @@ from bot import Bot
 from config import *
 from pyrogram.types import Message, InlineKeyboardMarkup, InlineKeyboardButton, CallbackQuery
 from database.database import *
+from helper_func import *
 
 @Bot.on_callback_query()
 async def cb_handler(client: Bot, query: CallbackQuery):
@@ -154,6 +155,59 @@ async def cb_handler(client: Bot, query: CallbackQuery):
             "sᴇʟᴇᴄᴛ ᴀ ᴄʜᴀɴɴᴇʟ ᴛᴏ ᴛᴏɢɢʟᴇ ɪᴛs ғᴏʀᴄᴇ-sᴜʙ ᴍᴏᴅᴇ:",
             reply_markup=InlineKeyboardMarkup(buttons)
         )
+
+    elif data.startswith("check_sub"):
+        user_id = query.from_user.id
+        if await is_subscribed(client, user_id):
+            await query.answer("All channels joined! Delivering files...", show_alert=False)
+            await query.message.delete()
+
+            parts = data.split("_", 2)
+            # Ensure the message's from_user is the person who clicked the button
+            query.message.from_user = query.from_user
+
+            if len(parts) > 2:
+                payload = parts[2]
+                from plugins.start import send_files
+                await send_files(client, query.message, payload)
+            else:
+                from plugins.start import start_command
+                query.message.text = "/start"
+                await start_command(client, query.message)
+        else:
+            await query.answer("You haven't joined all channels yet!", show_alert=True)
+            # Refresh the Force Sub UI
+            status_list = await get_sub_status(client, user_id)
+            buttons = []
+            status_text = ""
+            for i, status in enumerate(status_list, 1):
+                icon = "✅" if status['is_joined'] else "❌"
+                status_text += f"{i}. {icon} {status['name']} — {'Joined' if status['is_joined'] else 'Not Joined'}\n"
+                if not status['is_joined']:
+                    buttons.append([InlineKeyboardButton(text=f"📢 {status['name']}", url=status['link'])])
+
+            buttons.append([InlineKeyboardButton("🔄 Try Again", callback_data=data)])
+
+            caption = (
+                "━━━━━━━━━━━━━━━━━━━\n"
+                "HEY SAMA ×\n\n"
+                "🎉 Anime Files Are Ready !!\n\n"
+                "⚠️ Hey! You haven't joined all required channels.\n"
+                "Join now to unlock your files instantly!\n\n"
+                "━━━━━━━━━━━━━━━━━━━\n"
+                "📊 SUBSCRIPTION STATUS:\n\n"
+                f"{status_text}\n"
+                "━━━━━━━━━━━━━━━━━━━"
+            )
+
+            # Edit the message to show updated status
+            try:
+                await query.message.edit_caption(
+                    caption=caption,
+                    reply_markup=InlineKeyboardMarkup(buttons)
+                )
+            except Exception as e:
+                print(f"Error editing fsub message: {e}")
 
 
 # Don't Remove Credit @CodeFlix_Bots, @rohit_1888

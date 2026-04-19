@@ -34,6 +34,114 @@ from database.db_premium import *
 BAN_SUPPORT = f"{BAN_SUPPORT}"
 TUT_VID = f"{TUT_VID}"
 
+async def send_files(client: Client, message: Message, base64_string):
+    user_id = message.from_user.id
+
+    temp_msg = await message.reply_photo(
+        photo=random.choice(ANIME_BANNERS),
+        caption="━━━━━━━━━━━━━━━━━━━\n🔍 Checking Subscription...\n━━━━━━━━━━━━━━━━━━━"
+    )
+    await asyncio.sleep(1)
+
+    if not await is_subscribed(client, user_id):
+        await temp_msg.delete()
+        return await not_joined(client, message)
+
+    try:
+        string = await decode(base64_string)
+        argument = string.split("-")
+
+        ids = []
+        if len(argument) == 3:
+            try:
+                start = int(int(argument[1]) / abs(client.db_channel.id))
+                end = int(int(argument[2]) / abs(client.db_channel.id))
+                ids = range(start, end + 1) if start <= end else list(range(start, end - 1, -1))
+            except Exception as e:
+                print(f"Error decoding IDs: {e}")
+                return
+
+        elif len(argument) == 2:
+            try:
+                ids = [int(int(argument[1]) / abs(client.db_channel.id))]
+            except Exception as e:
+                print(f"Error decoding ID: {e}")
+                return
+
+        try:
+            messages = await get_messages(client, ids)
+        except Exception as e:
+            await message.reply_text("Something went wrong!")
+            print(f"Error getting messages: {e}")
+            return
+        finally:
+            try:
+                await temp_msg.delete()
+            except:
+                pass
+
+        codeflix_msgs = []
+        # File auto-delete time in seconds
+        FILE_AUTO_DELETE = await db.get_del_timer()
+
+        for msg in messages:
+            original_caption = msg.caption.html if msg.caption else ""
+            caption = f"{original_caption}\n\n{CUSTOM_CAPTION}" if CUSTOM_CAPTION else original_caption
+            reply_markup = msg.reply_markup if DISABLE_CHANNEL_BUTTON else None
+
+            try:
+                snt_msg = await msg.copy(
+                    chat_id=message.from_user.id,
+                    caption=caption,
+                    parse_mode=ParseMode.HTML,
+                    reply_markup=reply_markup,
+                    protect_content=PROTECT_CONTENT
+                )
+                await asyncio.sleep(0.5)
+                codeflix_msgs.append(snt_msg)
+            except FloodWait as e:
+                await asyncio.sleep(e.x)
+                copied_msg = await msg.copy(
+                    chat_id=message.from_user.id,
+                    caption=caption,
+                    parse_mode=ParseMode.HTML,
+                    reply_markup=reply_markup,
+                    protect_content=PROTECT_CONTENT
+                )
+                codeflix_msgs.append(copied_msg)
+            except:
+                pass
+
+        if FILE_AUTO_DELETE > 0:
+            notification_msg = await message.reply(
+                f"<b>Tʜɪs Fɪʟᴇ ᴡɪʟʟ ʙᴇ Dᴇʟᴇᴛᴇᴅ ɪɴ  {get_exp_time(FILE_AUTO_DELETE)}. Pʟᴇᴀsᴇ sᴀᴠᴇ ᴏʀ ғᴏʀᴡᴀʀᴅ ɪᴛ ᴛᴏ ʏᴏᴜʀ sᴀᴠᴇᴅ ᴍᴇssᴀɢᴇs ʙᴇғᴏʀᴇ ɪᴛ ɢᴇᴛs Dᴇʟᴇᴛᴇᴅ.</b>"
+            )
+
+            await asyncio.sleep(FILE_AUTO_DELETE)
+
+            for snt_msg in codeflix_msgs:    
+                if snt_msg:
+                    try:    
+                        await snt_msg.delete()  
+                    except Exception as e:
+                        print(f"Error deleting message {snt_msg.id}: {e}")
+
+            try:
+                reload_url = f"https://t.me/{client.username}?start={base64_string}"
+                keyboard = InlineKeyboardMarkup(
+                    [[InlineKeyboardButton("ɢᴇᴛ ғɪʟᴇ ᴀɢᴀɪɴ!", url=reload_url)]]
+                )
+
+                await notification_msg.edit(
+                    "<b>ʏᴏᴜʀ ᴠɪᴅᴇᴏ / ꜰɪʟᴇ ɪꜱ ꜱᴜᴄᴄᴇꜱꜱꜰᴜʟʟʏ ᴅᴇʟᴇᴛᴇᴅ !!\n\nᴄʟɪᴄᴋ ʙᴇʟᴏᴡ ʙᴜᴛᴛᴏɴ ᴛᴏ ɢᴇᴛ ʏᴏᴜʀ ᴅᴇʟᴇᴛᴇᴅ ᴠɪᴅᴇᴏ / ꜰɪʟᴇ 👇</b>",
+                    reply_markup=keyboard
+                )
+            except Exception as e:
+                print(f"Error updating notification with 'Get File Again' button: {e}")
+
+    except Exception as e:
+        print(f"Final Error in send_files: {e}")
+
 async def short_url(client: Client, message: Message, base64_string):
     try:
         prem_link = f"https://t.me/{client.username}?start=yu3elk{base64_string}7"
@@ -88,9 +196,6 @@ async def start_command(client: Client, message: Message):
             )
         )
 
-    # File auto-delete time in seconds
-    FILE_AUTO_DELETE = await db.get_del_timer()
-
     # Handle normal message flow
     text = message.text
 
@@ -106,123 +211,52 @@ async def start_command(client: Client, message: Message):
                 await short_url(client, message, base64_string)
                 return
 
+            # Start File delivery flow
+            await send_files(client, message, base64_string)
+            return
+
         except Exception as e:
             print(f"Error processing start payload: {e}")
-
-        string = await decode(base64_string)
-        argument = string.split("-")
-
-        ids = []
-        if len(argument) == 3:
-            try:
-                start = int(int(argument[1]) / abs(client.db_channel.id))
-                end = int(int(argument[2]) / abs(client.db_channel.id))
-                ids = range(start, end + 1) if start <= end else list(range(start, end - 1, -1))
-            except Exception as e:
-                print(f"Error decoding IDs: {e}")
-                return
-
-        elif len(argument) == 2:
-            try:
-                ids = [int(int(argument[1]) / abs(client.db_channel.id))]
-            except Exception as e:
-                print(f"Error decoding ID: {e}")
-                return
-
-        temp_msg = await message.reply("<b>Please wait...</b>")
-        try:
-            messages = await get_messages(client, ids)
-        except Exception as e:
-            await message.reply_text("Something went wrong!")
-            print(f"Error getting messages: {e}")
             return
-        finally:
-            await temp_msg.delete()
-
-        codeflix_msgs = []
-
-        for msg in messages:
-            original_caption = msg.caption.html if msg.caption else ""
-            caption = f"{original_caption}\n\n{CUSTOM_CAPTION}" if CUSTOM_CAPTION else original_caption
-            reply_markup = msg.reply_markup if DISABLE_CHANNEL_BUTTON else None
-
-            try:
-                snt_msg = await msg.copy(
-                    chat_id=message.from_user.id,
-                    caption=caption,
-                    parse_mode=ParseMode.HTML,
-                    reply_markup=reply_markup,
-                    protect_content=PROTECT_CONTENT
-                )
-                await asyncio.sleep(0.5)
-                codeflix_msgs.append(snt_msg)
-            except FloodWait as e:
-                await asyncio.sleep(e.x)
-                copied_msg = await msg.copy(
-                    chat_id=message.from_user.id,
-                    caption=caption,
-                    parse_mode=ParseMode.HTML,
-                    reply_markup=reply_markup,
-                    protect_content=PROTECT_CONTENT
-                )
-                codeflix_msgs.append(copied_msg)
-            except:
-                pass
-
-        if FILE_AUTO_DELETE > 0:
-            notification_msg = await message.reply(
-                f"<b>Tʜɪs Fɪʟᴇ ᴡɪʟʟ ʙᴇ Dᴇʟᴇᴛᴇᴅ ɪɴ  {get_exp_time(FILE_AUTO_DELETE)}. Pʟᴇᴀsᴇ sᴀᴠᴇ ᴏʀ ғᴏʀᴡᴀʀᴅ ɪᴛ ᴛᴏ ʏᴏᴜʀ sᴀᴠᴇᴅ ᴍᴇssᴀɢᴇs ʙᴇғᴏʀᴇ ɪᴛ ɢᴇᴛs Dᴇʟᴇᴛᴇᴅ.</b>"
-            )
-
-            await asyncio.sleep(FILE_AUTO_DELETE)
-
-            for snt_msg in codeflix_msgs:    
-                if snt_msg:
-                    try:    
-                        await snt_msg.delete()  
-                    except Exception as e:
-                        print(f"Error deleting message {snt_msg.id}: {e}")
-
-            try:
-                reload_url = (
-                    f"https://t.me/{client.username}?start={message.command[1]}"
-                    if message.command and len(message.command) > 1
-                    else None
-                )
-                keyboard = InlineKeyboardMarkup(
-                    [[InlineKeyboardButton("ɢᴇᴛ ғɪʟᴇ ᴀɢᴀɪɴ!", url=reload_url)]]
-                ) if reload_url else None
-
-                await notification_msg.edit(
-                    "<b>ʏᴏᴜʀ ᴠɪᴅᴇᴏ / ꜰɪʟᴇ ɪꜱ ꜱᴜᴄᴄᴇꜱꜱꜰᴜʟʟʏ ᴅᴇʟᴇᴛᴇᴅ !!\n\nᴄʟɪᴄᴋ ʙᴇʟᴏᴡ ʙᴜᴛᴛᴏɴ ᴛᴏ ɢᴇᴛ ʏᴏᴜʀ ᴅᴇʟᴇᴛᴇᴅ ᴠɪᴅᴇᴏ / ꜰɪʟᴇ 👇</b>",
-                    reply_markup=keyboard
-                )
-            except Exception as e:
-                print(f"Error updating notification with 'Get File Again' button: {e}")
     else:
-        reply_markup = InlineKeyboardMarkup(
+        # Premium Start UI Redesign
+        buttons = [
+            [InlineKeyboardButton("📢 Main Channel", url="https://t.me/Nova_Flix")],
+            [InlineKeyboardButton("🌀 Ongoing Anime", url="https://t.me/Nova_Flix/50")],
+            [InlineKeyboardButton("⚪ Anime Index", url="https://t.me/Nova_Flix/51")],
             [
-                    [InlineKeyboardButton("• ᴍᴏʀᴇ ᴄʜᴀɴɴᴇʟs •", url="https://t.me/Nova_Flix/50")],
-
-    [
-                    InlineKeyboardButton("• ᴀʙᴏᴜᴛ", callback_data = "about"),
-                    InlineKeyboardButton('ʜᴇʟᴘ •', callback_data = "help")
-
-    ]
+                InlineKeyboardButton("⚠️ About", callback_data="about"),
+                InlineKeyboardButton("💰 Promo", callback_data="premium")
             ]
+        ]
+
+        reply_markup = InlineKeyboardMarkup(buttons)
+
+        # Typing Simulation Lines
+        line1 = "━━━━━━━━━━━━━━━━━━━\n"
+        line2 = f"Hey, {message.from_user.first_name} ✌🏻\n"
+        line3 = "I hope you're feeling the power of Shadow Monarch 😈\n\n"
+        line4 = "✨ I'm The Ultimate File Sharing Bot... 🎉\n"
+        line5 = "━━━━━━━━━━━━━━━━━━━"
+
+        # Send initial message with first few lines
+        msg = await message.reply_photo(
+            photo=random.choice(ANIME_BANNERS),
+            caption=line1 + line2,
+            message_effect_id=5104841245755180586 # 🔥
         )
-        await message.reply_photo(
-            photo=START_PIC,
-            caption=START_MSG.format(
-                first=message.from_user.first_name,
-                last=message.from_user.last_name,
-                username=None if not message.from_user.username else '@' + message.from_user.username,
-                mention=message.from_user.mention,
-                id=message.from_user.id
-            ),
-            reply_markup=reply_markup,
-            message_effect_id=5104841245755180586)  # 🔥
-        
+
+        try:
+            await asyncio.sleep(0.5)
+            await msg.edit_caption(line1 + line2 + line3)
+
+            await asyncio.sleep(0.5)
+            await msg.edit_caption(
+                caption=line1 + line2 + line3 + line4 + line5,
+                reply_markup=reply_markup
+            )
+        except Exception as e:
+            print(f"Error in typing simulation: {e}")
         return
 
 
@@ -237,88 +271,45 @@ async def start_command(client: Client, message: Message):
 chat_data_cache = {}
 
 async def not_joined(client: Client, message: Message):
-    temp = await message.reply("<b><i>Checking Subscription...</i></b>")
-
     user_id = message.from_user.id
+
+    # Get detailed subscription status
+    status_list = await get_sub_status(client, user_id)
+
     buttons = []
-    count = 0
+    status_text = ""
 
-    try:
-        all_channels = await db.show_channels()  # Should return list of (chat_id, mode) tuples
-        for total, chat_id in enumerate(all_channels, start=1):
-            mode = await db.get_channel_mode(chat_id)  # fetch mode 
+    for i, status in enumerate(status_list, 1):
+        icon = "✅" if status['is_joined'] else "❌"
+        status_text += f"{i}. {icon} {status['name']} — {'Joined' if status['is_joined'] else 'Not Joined'}\n"
 
-            await message.reply_chat_action(ChatAction.TYPING)
+        if not status['is_joined']:
+            buttons.append([InlineKeyboardButton(text=f"📢 {status['name']}", url=status['link'])])
 
-            if not await is_sub(client, user_id, chat_id):
-                try:
-                    # Cache chat info
-                    if chat_id in chat_data_cache:
-                        data = chat_data_cache[chat_id]
-                    else:
-                        data = await client.get_chat(chat_id)
-                        chat_data_cache[chat_id] = data
+    # Add Try Again button
+    try_again_data = "check_sub"
+    if hasattr(message, 'command') and len(message.command) > 1:
+        try_again_data = f"check_sub_{message.command[1]}"
 
-                    name = data.title
+    buttons.append([InlineKeyboardButton("🔄 Try Again", callback_data=try_again_data)])
 
-                    # Generate proper invite link based on the mode
-                    if mode == "on" and not data.username:
-                        invite = await client.create_chat_invite_link(
-                            chat_id=chat_id,
-                            creates_join_request=True,
-                            expire_date=datetime.utcnow() + timedelta(seconds=FSUB_LINK_EXPIRY) if FSUB_LINK_EXPIRY else None
-                            )
-                        link = invite.invite_link
+    caption = (
+        "━━━━━━━━━━━━━━━━━━━\n"
+        "HEY SAMA ×\n\n"
+        "🎉 Anime Files Are Ready !!\n\n"
+        "⚠️ Hey! You haven't joined all required channels.\n"
+        "Join now to unlock your files instantly!\n\n"
+        "━━━━━━━━━━━━━━━━━━━\n"
+        "📊 SUBSCRIPTION STATUS:\n\n"
+        f"{status_text}\n"
+        "━━━━━━━━━━━━━━━━━━━"
+    )
 
-                    else:
-                        if data.username:
-                            link = f"https://t.me/{data.username}"
-                        else:
-                            invite = await client.create_chat_invite_link(
-                                chat_id=chat_id,
-                                expire_date=datetime.utcnow() + timedelta(seconds=FSUB_LINK_EXPIRY) if FSUB_LINK_EXPIRY else None)
-                            link = invite.invite_link
-
-                    buttons.append([InlineKeyboardButton(text=name, url=link)])
-                    count += 1
-                    await temp.edit(f"<b>{'! ' * count}</b>")
-
-                except Exception as e:
-                    print(f"Error with chat {chat_id}: {e}")
-                    return await temp.edit(
-                        f"<b><i>! Eʀʀᴏʀ, Cᴏɴᴛᴀᴄᴛ ᴅᴇᴠᴇʟᴏᴘᴇʀ ᴛᴏ sᴏʟᴠᴇ ᴛʜᴇ ɪssᴜᴇs @rohit_1888</i></b>\n"
-                        f"<blockquote expandable><b>Rᴇᴀsᴏɴ:</b> {e}</blockquote>"
-                    )
-
-        # Retry Button
-        try:
-            buttons.append([
-                InlineKeyboardButton(
-                    text='♻️ Tʀʏ Aɢᴀɪɴ',
-                    url=f"https://t.me/{client.username}?start={message.command[1]}"
-                )
-            ])
-        except IndexError:
-            pass
-
-        await message.reply_photo(
-            photo=FORCE_PIC,
-            caption=FORCE_MSG.format(
-                first=message.from_user.first_name,
-                last=message.from_user.last_name,
-                username=None if not message.from_user.username else '@' + message.from_user.username,
-                mention=message.from_user.mention,
-                id=message.from_user.id
-            ),
-            reply_markup=InlineKeyboardMarkup(buttons),
-        )
-
-    except Exception as e:
-        print(f"Final Error: {e}")
-        await temp.edit(
-            f"<b><i>! Eʀʀᴏʀ, Cᴏɴᴛᴀᴄᴛ ᴅᴇᴠᴇʟᴏᴘᴇʀ ᴛᴏ sᴏʟᴠᴇ ᴛʜᴇ ɪssᴜᴇs @rohit_1888</i></b>\n"
-            f"<blockquote expandable><b>Rᴇᴀsᴏɴ:</b> {e}</blockquote>"
-        )
+    await message.reply_photo(
+        photo=FORCE_PIC,
+        caption=caption,
+        reply_markup=InlineKeyboardMarkup(buttons)
+    )
 
 #=====================================================================================##
 

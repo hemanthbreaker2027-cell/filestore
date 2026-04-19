@@ -49,13 +49,15 @@ async def check_admin(filter, client, update):
 # All rights reserved.
 #
 
-async def is_subscribed(client, user_id):
-    channel_ids = await db.show_channels()
+# Create a global dictionary to store chat data
+chat_data_cache = {}
 
-    if not channel_ids:
+async def is_subscribed(client, user_id):
+    if user_id == OWNER_ID:
         return True
 
-    if user_id == OWNER_ID:
+    channel_ids = await db.show_channels()
+    if not channel_ids:
         return True
 
     for cid in channel_ids:
@@ -69,6 +71,51 @@ async def is_subscribed(client, user_id):
             return False
 
     return True
+
+async def get_sub_status(client, user_id):
+    status_list = []
+    channel_ids = await db.show_channels()
+
+    for cid in channel_ids:
+        try:
+            # Use Cache for chat info
+            if cid in chat_data_cache:
+                chat = chat_data_cache[cid]
+            else:
+                chat = await client.get_chat(cid)
+                chat_data_cache[cid] = chat
+
+            is_joined = await is_sub(client, user_id, cid)
+
+            # Use username link if available to avoid unnecessary invite link creation
+            if chat.username:
+                link = f"https://t.me/{chat.username}"
+            else:
+                # Only create invite link if not joined or not cached
+                if not is_joined:
+                    mode = await db.get_channel_mode(cid)
+                    if mode == "on":
+                        invite = await client.create_chat_invite_link(
+                            chat_id=cid,
+                            creates_join_request=True
+                        )
+                        link = invite.invite_link
+                    else:
+                        invite = await client.create_chat_invite_link(chat_id=cid)
+                        link = invite.invite_link
+                else:
+                    link = "" # User already joined, link not strictly needed for UI display
+
+            status_list.append({
+                "name": chat.title,
+                "link": link,
+                "is_joined": is_joined
+            })
+        except Exception as e:
+            print(f"Error getting sub status for {cid}: {e}")
+            continue
+
+    return status_list
 
 
 # Don't Remove Credit @CodeFlix_Bots, @rohit_1888
