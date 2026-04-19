@@ -23,7 +23,7 @@ from pyrogram import Client, filters, __version__
 from pyrogram.enums import ParseMode, ChatAction
 from pyrogram.types import Message, InlineKeyboardMarkup, InlineKeyboardButton, CallbackQuery, ReplyKeyboardMarkup, ChatInviteLink, ChatPrivileges
 from pyrogram.errors.exceptions.bad_request_400 import UserNotParticipant
-from pyrogram.errors import FloodWait, UserIsBlocked, InputUserDeactivated, UserNotParticipant
+from pyrogram.errors import FloodWait, UserIsBlocked, InputUserDeactivated, UserNotParticipant, MessageNotModified
 from bot import Bot
 from config import *
 from helper_func import *
@@ -255,6 +255,8 @@ async def start_command(client: Client, message: Message):
                 caption=line1 + line2 + line3 + line4 + line5,
                 reply_markup=reply_markup
             )
+        except MessageNotModified:
+            pass
         except Exception as e:
             print(f"Error in typing simulation: {e}")
         return
@@ -266,9 +268,6 @@ async def start_command(client: Client, message: Message):
 # Ask Doubt on telegram @CodeflixSupport
 
 
-
-# Create a global dictionary to store chat data
-chat_data_cache = {}
 
 async def not_joined(client: Client, message: Message):
     user_id = message.from_user.id
@@ -287,9 +286,9 @@ async def not_joined(client: Client, message: Message):
             buttons.append([InlineKeyboardButton(text=f"📢 {status['name']}", url=status['link'])])
 
     # Add Try Again button
-    try_again_data = "check_sub"
+    try_again_data = "ck"
     if hasattr(message, 'command') and len(message.command) > 1:
-        try_again_data = f"check_sub_{message.command[1]}"
+        try_again_data = f"ck_{message.command[1]}"
 
     buttons.append([InlineKeyboardButton("🔄 Try Again", callback_data=try_again_data)])
 

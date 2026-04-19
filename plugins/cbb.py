@@ -156,18 +156,18 @@ async def cb_handler(client: Bot, query: CallbackQuery):
             reply_markup=InlineKeyboardMarkup(buttons)
         )
 
-    elif data.startswith("check_sub"):
+    elif data.startswith("ck"):
         user_id = query.from_user.id
         if await is_subscribed(client, user_id):
             await query.answer("All channels joined! Delivering files...", show_alert=False)
             await query.message.delete()
 
-            parts = data.split("_", 2)
+            parts = data.split("_", 1)
             # Ensure the message's from_user is the person who clicked the button
             query.message.from_user = query.from_user
 
-            if len(parts) > 2:
-                payload = parts[2]
+            if len(parts) > 1:
+                payload = parts[1]
                 from plugins.start import send_files
                 await send_files(client, query.message, payload)
             else:
