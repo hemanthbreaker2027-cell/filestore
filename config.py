@@ -41,10 +41,19 @@ FORCE_PIC = os.environ.get("FORCE_PIC", "https://telegra.ph/file/e292b12890b8b4b
 
 # Random Anime Banners
 ANIME_BANNERS = [
-    "https://telegra.ph/file/ec17880d61180d3312d6a.jpg", # Zoro
-    "https://telegra.ph/file/e292b12890b8b4b9dcbd1.jpg", # Solo Leveling
-    "https://telegra.ph/file/3e83c69804826b3cba066-16cffa90cd682570da.jpg", # Naruto/Other
-    "https://telegra.ph/file/ec17880d61180d3312d6a.jpg", # Add more as needed
+    "https://freeimage.host/i/Bge4jwl",
+    "https://freeimage.host/i/Bge423u",
+    "https://freeimage.host/i/Bge49C7",
+    "https://freeimage.host/i/Bge4pHJ",
+    "https://freeimage.host/i/Bge4hu4",
+    "https://freeimage.host/i/Bge69NR",
+    "https://freeimage.host/i/Bge4bSa",
+    "https://freeimage.host/i/Bge6xDl",
+    "https://freeimage.host/i/Bge6MiP",
+    "https://freeimage.host/i/Bge6Wf1",
+    "https://freeimage.host/i/Bge6wJa",
+    "https://freeimage.host/i/Bge6N5J",
+    "https://freeimage.host/i/Bge6OOv",
 ]
 
 #--------------------------------------------
