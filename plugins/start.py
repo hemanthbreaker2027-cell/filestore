@@ -157,7 +157,7 @@ async def short_url(client: Client, message: Message, base64_string):
         ]
 
         await message.reply_photo(
-            photo=SHORTENER_PIC,
+            photo=random.choice(ANIME_BANNERS),
             caption=SHORT_MSG.format(
             ),
             reply_markup=InlineKeyboardMarkup(buttons),
@@ -304,7 +304,7 @@ async def not_joined(client: Client, message: Message):
     )
 
     await message.reply_photo(
-        photo=FORCE_PIC,
+        photo=random.choice(ANIME_BANNERS),
         caption=caption,
         reply_markup=InlineKeyboardMarkup(buttons)
     )

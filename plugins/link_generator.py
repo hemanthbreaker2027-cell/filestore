@@ -1,5 +1,6 @@
 #(©)Codexbotz
 
+import re
 from pyrogram import Client, filters
 from pyrogram.types import Message, InlineKeyboardMarkup, InlineKeyboardButton
 from bot import Bot
@@ -9,6 +10,20 @@ from helper_func import encode, get_message_id, admin
 
 @Bot.on_message(filters.private & admin & filters.command('batch'))
 async def batch(client: Client, message: Message):
+    # Support for range link format: /batch https://t.me/c/3967760305/274-299
+    if len(message.command) > 1:
+        link_text = message.command[1]
+        pattern = r"https://t.me/(?:c/)?(?:[^/]+)/(\d+)-(\d+)"
+        match = re.search(pattern, link_text)
+        if match:
+            f_msg_id = int(match.group(1))
+            s_msg_id = int(match.group(2))
+            string = f"get-{f_msg_id * abs(client.db_channel.id)}-{s_msg_id * abs(client.db_channel.id)}"
+            base64_string = await encode(string)
+            link = f"https://t.me/{client.username}?start={base64_string}"
+            reply_markup = InlineKeyboardMarkup([[InlineKeyboardButton("🔁 Share URL", url=f'https://telegram.me/share/url?url={link}')]])
+            return await message.reply_text(f"<b>Here is your link</b>\n\n{link}", quote=True, reply_markup=reply_markup)
+
     while True:
         try:
             first_message = await client.ask(text = "Forward the First Message from DB Channel (with Quotes)..\n\nor Send the DB Channel Post Link", chat_id = message.from_user.id, filters=(filters.forwarded | (filters.text & ~filters.forwarded)), timeout=60)

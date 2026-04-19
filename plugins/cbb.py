@@ -66,7 +66,7 @@ async def cb_handler(client: Bot, query: CallbackQuery):
         await query.message.delete()
         await client.send_photo(
             chat_id=query.message.chat.id,
-            photo=QR_PIC,
+            photo=random.choice(ANIME_BANNERS),
             caption=(
                 f"👋 {query.from_user.username}\n\n"
                 f"🎖️ Available Plans :\n\n"

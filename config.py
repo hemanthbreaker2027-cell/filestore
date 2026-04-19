@@ -11,6 +11,7 @@
 #
 
 import os
+import random
 from os import environ,getenv
 import logging
 from logging.handlers import RotatingFileHandler
@@ -18,51 +19,43 @@ from logging.handlers import RotatingFileHandler
 #OTAKULUX on Tg
 #--------------------------------------------
 #Bot token @OTAKULUX
-TG_BOT_TOKEN = os.environ.get("TG_BOT_TOKEN", "8686791784:AAFF1vlfE8CfJ5ZyBREeWLQgad81d-xiS7E")
-APP_ID = int(os.environ.get("APP_ID", "22266643")) #Your API ID from my.telegram.org
-API_HASH = os.environ.get("API_HASH", "7d0b85b4146034511b8776ed7ff99de4") #Your API Hash from my.telegram.org
+TG_BOT_TOKEN = os.environ.get("TG_BOT_TOKEN", "")
+APP_ID = int(os.environ.get("APP_ID", "")) #Your API ID from my.telegram.org
+API_HASH = os.environ.get("API_HASH", "") #Your API Hash from my.telegram.org
 #--------------------------------------------
 
-CHANNEL_ID = int(os.environ.get("CHANNEL_ID", "-1003967760305")) #Your db channel Id
+CHANNEL_ID = int(os.environ.get("CHANNEL_ID", "-1002170811388")) #Your db channel Id
 OWNER = os.environ.get("OWNER", "OTAKULUX") # Owner username without @OTAKULUX
-OWNER_ID = int(os.environ.get("OWNER_ID", "8797485479")) # Owner id
+OWNER_ID = int(os.environ.get("OWNER_ID", "7328629001")) # Owner id
 #--------------------------------------------
 PORT = os.environ.get("PORT", "8001")
 #--------------------------------------------
-DB_URI = os.environ.get("DATABASE_URL", "mongodb+srv://hemanthbreaker2027:9550399779htr@cluster0.haybbxg.mongodb.net/?appName=Cluster0")
-DB_NAME = os.environ.get("DATABASE_NAME", "Cluster0")
+DB_URI = os.environ.get("DATABASE_URL", "")
+DB_NAME = os.environ.get("DATABASE_NAME", "Cluooo")
 #--------------------------------------------
 FSUB_LINK_EXPIRY = int(os.getenv("FSUB_LINK_EXPIRY", "10"))  # 0 means no expiry
 BAN_SUPPORT = os.environ.get("BAN_SUPPORT", "https://t.me/OTAKULUX")
 TG_BOT_WORKERS = int(os.environ.get("TG_BOT_WORKERS", "200"))
 #--------------------------------------------
-START_PIC = os.environ.get("START_PIC", "https://telegra.ph/file/ec17880d61180d3312d6a.jpg")
-FORCE_PIC = os.environ.get("FORCE_PIC", "https://telegra.ph/file/e292b12890b8b4b9dcbd1.jpg")
-
-# Random Anime Banners
+# Random Anime Banners (Neon / Dark Theme)
 ANIME_BANNERS = [
-    "https://freeimage.host/i/Bge4jwl",
-    "https://freeimage.host/i/Bge423u",
-    "https://freeimage.host/i/Bge49C7",
-    "https://freeimage.host/i/Bge4pHJ",
-    "https://freeimage.host/i/Bge4hu4",
-    "https://freeimage.host/i/Bge69NR",
-    "https://freeimage.host/i/Bge4bSa",
-    "https://freeimage.host/i/Bge6xDl",
-    "https://freeimage.host/i/Bge6MiP",
-    "https://freeimage.host/i/Bge6Wf1",
-    "https://freeimage.host/i/Bge6wJa",
-    "https://freeimage.host/i/Bge6N5J",
-    "https://freeimage.host/i/Bge6OOv",
+    "https://telegra.ph/file/ec17880d61180d3312d6a.jpg", # Zoro
+    "https://telegra.ph/file/e292b12890b8b4b9dcbd1.jpg", # Solo Leveling
+    "https://telegra.ph/file/3e83c69804826b3cba066-16cffa90cd682570da.jpg", # Naruto
+    "https://telegra.ph/file/ec17880d61180d3312d6a.jpg", # Add more
+    "https://telegra.ph/file/e292b12890b8b4b9dcbd1.jpg"
 ]
 
+START_PIC = random.choice(ANIME_BANNERS)
+FORCE_PIC = random.choice(ANIME_BANNERS)
+
 #--------------------------------------------
-SHORTLINK_URL = os.environ.get("SHORTLINK_URL", "")
+SHORTLINK_URL = os.environ.get("SHORTLINK_URL", "linkshortify.com")
 SHORTLINK_API = os.environ.get("SHORTLINK_API", "")
 TUT_VID = os.environ.get("TUT_VID","https://t.me/OTAKULUX/3")
 SHORT_MSG = "<b>⌯ Here is Your Download Link, Must Watch Tutorial Before Clicking On Download...</b>"
 
-SHORTENER_PIC = os.environ.get("SHORTENER_PIC", "https://telegra.ph/file/ec17880d61180d3312d6a.jpg")
+SHORTENER_PIC = random.choice(ANIME_BANNERS)
 #--------------------------------------------
 
 #--------------------------------------------
@@ -110,7 +103,7 @@ USER_REPLY_TEXT = "ʙᴀᴋᴋᴀ ! ʏᴏᴜ ᴀʀᴇ ɴᴏᴛ ᴍʏ ꜱᴇɴᴘ
 
 OWNER_TAG = os.environ.get("OWNER_TAG", "OTAKULUX")
 UPI_ID = os.environ.get("UPI_ID", "OTAKULUX@OTAKULUX")
-QR_PIC = os.environ.get("QR_PIC", "https://telegra.ph/file/3e83c69804826b3cba066-16cffa90cd682570da.jpg")
+QR_PIC = random.choice(ANIME_BANNERS)
 SCREENSHOT_URL = os.environ.get("SCREENSHOT_URL", f"t.me/OTAKULUX")
 #--------------------------------------------
 #Time and its price
