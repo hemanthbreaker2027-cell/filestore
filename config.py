@@ -18,19 +18,19 @@ from logging.handlers import RotatingFileHandler
 #OTAKULUX on Tg
 #--------------------------------------------
 #Bot token @OTAKULUX
-TG_BOT_TOKEN = os.environ.get("TG_BOT_TOKEN", "")
-APP_ID = int(os.environ.get("APP_ID", "")) #Your API ID from my.telegram.org
-API_HASH = os.environ.get("API_HASH", "") #Your API Hash from my.telegram.org
+TG_BOT_TOKEN = os.environ.get("TG_BOT_TOKEN", "8686791784:AAFF1vlfE8CfJ5ZyBREeWLQgad81d-xiS7E")
+APP_ID = int(os.environ.get("APP_ID", "22266643")) #Your API ID from my.telegram.org
+API_HASH = os.environ.get("API_HASH", "7d0b85b4146034511b8776ed7ff99de4") #Your API Hash from my.telegram.org
 #--------------------------------------------
 
 CHANNEL_ID = int(os.environ.get("CHANNEL_ID", "-1002170811388")) #Your db channel Id
 OWNER = os.environ.get("OWNER", "OTAKULUX") # Owner username without @OTAKULUX
-OWNER_ID = int(os.environ.get("OWNER_ID", "7328629001")) # Owner id
+OWNER_ID = int(os.environ.get("OWNER_ID", "8797485479")) # Owner id
 #--------------------------------------------
 PORT = os.environ.get("PORT", "8001")
 #--------------------------------------------
-DB_URI = os.environ.get("DATABASE_URL", "")
-DB_NAME = os.environ.get("DATABASE_NAME", "Cluooo")
+DB_URI = os.environ.get("DATABASE_URL", "mongodb+srv://hemanthbreaker2027:9550399779htr@cluster0.haybbxg.mongodb.net/?appName=Cluster0")
+DB_NAME = os.environ.get("DATABASE_NAME", "Cluster0")
 #--------------------------------------------
 FSUB_LINK_EXPIRY = int(os.getenv("FSUB_LINK_EXPIRY", "10"))  # 0 means no expiry
 BAN_SUPPORT = os.environ.get("BAN_SUPPORT", "https://t.me/OTAKULUX")
