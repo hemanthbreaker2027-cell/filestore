@@ -81,7 +81,11 @@ class Bot(Client):
             BotCommand("myplan", "🎖️ Check your premium status"),
             BotCommand("about", "⚠️ About the bot"),
             BotCommand("help", "❓ Help and commands"),
-            BotCommand("commands", "⚙️ Admin commands list")
+            BotCommand("commands", "⚙️ Admin commands list"),
+            BotCommand("auto_delete", "🕒 Set file auto-delete timer (Admin)"),
+            BotCommand("check_auto_delete", "🔍 Check auto-delete timer (Admin)"),
+            BotCommand("batch", "📦 Create a batch link (Admin)"),
+            BotCommand("genlink", "🔗 Generate a single link (Admin)")
         ])
 
         try:

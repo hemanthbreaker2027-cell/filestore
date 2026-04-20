@@ -77,11 +77,11 @@ async def set_delete_time(client: Bot, message: Message):
     except (IndexError, ValueError):
         await message.reply("<b>Pʟᴇᴀsᴇ ᴘʀᴏᴠɪᴅᴇ ᴀ ᴠᴀʟɪᴅ ᴅᴜʀᴀᴛɪᴏɴ ɪɴ sᴇᴄᴏɴᴅs.</b> Usage: /dlt_time {duration}")
 
-@Bot.on_message(filters.private & filters.command('check_dlt_time') & admin)
+@Bot.on_message(filters.private & filters.command(['check_dlt_time', 'check_auto_delete']) & admin)
 async def check_delete_time(client: Bot, message: Message):
     duration = await db.get_del_timer()
 
-    await message.reply(f"<b><blockquote>Cᴜʀʀᴇɴᴛ ᴅᴇʟᴇᴛᴇ ᴛɪᴍᴇʀ ɪs sᴇᴛ ᴛᴏ {duration}sᴇᴄᴏɴᴅs.</blockquote></b>")
+    await message.reply(f"<b><blockquote>Cᴜʀʀᴇɴᴛ ᴅᴇʟᴇᴛᴇ ᴛɪᴍᴇʀ ɪs sᴇᴛ ᴛᴏ {duration} sᴇᴄᴏɴᴅs.</blockquote></b>")
 
 #=====================================================================================##
 
