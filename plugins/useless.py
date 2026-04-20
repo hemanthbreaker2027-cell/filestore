@@ -65,7 +65,7 @@ async def get_users(client: Bot, message: Message):
 
 #AUTO-DELETE
 
-@Bot.on_message(filters.private & filters.command('dlt_time') & admin)
+@Bot.on_message(filters.private & filters.command(['dlt_time', 'auto_delete']) & admin)
 async def set_delete_time(client: Bot, message: Message):
     try:
         duration = int(message.command[1])
