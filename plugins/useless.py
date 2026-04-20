@@ -65,23 +65,32 @@ async def get_users(client: Bot, message: Message):
 
 #AUTO-DELETE
 
-@Bot.on_message(filters.private & filters.command(['dlt_time', 'auto_delete']) & admin)
+@Bot.on_message(filters.private & filters.command(['dlt_time', 'auto_delete', 'autodelete']) & admin)
 async def set_delete_time(client: Bot, message: Message):
     try:
-        duration = int(message.command[1])
+        if len(message.command) < 2:
+            return await message.reply("<b>⚠️ Usᴀɢᴇ:</b> <code>/auto_delete <seconds></code>")
 
+        duration = int(message.command[1])
         await db.set_del_timer(duration)
 
-        await message.reply(f"<b>Dᴇʟᴇᴛᴇ Tɪᴍᴇʀ ʜᴀs ʙᴇᴇɴ sᴇᴛ ᴛᴏ <blockquote>{duration} sᴇᴄᴏɴᴅs.</blockquote></b>")
+        await message.reply(
+            f"<b>✅ Dᴇʟᴇᴛᴇ Tɪᴍᴇʀ sᴇᴛ sᴜᴄᴄᴇssғᴜʟʟʏ!</b>\n\n"
+            f"Fɪʟᴇs ᴡɪʟʟ ʙᴇ ᴀᴜᴛᴏ-ᴅᴇʟᴇᴛᴇᴅ ᴀғᴛᴇʀ <blockquote><b>{duration} sᴇᴄᴏɴᴅs.</b></blockquote>",
+            quote=True
+        )
 
-    except (IndexError, ValueError):
-        await message.reply("<b>Pʟᴇᴀsᴇ ᴘʀᴏᴠɪᴅᴇ ᴀ ᴠᴀʟɪᴅ ᴅᴜʀᴀᴛɪᴏɴ ɪɴ sᴇᴄᴏɴᴅs.</b> Usage: /dlt_time {duration}")
+    except ValueError:
+        await message.reply("<b>❌ Eʀʀᴏʀ:</b> Pʟᴇᴀsᴇ ᴘʀᴏᴠɪᴅᴇ ᴀ ᴠᴀʟɪᴅ ɴᴜᴍʙᴇʀ ᴏғ sᴇᴄᴏɴᴅs.")
 
-@Bot.on_message(filters.private & filters.command(['check_dlt_time', 'check_auto_delete']) & admin)
+@Bot.on_message(filters.private & filters.command(['check_dlt_time', 'check_auto_delete', 'checkautodelete']) & admin)
 async def check_delete_time(client: Bot, message: Message):
     duration = await db.get_del_timer()
-
-    await message.reply(f"<b><blockquote>Cᴜʀʀᴇɴᴛ ᴅᴇʟᴇᴛᴇ ᴛɪᴍᴇʀ ɪs sᴇᴛ ᴛᴏ {duration} sᴇᴄᴏɴᴅs.</blockquote></b>")
+    await message.reply(
+        f"<b>🔍 Cᴜʀʀᴇɴᴛ Dᴇʟᴇᴛᴇ Tɪᴍᴇʀ:</b>\n\n"
+        f"<blockquote><b>{duration} sᴇᴄᴏɴᴅs</b></blockquote>",
+        quote=True
+    )
 
 #=====================================================================================##
 
