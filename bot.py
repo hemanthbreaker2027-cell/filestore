@@ -16,6 +16,7 @@ from plugins import web_server
 import asyncio
 import pyromod.listen
 from pyrogram import Client
+from pyrogram.types import BotCommand
 from pyrogram.enums import ParseMode
 import sys
 import pytz
@@ -73,6 +74,15 @@ class Bot(Client):
         scheduler.start()
         usr_bot_me = await self.get_me()
         self.uptime = get_indian_time()
+
+        # Set Bot Commands Automatically
+        await self.set_bot_commands([
+            BotCommand("start", "🚀 Start the bot"),
+            BotCommand("myplan", "🎖️ Check your premium status"),
+            BotCommand("about", "⚠️ About the bot"),
+            BotCommand("help", "❓ Help and commands"),
+            BotCommand("commands", "⚙️ Admin commands list")
+        ])
 
         try:
             db_channel = await self.get_chat(CHANNEL_ID)
