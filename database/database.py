@@ -48,6 +48,7 @@ class OTAKULUX:
         self.fsub_data = self.database['fsub']   
         self.rqst_fsub_data = self.database['request_forcesub']
         self.rqst_fsub_Channel_data = self.database['request_forcesub_channel']
+        self.bypass_data = self.database['bypass_attempts']
         
 
 
@@ -260,6 +261,34 @@ class OTAKULUX:
         ]
         result = await self.sex_data.aggregate(pipeline).to_list(length=1)
         return result[0]["total"] if result else 0
+
+    # BYPASS ATTEMPT TRACKING
+    async def get_bypass_record(self, identifier: str):
+        return await self.bypass_data.find_one({'_id': identifier})
+
+    async def increment_bypass_attempt(self, identifier: str):
+        await self.bypass_data.update_one(
+            {'_id': identifier},
+            {
+                '$inc': {'attempts_count': 1},
+                '$set': {'last_attempt_time': time.time()}
+            },
+            upsert=True
+        )
+
+    async def ban_user_bypass(self, identifier: str, duration_hours: int = 24):
+        ban_expiry = time.time() + (duration_hours * 3600)
+        await self.bypass_data.update_one(
+            {'_id': identifier},
+            {'$set': {
+                'ban_status': True,
+                'ban_expiry': ban_expiry
+            }},
+            upsert=True
+        )
+
+    async def reset_bypass_attempts(self, identifier: str):
+        await self.bypass_data.delete_one({'_id': identifier})
 
 
 db = OTAKULUX(DB_URI, DB_NAME)
