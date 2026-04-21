@@ -277,7 +277,11 @@ class OTAKULUX:
         )
 
     async def ban_user_bypass(self, identifier: str, duration_hours: int = 24):
-        ban_expiry = time.time() + (duration_hours * 3600)
+        if duration_hours == -1: # Permanent
+            ban_expiry = 9999999999
+        else:
+            ban_expiry = time.time() + (duration_hours * 3600)
+
         await self.bypass_data.update_one(
             {'_id': identifier},
             {'$set': {

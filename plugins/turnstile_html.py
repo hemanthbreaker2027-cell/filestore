@@ -14,6 +14,7 @@ TURNSTILE_HTML = """
             --accent-color: #00ffcc;
             --container-bg: #1a1a24;
             --danger-color: #ff4d4d;
+            --warning-color: #ff9900;
         }
 
         body {
@@ -89,8 +90,9 @@ TURNSTILE_HTML = """
 
         .error { color: var(--danger-color); }
         .success { color: var(--accent-color); }
+        .warning { color: var(--warning-color); }
 
-        #submit-btn {
+        .btn {
             display: none;
             background-color: var(--accent-color);
             color: #000;
@@ -104,44 +106,51 @@ TURNSTILE_HTML = """
             width: 100%;
         }
 
-        #submit-btn:hover {
+        .btn:hover {
             transform: scale(1.02);
         }
 
-        #submit-btn:disabled {
+        .btn:disabled {
             opacity: 0.5;
             cursor: not-allowed;
+        }
+
+        #solve-again-btn {
+            background-color: var(--warning-color);
+            margin-top: 1rem;
         }
     </style>
 </head>
 <body>
     <div class="container">
         <h1>Security Check</h1>
-        <p id="instruction">Please wait for the timer to complete...</p>
+        <p id="instruction">Please wait while we prepare your link...</p>
 
-        <div id="timer-display" class="timer-box">100</div>
+        <div id="timer-display" class="timer-box">3</div>
 
         <div id="turnstile-container">
             <div class="cf-turnstile" data-sitekey="{{ SITE_KEY }}" data-callback="onTurnstileSuccess"></div>
         </div>
 
-        <button id="submit-btn" disabled onclick="submitForm()">Verify & Proceed</button>
+        <button id="submit-btn" class="btn" disabled onclick="submitForm()">Verify & Proceed</button>
+        <button id="solve-again-btn" class="btn" onclick="location.reload()">Solve Again</button>
 
         <div id="loader" class="spinner"></div>
         <div id="status-message"></div>
     </div>
 
     <script>
-        let timeLeft = 100;
+        let timeLeft = 3; // UX Timer: 3 seconds
         let turnstileToken = null;
         const timerDisplay = document.getElementById('timer-display');
         const submitBtn = document.getElementById('submit-btn');
+        const solveAgainBtn = document.getElementById('solve-again-btn');
         const instruction = document.getElementById('instruction');
         const turnstileWidget = document.querySelector('.cf-turnstile');
 
         const countdown = setInterval(() => {
             timeLeft--;
-            timerDisplay.textContent = timeLeft;
+            if (timeLeft >= 0) timerDisplay.textContent = timeLeft;
             if (timeLeft <= 0) {
                 clearInterval(countdown);
                 timerDisplay.style.display = 'none';
@@ -182,13 +191,20 @@ TURNSTILE_HTML = """
                 if (data.success) {
                     statusMsg.textContent = 'Verification successful! Redirecting...';
                     statusMsg.className = 'success';
-                    setTimeout(() => { window.location.href = data.redirect; }, 1000);
+                    setTimeout(() => { window.location.href = data.redirect; }, 1500);
                 } else {
-                    statusMsg.textContent = data.message || 'Verification failed.';
-                    statusMsg.className = 'error';
-                    if (data.banned) {
+                    if (data.loop) {
+                        statusMsg.textContent = data.message;
+                        statusMsg.className = 'warning';
+                        solveAgainBtn.style.display = 'block';
+                        solveAgainBtn.onclick = () => { window.location.href = data.new_link; };
+                    } else if (data.banned) {
+                        statusMsg.textContent = data.message;
+                        statusMsg.className = 'error';
                         setTimeout(() => { window.location.href = '/banned'; }, 2000);
                     } else {
+                        statusMsg.textContent = data.message || 'Verification failed.';
+                        statusMsg.className = 'error';
                         setTimeout(() => { window.location.reload(); }, 2000);
                     }
                 }
@@ -197,6 +213,7 @@ TURNSTILE_HTML = """
                 loader.style.display = 'none';
                 statusMsg.textContent = 'Network error. Please try again.';
                 statusMsg.className = 'error';
+                setTimeout(() => { window.location.reload(); }, 2000);
             });
         }
     </script>
@@ -212,36 +229,23 @@ BANNED_HTML = """
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Access Blocked - OTAKULUX</title>
     <style>
-        body {
-            background-color: #0f0f12;
-            color: #fff;
-            font-family: sans-serif;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            height: 100vh;
-            margin: 0;
-        }
-        .box {
-            background: #1a1a24;
-            padding: 3rem;
-            border-radius: 15px;
-            text-align: center;
-            border: 1px solid #ff4d4d;
-            max-width: 400px;
-        }
+        body { background-color: #0f0f12; color: #fff; font-family: sans-serif; display: flex; justify-content: center; align-items: center; height: 100vh; margin: 0; }
+        .box { background: #1a1a24; padding: 3rem; border-radius: 15px; text-align: center; border: 1px solid #ff4d4d; max-width: 400px; }
         h1 { color: #ff4d4d; margin-top: 0; }
         .time { font-size: 1.5rem; font-weight: bold; color: #00ffcc; margin: 1rem 0; }
         p { color: #ccc; line-height: 1.5; }
+        .hidden { display: none; }
     </style>
 </head>
 <body>
     <div class="box">
         <h1>ACCESS BLOCKED</h1>
-        <p>You have been temporarily blocked due to repeated bypass attempts.</p>
-        <p>Block expires in:</p>
-        <div class="time">{{ TIME_LEFT }}</div>
-        <p>Please try again after the block period has ended. Automated systems are monitored.</p>
+        <p>{{ MESSAGE }}</p>
+        <div class="{{ TIME_BOX_CLASS }}">
+            <p>Block expires in:</p>
+            <div class="time">{{ TIME_LEFT }}</div>
+        </div>
+        <p>Automated security monitoring is active. Do not attempt to bypass.</p>
     </div>
 </body>
 </html>
@@ -264,7 +268,7 @@ BOT_DETECTED_HTML = """
     <div class="box">
         <h1>BOT DETECTED</h1>
         <p>Our security system has detected suspicious activity.</p>
-        <p>Please return to the bot and try again using a real browser.</p>
+        <p>Verification failed. Please return to the bot and try again.</p>
     </div>
 </body>
 </html>
