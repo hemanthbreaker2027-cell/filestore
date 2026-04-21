@@ -144,9 +144,8 @@ async def send_files(client: Client, message: Message, base64_string):
 async def short_url(client: Client, message: Message, base64_string):
     try:
         if WEBSITE_URL:
-            # New flow: point to our turnstile protection page
-            protection_link = f"{WEBSITE_URL}/verify/{base64_string}"
-            short_link = await get_shortlink(SHORTLINK_URL, SHORTLINK_API, protection_link)
+            # Send our verification page link directly
+            short_link = f"{WEBSITE_URL}/verify/{base64_string}"
         else:
             # Fallback to old flow if WEBSITE_URL is not set
             prem_link = f"https://t.me/{client.username}?start=yu3elk{base64_string}7"
