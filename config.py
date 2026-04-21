@@ -51,7 +51,7 @@ FORCE_PIC = random.choice(ANIME_BANNERS)
 
 #--------------------------------------------
 SHORTLINK_URL = os.environ.get("SHORTLINK_URL", "arolinks.com")
-SHORTLINK_API = os.environ.get("SHORTLINK_API", "")
+SHORTLINK_API = os.environ.get("SHORTLINK_API", "e49643875c2fa34dd6087254e58283d65ffc7748")
 TURNSTILE_SITE_KEY = os.environ.get("TURNSTILE_SITE_KEY", "")
 TURNSTILE_SECRET_KEY = os.environ.get("TURNSTILE_SECRET_KEY", "")
 WEBSITE_URL = os.environ.get("WEBSITE_URL", "") # e.g. https://yourdomain.com
