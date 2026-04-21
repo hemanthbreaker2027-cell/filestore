@@ -211,13 +211,21 @@ async def start_command(client: Client, message: Message):
             else:
                 base64_string = basic
 
-            if not is_premium and user_id != OWNER_ID and not basic.startswith("yu3elk"):
-                await short_url(client, message, base64_string)
+                        # --- NEW REPLACEMENT CODE ---
+            # Check if any required config is missing
+            configs = [SHORTLINK_URL, SHORTLINK_API, WEBSITE_URL, TURNSTILE_SITE, TURNSTILE_SECRET]
+            is_empty = any(not x or str(x).strip() == "" or str(x).lower() == "none" for x in configs)
+
+            # If Config is NOT filled, or user is Premium/Owner, send file directly
+            if is_premium or user_id == OWNER_ID or basic.startswith("yu3elk") or is_empty:
+                await send_files(client, message, base64_string)
                 return
 
-            # Start File delivery flow
-            await send_files(client, message, base64_string)
+            # Only send shortener if ALL configs are filled
+            await short_url(client, message, base64_string)
             return
+            # --- END OF REPLACEMENT ---
+
 
         except Exception as e:
             print(f"Error processing start payload: {e}")
