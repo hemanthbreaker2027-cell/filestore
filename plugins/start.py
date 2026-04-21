@@ -211,21 +211,30 @@ async def start_command(client: Client, message: Message):
             else:
                 base64_string = basic
 
-                        # --- NEW REPLACEMENT CODE ---
-            # Check if any required config is missing
-            configs = [SHORTLINK_URL, SHORTLINK_API, WEBSITE_URL, TURNSTILE_SITE, TURNSTILE_SECRET]
-            is_empty = any(not x or str(x).strip() == "" or str(x).lower() == "none" for x in configs)
+                                    # --- SAFE BLOCK START ---
+            try:
+                # Check if variables exist and are filled
+                conf_list = [
+                    globals().get('SHORTLINK_URL'),
+                    globals().get('SHORTLINK_API'),
+                    globals().get('WEBSITE_URL'),
+                    globals().get('TURNSTILE_SITE'),
+                    globals().get('TURNSTILE_SECRET')
+                ]
+                is_incomplete = any(not x or str(x).strip() == "" for x in conf_list)
+            except:
+                is_incomplete = True # If variables don't even exist, skip to send_files
 
-            # If Config is NOT filled, or user is Premium/Owner, send file directly
-            if is_premium or user_id == OWNER_ID or basic.startswith("yu3elk") or is_empty:
+            # Direct send logic
+            if is_premium or user_id == OWNER_ID or basic.startswith("yu3elk") or is_incomplete:
                 await send_files(client, message, base64_string)
                 return
-
-            # Only send shortener if ALL configs are filled
+            
+            # Shortener logic
             await short_url(client, message, base64_string)
             return
-            # --- END OF REPLACEMENT ---
-
+            # --- SAFE BLOCK END ---
+        
 
         except Exception as e:
             print(f"Error processing start payload: {e}")
