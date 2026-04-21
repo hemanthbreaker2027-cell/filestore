@@ -105,7 +105,7 @@ TURNSTILE_HTML = """
             statusMsg.className = '';
 
             // Send token to backend
-            fetch('/verify', {
+            fetch('/verify_token', {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',

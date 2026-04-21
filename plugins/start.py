@@ -145,7 +145,7 @@ async def short_url(client: Client, message: Message, base64_string):
     try:
         if WEBSITE_URL:
             # New flow: point to our turnstile protection page
-            protection_link = f"{WEBSITE_URL}/p/{base64_string}"
+            protection_link = f"{WEBSITE_URL}/verify/{base64_string}"
             short_link = await get_shortlink(SHORTLINK_URL, SHORTLINK_API, protection_link)
         else:
             # Fallback to old flow if WEBSITE_URL is not set

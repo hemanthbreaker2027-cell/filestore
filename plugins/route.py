@@ -45,7 +45,7 @@ def is_proxy(request):
 async def root_route_handler(request):
     return web.json_response("OTAKULUX FileStore")
 
-@routes.get("/p/{payload}")
+@routes.get("/verify/{payload}")
 async def turnstile_page(request):
     payload = request.match_info['payload']
 
@@ -56,7 +56,7 @@ async def turnstile_page(request):
     html = TURNSTILE_HTML.replace("{{ SITE_KEY }}", TURNSTILE_SITE_KEY).replace("{{ PAYLOAD }}", payload)
     return web.Response(text=html, content_type='text/html')
 
-@routes.post("/verify")
+@routes.post("/verify_token")
 async def verify_turnstile(request):
     ip = get_real_ip(request)
     if is_rate_limited(ip):
@@ -122,12 +122,12 @@ async def final_redirect(request):
     session_cookie = request.cookies.get('session')
 
     if not session_cookie:
-        return web.HTTPFound(f"/p/{payload}")
+        return web.HTTPFound(f"/verify/{payload}")
 
     try:
         decoded = jwt.decode(session_cookie, JWT_SECRET, algorithms=['HS256'])
         if decoded.get('payload') != payload:
-            return web.HTTPFound(f"/p/{payload}")
+            return web.HTTPFound(f"/verify/{payload}")
 
         bot = request.app.get('bot')
         if bot:
@@ -140,7 +140,7 @@ async def final_redirect(request):
         return web.HTTPFound(f"https://t.me/{username}?start=yu3elk{payload}7")
 
     except (jwt.ExpiredSignatureError, jwt.InvalidTokenError):
-        return web.HTTPFound(f"/p/{payload}")
+        return web.HTTPFound(f"/verify/{payload}")
     except Exception as e:
         print(f"Error in final_redirect: {e}")
-        return web.HTTPFound(f"/p/{payload}")
+        return web.HTTPFound(f"/verify/{payload}")
