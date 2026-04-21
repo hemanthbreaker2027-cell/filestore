@@ -52,6 +52,10 @@ FORCE_PIC = random.choice(ANIME_BANNERS)
 #--------------------------------------------
 SHORTLINK_URL = os.environ.get("SHORTLINK_URL", "linkshortify.com")
 SHORTLINK_API = os.environ.get("SHORTLINK_API", "")
+TURNSTILE_SITE_KEY = os.environ.get("TURNSTILE_SITE_KEY", "")
+TURNSTILE_SECRET_KEY = os.environ.get("TURNSTILE_SECRET_KEY", "")
+WEBSITE_URL = os.environ.get("WEBSITE_URL", "") # e.g. https://yourdomain.com
+JWT_SECRET = os.environ.get("JWT_SECRET", "otakulux_secret_key")
 TUT_VID = os.environ.get("TUT_VID","https://t.me/OTAKULUX/3")
 SHORT_MSG = "<b>⌯ Here is Your Download Link, Must Watch Tutorial Before Clicking On Download...</b>"
 

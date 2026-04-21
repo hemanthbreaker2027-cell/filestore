@@ -117,7 +117,7 @@ class Bot(Client):
         self.LOGGER(__name__).info(f"Bot Running..! Made by @OTAKULUX")
 
         # Start Web Server
-        app = web.AppRunner(await web_server())
+        app = web.AppRunner(await web_server(self))
         await app.setup()
         await web.TCPSite(app, "0.0.0.0", PORT).start()
 

@@ -19,3 +19,5 @@ bs4
 shortzy
 aiofiles
 asyncio
+PyJWT
+jinja2

@@ -143,8 +143,14 @@ async def send_files(client: Client, message: Message, base64_string):
 
 async def short_url(client: Client, message: Message, base64_string):
     try:
-        prem_link = f"https://t.me/{client.username}?start=yu3elk{base64_string}7"
-        short_link = await get_shortlink(SHORTLINK_URL, SHORTLINK_API, prem_link)
+        if WEBSITE_URL:
+            # New flow: point to our turnstile protection page
+            protection_link = f"{WEBSITE_URL}/p/{base64_string}"
+            short_link = await get_shortlink(SHORTLINK_URL, SHORTLINK_API, protection_link)
+        else:
+            # Fallback to old flow if WEBSITE_URL is not set
+            prem_link = f"https://t.me/{client.username}?start=yu3elk{base64_string}7"
+            short_link = await get_shortlink(SHORTLINK_URL, SHORTLINK_API, prem_link)
 
         buttons = [
             [

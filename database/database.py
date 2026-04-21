@@ -124,8 +124,8 @@ class OTAKULUX:
     async def get_del_timer(self):
         data = await self.del_timer_data.find_one({})
         if data:
-            return data.get('value', 600)
-        return 0
+            return data.get('value', 900)
+        return 900
 
 
     # CHANNEL MANAGEMENT
