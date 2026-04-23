@@ -1,78 +1,77 @@
-<h1 align="center">
-  <b>🌟 OTAKULUX ANIME ECOSYSTEM 🌟</b>
-</h1>
+# OTAKULUX - Premium Anime Streaming Ecosystem 🚀
 
-<p align="center">
-  <img src="https://graph.org/file/8581e33195ed8183a3253.jpg" alt="OTAKULUX Banner" width="500">
-</p>
+A comprehensive solution for anime communities, combining a high-performance **Pyrogram Telegram Bot** for file storage and a **Premium Dark-Theme Website** for seamless streaming.
 
-<p align="center">
-  <a href="https://t.me/OTAKULUX">
-    <img src="https://img.shields.io/badge/Telegram-Channel-blue?style=for-the-badge&logo=telegram" alt="Telegram Channel">
-  </a>
-  <a href="https://t.me/OTAKULUX">
-    <img src="https://img.shields.io/badge/Support-Group-red?style=for-the-badge&logo=telegram" alt="Support Group">
-  </a>
-</p>
+## 🌟 Key Features
 
----
+### 🤖 Telegram Bot (Backend)
+- **Advanced FileStore:** Interactive metadata collection (Anime Name, Season, Episode, Quality).
+- **Auto-Enrichment:** Automatically fetches plots, ratings, and banners using the **Anilist API**.
+- **Alphabetical Index:** User-friendly `/index` command to browse the entire library (A-Z).
+- **Auto-Delete:** configurable timer to delete files from users' chats after delivery.
+- **Force Subscribe:** Multi-channel join verification before file access.
+- **Premium System:** Built-in subscription management for bypassing restrictions.
 
-### 🚀 **OVERVIEW**
-
-**OTAKULUX** is a Senior-grade Anime Streaming Ecosystem that bridges the power of Telegram with a high-performance Web Experience. It features an automated FileStore Bot and a "Premium Dark Mode" Streaming Website.
+### 🌐 Streaming Website (Frontend)
+- **Dynamic Homepage:** Real-time "Trending" and "Latest" grids synced with the bot's database.
+- **Neon Aesthetic:** Premium dark mode UI with backdrop blurs and glowing accents.
+- **Built-in Player:** Integrated **Video.js** player with support for seeking (HTTP Range requests).
+- **External Player Support:** One-click links for **VLC**, **MX Player**, and **PlayIt**.
+- **Security:** Cloudflare Turnstile protection with a mandatory backend security timer.
 
 ---
 
-### ✨ **KEY FEATURES**
+## 🛠️ Deployment Guide
 
-- 🎬 **Integrated Streaming**: Watch anime directly on the web player (Video.js) or open in VLC, MX Player, or PlayIt.
-- 📂 **Auto-Indexing**: Browse the entire library alphabetically with the `/index` command or on the web.
-- 🤖 **Anilist Metadata**: Automatically fetches plots, ratings, genres, and 4K thumbnails using the Anilist GraphQL API.
-- 🔐 **Secure Verification**: Cloudflare Turnstile integration with a 100s backend timer to prevent bypasses.
-- ⚡ **Neon Premium UI**: Dark mode theme with Neon Pink/Blue accents (matching Animetoon.in branding).
-- 💎 **Premium System**: Built-in membership management to monetize or restrict access.
-- 🗑️ **Auto-Delete**: Configurable timers to automatically delete sent files for privacy.
+### 1. Prerequisites
+- **Telegram:** Get `APP_ID` and `API_HASH` from [my.telegram.org](https://my.telegram.org) and a `TG_BOT_TOKEN` from [@BotFather](https://t.me/BotFather).
+- **Database:** A free cluster from [MongoDB Atlas](https://www.mongodb.com/cloud/atlas). Use the `DATABASE_URL` (SRV connection string).
+- **Cloudflare:** Create a [Turnstile](https://dash.cloudflare.com/?to=/:account/turnstile) widget. Note the `SITE_KEY` and `SECRET_KEY`.
 
----
+### 2. Environment Variables
 
-### 🛠 **BOT COMMANDS**
+| Variable | Description | Example |
+| :--- | :--- | :--- |
+| `TG_BOT_TOKEN` | Your Bot Token | `123456:ABCDE...` |
+| `APP_ID` | Telegram App ID | `22266643` |
+| `API_HASH` | Telegram API Hash | `7d0b85b41...` |
+| `DATABASE_URL` | MongoDB Connection URI | `mongodb+srv://...` |
+| `CHANNEL_ID` | Database Channel ID | `-100123456789` |
+| `OWNER_ID` | Your Telegram User ID | `8797485479` |
+| `WEBSITE_URL` | Your deployed website URL | `https://your-app.onrender.com` |
+| `TURNSTILE_SITE_KEY` | Cloudflare Turnstile Site Key | `0x4AAAAAA...` |
+| `TURNSTILE_SECRET_KEY` | Cloudflare Turnstile Secret Key | `0x4AAAAAA...` |
+| `JWT_SECRET` | Secret for session tokens | `your_random_secret` |
 
-| Command | Description |
-| :--- | :--- |
-| `/start` | Activate the bot or retrieve files |
-| `/index` | Open the Alphabetical Anime Index |
-| `/batch` | [Admin] Create a batch link for multiple files |
-| `/genlink` | [Admin] Generate a single file sharing link |
-| `/auto_delete`| [Admin] Set file auto-delete timer |
-| `/broadcast` | [Admin] Send a message to all users |
-| `/addchnl` | [Admin] Add a new Force Sub channel |
-| `/listchnl` | [Admin] View all active Force Sub channels |
-| `/addpremium` | [Admin] Grant premium access to a user |
-| `/myplan` | Check your current subscription status |
+### 3. Deploy to Render / Heroku / VPS
 
----
+#### Option A: VPS (Docker)
+```bash
+git clone https://github.com/OTAKULUX/Bot.git
+cd Bot
+# Edit .env with your variables
+docker build -t otakulux-bot .
+docker run -p 8001:8001 otakulux-bot
+```
 
-### 📦 **QUICK DEPLOYMENT**
-
-**Environment Variables:**
-
-- `API_ID` / `API_HASH`: Get from [my.telegram.org](https://my.telegram.org)
-- `TG_BOT_TOKEN`: Get from [@BotFather](https://t.me/BotFather)
-- `OWNER_ID`: Your Telegram User ID
-- `CHANNEL_ID`: The ID of your private database channel
-- `DATABASE_URL`: Your MongoDB connection string
-- `WEBSITE_URL`: Your deployed website URL (e.g. `https://otakulux.vercel.app`)
-- `TURNSTILE_SITE_KEY` / `TURNSTILE_SECRET_KEY`: Get from Cloudflare
-
----
-
-### 🤝 **CREDITS**
-
-- 👑 **[OTAKULUX](https://t.me/OTAKULUX)** - Lead Developer
-- 🌌 **[OTAKULUX NETWORK](https://t.me/OTAKULUX)** - Infrastructure
+#### Option B: Render / Heroku
+1. Create a new Web Service.
+2. Connect your GitHub repository.
+3. Add all the environment variables listed above.
+4. Set the build command: `pip install -r requirements.txt`
+5. Set the start command: `python3 bot.py`
 
 ---
 
-<p align="center">
-  <b>Developed with ❤️ by <a href="https://t.me/OTAKULUX">OTAKULUX</a></b>
-</p>
+## 📖 Admin Usage
+
+1. **Adding Anime:** Simply send a file to the bot. It will ask for details interactively.
+2. **Setup Channels:** Use `/addchnl <channel_id>` to add force-subscription requirements.
+3. **Manage Admins:** Use `/add_admin <user_id>` to authorize other users to add anime.
+4. **Auto-Delete:** Use `/auto_delete <seconds>` to set the global file deletion timer.
+
+## 🤝 Support
+Join our Telegram channel for updates and support: [@OTAKULUX](https://t.me/OTAKULUX)
+
+---
+*Created with ❤️ by **OTAKULUX***

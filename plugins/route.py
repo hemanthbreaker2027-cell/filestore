@@ -9,7 +9,7 @@ import uuid
 import asyncio
 from config import TURNSTILE_SITE_KEY, TURNSTILE_SECRET_KEY, JWT_SECRET, WEBSITE_URL
 from plugins.turnstile_html import TURNSTILE_HTML, BANNED_HTML, BOT_DETECTED_HTML
-from helper_func import get_shortlink, decode
+from helper_func import get_shortlink, decode, encode
 from database.database import db
 
 routes = web.RouteTableDef()

@@ -11,7 +11,7 @@
 #
 
 from pyrogram import filters, Client
-from pyrogram.types import InlineKeyboardMarkup, InlineKeyboardButton, Message
+from pyrogram.types import InlineKeyboardMarkup, InlineKeyboardButton, Message, CallbackQuery
 from bot import Bot
 from database.database import db
 from helper_func import encode
@@ -37,7 +37,7 @@ async def index_handler(client: Client, message: Message):
     )
 
 @Bot.on_callback_query(filters.regex(r"^idx_"))
-async def index_callback(client: Client, query):
+async def index_callback(client: Client, query: CallbackQuery):
     char = query.data.split("_")[1]
     results = await db.get_anime_by_letter(char)
 
@@ -67,7 +67,7 @@ async def index_callback(client: Client, query):
     )
 
 @Bot.on_callback_query(filters.regex("back_to_index"))
-async def back_to_index(client: Client, query):
+async def back_to_index(client: Client, query: CallbackQuery):
     buttons = []
     alphabet = list(string.ascii_uppercase)
     for i in range(0, len(alphabet), 4):
