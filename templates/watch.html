@@ -1,0 +1,110 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Watching Anime - OTAKULUX</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://vjs.zencdn.net/8.10.0/video-js.css" rel="stylesheet" />
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;600;700&display=swap" rel="stylesheet">
+    <style>
+        body { font-family: 'Plus Jakarta Sans', sans-serif; background-color: #0a0a0b; }
+        .video-js { width: 100%; border-radius: 1rem; overflow: hidden; }
+        .vjs-big-play-button { background-color: #db2777 !important; border: none !important; border-radius: 50% !important; width: 3em !important; height: 3em !important; line-height: 3em !important; margin-top: -1.5em !important; margin-left: -1.5em !important; box-shadow: 0 0 20px rgba(219, 39, 119, 0.4); }
+        .bg-glass { background: rgba(18, 18, 20, 0.8); backdrop-filter: blur(12px); }
+    </style>
+</head>
+<body class="text-white">
+    <nav class="fixed top-0 w-full z-50 bg-glass border-b border-white/5 px-6 py-4">
+        <div class="max-w-7xl mx-auto flex justify-between items-center">
+            <a href="/" class="text-2xl font-bold bg-gradient-to-r from-pink-500 to-blue-500 bg-clip-text text-transparent">OTAKULUX</a>
+            <div class="flex gap-4">
+                <a href="https://t.me/OTAKULUX" target="_blank" class="bg-blue-600 hover:bg-blue-700 px-4 py-1.5 rounded-full text-xs font-bold transition-all">Join Telegram</a>
+            </div>
+        </div>
+    </nav>
+
+    <main class="pt-32 pb-24 px-6 max-w-7xl mx-auto">
+        <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+            <!-- Player Section -->
+            <div class="lg:col-span-2">
+                <div class="relative rounded-2xl overflow-hidden border border-white/10 shadow-2xl bg-black aspect-video">
+                    <video id="my-video" class="video-js vjs-big-play-centered" controls preload="auto" width="640" height="264" data-setup="{}">
+                        <source src="/stream/{{ PAYLOAD }}" type="video/mp4" />
+                        <p class="vjs-no-js">To view this video please enable JavaScript, and consider upgrading to a web browser that <a href="https://videojs.com/html5-video-support/" target="_blank">supports HTML5 video</a></p>
+                    </video>
+                </div>
+
+                <!-- External Player Links -->
+                <div class="mt-6 flex flex-wrap gap-3">
+                    <a id="vlc-btn" href="#" class="bg-orange-600/20 hover:bg-orange-600/40 text-orange-400 border border-orange-600/30 px-4 py-2 rounded-lg text-sm font-medium transition-all flex items-center gap-2">
+                        <span>Open in VLC</span>
+                    </a>
+                    <a id="mx-btn" href="#" class="bg-blue-600/20 hover:bg-blue-600/40 text-blue-400 border border-blue-600/30 px-4 py-2 rounded-lg text-sm font-medium transition-all flex items-center gap-2">
+                        <span>Open in MX Player</span>
+                    </a>
+                    <a id="playit-btn" href="#" class="bg-purple-600/20 hover:bg-purple-600/40 text-purple-400 border border-purple-600/30 px-4 py-2 rounded-lg text-sm font-medium transition-all flex items-center gap-2">
+                        <span>Open in PlayIt</span>
+                    </a>
+                </div>
+
+                <div class="mt-8">
+                    <h2 id="anime-title" class="text-3xl font-bold text-pink-400 mb-2">Loading Anime Details...</h2>
+                    <div class="flex gap-4 text-sm text-gray-500 mb-6">
+                        <span id="season-tag" class="bg-white/5 px-3 py-1 rounded-full border border-white/10">Season --</span>
+                        <span id="episode-tag" class="bg-white/5 px-3 py-1 rounded-full border border-white/10">Episode --</span>
+                    </div>
+                    <p id="anime-desc" class="text-gray-400 leading-relaxed">Please wait while we fetch the anime information from our database.</p>
+                </div>
+            </div>
+
+            <!-- Sidebar -->
+            <div class="space-y-8">
+                <div class="bg-[#121214] rounded-2xl p-6 border border-white/5">
+                    <h3 class="text-xl font-bold mb-6 flex items-center gap-2">
+                        <span class="w-2 h-8 bg-pink-500 rounded-full"></span>
+                        Episode List
+                    </h3>
+                    <div id="episode-grid" class="grid grid-cols-4 gap-2">
+                        <!-- Populated via JS -->
+                    </div>
+                </div>
+
+                <div class="bg-[#121214] rounded-2xl p-6 border border-white/5">
+                    <h3 class="text-xl font-bold mb-6 flex items-center gap-2">
+                        <span class="w-2 h-8 bg-blue-500 rounded-full"></span>
+                        Quick Filters
+                    </h3>
+                    <div class="flex flex-wrap gap-2">
+                        <span class="px-3 py-1 bg-white/5 rounded-full text-xs hover:bg-pink-500/20 cursor-pointer transition-colors border border-white/5">Action</span>
+                        <span class="px-3 py-1 bg-white/5 rounded-full text-xs hover:bg-pink-500/20 cursor-pointer transition-colors border border-white/5">Sci-Fi</span>
+                        <span class="px-3 py-1 bg-white/5 rounded-full text-xs hover:bg-pink-500/20 cursor-pointer transition-colors border border-white/5">Fantasy</span>
+                        <span class="px-3 py-1 bg-white/5 rounded-full text-xs hover:bg-pink-500/20 cursor-pointer transition-colors border border-white/5">Shonen</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <script src="https://vjs.zencdn.net/8.10.0/video.min.js"></script>
+    <script>
+        const payload = "{{ PAYLOAD }}";
+        const streamUrl = window.location.origin + "/stream/" + payload;
+
+        // Set External Player URLs
+        document.getElementById('vlc-btn').href = "vlc://" + streamUrl;
+        document.getElementById('mx-btn').href = "intent:" + streamUrl + "#Intent;package=com.mxtech.videoplayer.ad;end";
+        document.getElementById('playit-btn').href = "playit://" + streamUrl;
+
+        // Mock episode list
+        const epGrid = document.getElementById('episode-grid');
+        for (let i = 1; i <= 12; i++) {
+            const btn = document.createElement('button');
+            btn.className = `py-2 rounded-lg border text-sm font-medium transition-all ${i === 1 ? 'bg-pink-600 border-pink-500' : 'bg-white/5 border-white/5 hover:border-pink-500/50'}`;
+            btn.textContent = i;
+            epGrid.appendChild(btn);
+        }
+
+    </script>
+</body>
+</html>

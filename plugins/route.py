@@ -3,6 +3,7 @@ from aiohttp import web
 import aiohttp
 import jwt
 import time
+import re
 import hashlib
 import uuid
 import asyncio
@@ -38,7 +39,98 @@ async def check_ban(identifier):
 
 @routes.get("/", allow_head=True)
 async def root_route_handler(request):
-    return web.json_response("OTAKULUX FileStore Secure v2")
+    try:
+        with open("templates/index.html", "r") as f:
+            content = f.read()
+        return web.Response(text=content, content_type='text/html')
+    except:
+        return web.json_response("OTAKULUX FileStore Secure v2")
+
+@routes.get("/watch/{payload}")
+async def watch_page(request):
+    payload = request.match_info['payload']
+    try:
+        with open("templates/watch.html", "r") as f:
+            content = f.read()
+        content = content.replace("{{ PAYLOAD }}", payload)
+
+        # Try to fetch real metadata
+        try:
+            bot = request.app['bot']
+            decoded_string = await decode(payload)
+            if decoded_string.startswith("get-"):
+                msg_id = int(int(decoded_string.split("-")[1]) / abs(bot.db_channel.id))
+            else:
+                msg_id = int(int(decoded_string) / abs(bot.db_channel.id))
+
+            metadata = await db.get_anime_metadata(msg_id)
+            if metadata:
+                content = content.replace("Solo Leveling", metadata.get('anime_name', 'Unknown Anime'))
+                content = content.replace("Season 1", f"Season {metadata.get('season', '--')}")
+                content = content.replace("Episode 1", f"Episode {metadata.get('episode', '--')}")
+
+                anilist = metadata.get('anilist', {})
+                if anilist:
+                    desc = anilist.get('description', 'No description available.')
+                    # Strip HTML tags from description if any
+                    clean_desc = re.sub('<[^<]+?>', '', desc)
+                    content = content.replace("In a world where hunters...", clean_desc)
+                    if anilist.get('bannerImage'):
+                         content = content.replace('https://vjs.zencdn.net/v/oceans.png', anilist.get('bannerImage'))
+        except Exception as meta_e:
+            print(f"Metadata fetch error for watch page: {meta_e}")
+
+        return web.Response(text=content, content_type='text/html')
+    except Exception as e:
+        return web.Response(text=f"Error loading watch page: {e}", status=500)
+
+@routes.get("/health")
+async def health_check(request):
+    return web.Response(text="OK", status=200)
+
+@routes.get("/api/trending")
+async def api_trending(request):
+    # Fetch top 10 recent anime for trending
+    cursor = db.anime_data.find().sort("_id", -1).limit(10)
+    results = await cursor.to_list(length=10)
+    data = []
+    for res in results:
+        bot = request.app['bot']
+        converted_id = res['_id'] * abs(bot.db_channel.id)
+        payload = await encode(f"get-{converted_id}")
+
+        anilist = res.get('anilist', {})
+        img = anilist.get('coverImage', {}).get('extraLarge') or "https://telegra.ph/file/e292b12890b8b4b9dcbd1.jpg"
+
+        data.append({
+            "id": payload,
+            "title": res.get('anime_name'),
+            "ep": res.get('episode'),
+            "img": img
+        })
+    return web.json_response(data)
+
+@routes.get("/api/latest")
+async def api_latest(request):
+    # Fetch 10 latest anime
+    cursor = db.anime_data.find().sort("_id", -1).limit(10)
+    results = await cursor.to_list(length=10)
+    data = []
+    for res in results:
+        bot = request.app['bot']
+        converted_id = res['_id'] * abs(bot.db_channel.id)
+        payload = await encode(f"get-{converted_id}")
+
+        anilist = res.get('anilist', {})
+        img = anilist.get('coverImage', {}).get('extraLarge') or "https://telegra.ph/file/e292b12890b8b4b9dcbd1.jpg"
+
+        data.append({
+            "id": payload,
+            "title": res.get('anime_name'),
+            "ep": res.get('episode'),
+            "img": img
+        })
+    return web.json_response(data)
 
 @routes.get("/verify/{payload}")
 async def turnstile_page(request):
@@ -206,9 +298,7 @@ async def final_redirect(request):
         if decoded.get('payload') != payload:
             return web.HTTPFound(f"/verify/{payload}")
 
-        bot = request.app.get('bot')
-        username = bot.username if bot else "OTAKULUX"
-        return web.HTTPFound(f"https://t.me/{username}?start=yu3elk{payload}7")
+        return web.HTTPFound(f"/watch/{payload}")
     except:
         return web.HTTPFound(f"/verify/{payload}")
 
@@ -257,20 +347,40 @@ async def stream_handler(request):
         file_name = getattr(media, 'file_name', 'video.mp4')
         mime_type = getattr(media, 'mime_type', 'video/mp4')
 
+        # Handle Range Requests for Seeking
+        range_header = request.headers.get('Range')
+        start = 0
+        end = file_size - 1
+
+        if range_header:
+            try:
+                kind, ranges = range_header.split('=')
+                if kind == 'bytes':
+                    start_str, end_str = ranges.split('-')
+                    start = int(start_str) if start_str else 0
+                    if end_str:
+                        end = int(end_str)
+            except:
+                pass
+
+        if start >= file_size:
+             return web.Response(status=416, text="Requested range not satisfiable")
+
         response = web.StreamResponse(
-            status=200,
-            reason='OK',
+            status=206 if range_header else 200,
+            reason='Partial Content' if range_header else 'OK',
             headers={
                 'Content-Type': mime_type,
                 'Content-Disposition': f'attachment; filename="{file_name}"',
-                'Content-Length': str(file_size),
+                'Content-Length': str(end - start + 1),
+                'Content-Range': f'bytes {start}-{end}/{file_size}',
                 'Accept-Ranges': 'bytes',
             }
         )
 
         await response.prepare(request)
 
-        async for chunk in bot.stream_media(message):
+        async for chunk in bot.stream_media(message, offset=start, limit=end - start + 1):
             await response.write(chunk)
 
         await response.write_eof()

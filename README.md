@@ -1,5 +1,5 @@
 <h1 align="center">
-  <b>🌟 OTAKULUX PREMIUM FILE STORE 🌟</b>
+  <b>🌟 OTAKULUX ANIME ECOSYSTEM 🌟</b>
 </h1>
 
 <p align="center">
@@ -19,19 +19,19 @@
 
 ### 🚀 **OVERVIEW**
 
-**OTAKULUX PRO** is a high-performance Telegram File Store Bot designed with a premium anime aesthetic. It allows users to store files in a private channel and access them via secure, unique links. Built for speed, stability, and a top-tier user experience.
+**OTAKULUX** is a Senior-grade Anime Streaming Ecosystem that bridges the power of Telegram with a high-performance Web Experience. It features an automated FileStore Bot and a "Premium Dark Mode" Streaming Website.
 
 ---
 
 ### ✨ **KEY FEATURES**
 
-- 🎭 **Premium Zoro UI:** Neon-themed interface with simulated typing animations and random anime banners.
-- ⚡ **Ultra-Fast Delivery:** Files are delivered in milliseconds with strictly preserved sequential order.
-- 🔐 **Advanced Force Sub:** Multi-channel subscription check with a dynamic status checklist (✅/❌).
-- 🛠️ **Powerful Admin Tools:** Complete control over channels, users, and bot settings directly from Telegram.
-- 💎 **Premium System:** Built-in membership management for monetizing or restricting access.
-- 🗑️ **Auto-Delete:** configurable timers to automatically delete sent files for privacy and storage management.
-- 📊 **Real-time Analytics:** Track user growth, broadcast success, and bot performance instantly.
+- 🎬 **Integrated Streaming**: Watch anime directly on the web player (Video.js) or open in VLC, MX Player, or PlayIt.
+- 📂 **Auto-Indexing**: Browse the entire library alphabetically with the `/index` command or on the web.
+- 🤖 **Anilist Metadata**: Automatically fetches plots, ratings, genres, and 4K thumbnails using the Anilist GraphQL API.
+- 🔐 **Secure Verification**: Cloudflare Turnstile integration with a 100s backend timer to prevent bypasses.
+- ⚡ **Neon Premium UI**: Dark mode theme with Neon Pink/Blue accents (matching Animetoon.in branding).
+- 💎 **Premium System**: Built-in membership management to monetize or restrict access.
+- 🗑️ **Auto-Delete**: Configurable timers to automatically delete sent files for privacy.
 
 ---
 
@@ -39,60 +39,37 @@
 
 | Command | Description |
 | :--- | :--- |
-| `/start` | Activate the bot or retrieve files via link |
-| `/batch` | Create a permanent link for multiple files |
-| `/genlink` | Generate a single file sharing link |
-| `/users` | [Admin] View total user statistics |
+| `/start` | Activate the bot or retrieve files |
+| `/index` | Open the Alphabetical Anime Index |
+| `/batch` | [Admin] Create a batch link for multiple files |
+| `/genlink` | [Admin] Generate a single file sharing link |
+| `/auto_delete`| [Admin] Set file auto-delete timer |
 | `/broadcast` | [Admin] Send a message to all users |
 | `/addchnl` | [Admin] Add a new Force Sub channel |
-| `/delchnl` | [Admin] Remove a Force Sub channel |
 | `/listchnl` | [Admin] View all active Force Sub channels |
 | `/addpremium` | [Admin] Grant premium access to a user |
 | `/myplan` | Check your current subscription status |
-| `/stats` | View bot uptime and server health |
 
 ---
 
 ### 📦 **QUICK DEPLOYMENT**
 
-Deploy OTAKULUX in minutes on your favorite platform:
-
-<p align="center">
-  <a href="https://heroku.com/deploy?template=https://t.me/OTAKULUX">
-    <img src="https://www.herokucdn.com/deploy/button.svg" alt="Deploy to Heroku">
-  </a>
-  <a href="https://app.koyeb.com/deploy?type=git&repository=https://t.me/OTAKULUX&branch=master&name=master">
-    <img src="https://www.koyeb.com/static/images/deploy/button.svg" alt="Deploy to Koyeb">
-  </a>
-</p>
-
-**VPS Deployment:**
-```bash
-git clone https://t.me/OTAKULUX
-cd OTAKULUX
-pip3 install -r requirements.txt
-# Configure config.py with your credentials
-python3 bot.py
-```
-
----
-
-### ⚙️ **ENVIRONMENT VARIABLES**
+**Environment Variables:**
 
 - `API_ID` / `API_HASH`: Get from [my.telegram.org](https://my.telegram.org)
 - `TG_BOT_TOKEN`: Get from [@BotFather](https://t.me/BotFather)
 - `OWNER_ID`: Your Telegram User ID
 - `CHANNEL_ID`: The ID of your private database channel
 - `DATABASE_URL`: Your MongoDB connection string
-- `FORCE_SUB_CHANNELS`: List of channel IDs for mandatory join
+- `WEBSITE_URL`: Your deployed website URL (e.g. `https://otakulux.vercel.app`)
+- `TURNSTILE_SITE_KEY` / `TURNSTILE_SECRET_KEY`: Get from Cloudflare
 
 ---
 
 ### 🤝 **CREDITS**
 
-- 👑 **[OTAKULUX](https://t.me/)** - Lead Developer & Designer
-- 🌌 **[OTAKULUX NETWORK](https://t.me/)** - Infrastructure & Assets
-- 🖤 **Contributors** - Everyone who helped optimize the code!
+- 👑 **[OTAKULUX](https://t.me/OTAKULUX)** - Lead Developer
+- 🌌 **[OTAKULUX NETWORK](https://t.me/OTAKULUX)** - Infrastructure
 
 ---
 

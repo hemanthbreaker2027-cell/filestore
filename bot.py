@@ -120,7 +120,8 @@ class Bot(Client):
         # Start Web Server
         app = web.AppRunner(await web_server(self))
         await app.setup()
-        await web.TCPSite(app, "0.0.0.0", PORT).start()
+        bind_address = "0.0.0.0"
+        await web.TCPSite(app, bind_address, PORT).start()
 
 
         try: await self.send_message(OWNER_ID, text = f"<b><blockquote> Bᴏᴛ Rᴇsᴛᴀʀᴛᴇᴅ by @OTAKULUX</blockquote></b>")
