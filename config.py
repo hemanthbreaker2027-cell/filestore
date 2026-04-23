@@ -19,7 +19,7 @@ from logging.handlers import RotatingFileHandler
 #OTAKULUX on Tg
 #--------------------------------------------
 #Bot token @OTAKULUX
-TG_BOT_TOKEN = os.environ.get("TG_BOT_TOKEN", "8686791784:AAEx_yNKgwLbSMzL-536sofSPPwEeAV9btw")
+TG_BOT_TOKEN = os.environ.get("TG_BOT_TOKEN", "8619918375:AAHTr7jmw_f1Ia5-OmG9lWInlVBsZOuJlbM")
 APP_ID = int(os.environ.get("APP_ID", "22266643")) #Your API ID from my.telegram.org
 API_HASH = os.environ.get("API_HASH", "7d0b85b4146034511b8776ed7ff99de4") #Your API Hash from my.telegram.org
 #--------------------------------------------
@@ -30,7 +30,7 @@ OWNER_ID = int(os.environ.get("OWNER_ID", "8797485479")) # Owner id
 #--------------------------------------------
 PORT = os.environ.get("PORT", "8001")
 #--------------------------------------------
-DB_URI = os.environ.get("DATABASE_URL", "")
+DB_URI = os.environ.get("DATABASE_URL", "mongodb+srv://hemanthbreaker2027:9550399779htr@cluster0.haybbxg.mongodb.net/?appName=Cluster0")
 DB_NAME = os.environ.get("DATABASE_NAME", "Cluster0")
 #--------------------------------------------
 TG_BOT_WORKERS = int(os.environ.get("TG_BOT_WORKERS", "200"))
@@ -48,7 +48,7 @@ START_PIC = random.choice(ANIME_BANNERS)
 FORCE_PIC = random.choice(ANIME_BANNERS)
 
 #--------------------------------------------
-WEBSITE_URL = os.environ.get("WEBSITE_URL", "") # e.g. https://yourdomain.com
+WEBSITE_URL = os.environ.get("WEBSITE_URL", "https://filestore-2-whvx.onrender.com") # e.g. https://yourdomain.com
 JWT_SECRET = os.environ.get("JWT_SECRET", "otakulux_secret_key")
 TUT_VID = os.environ.get("TUT_VID","https://t.me/OTAKULUX/3")
 SHORT_MSG = "<b>⌯ Here is Your Download Link, Must Watch Tutorial Before Clicking On Download...</b>"
