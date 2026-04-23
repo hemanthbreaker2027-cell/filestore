@@ -5,6 +5,7 @@ import base64
 import re
 import asyncio
 import time
+import aiohttp
 from pyrogram import filters
 from pyrogram.enums import ChatMemberStatus
 from config import *
@@ -211,7 +212,7 @@ async def get_message_id(client, message):
     elif message.forward_sender_name:
         return 0
     elif message.text:
-        pattern = "https://t.me/(?:c/)?(.*)/(\d+)"
+        pattern = r"https://t.me/(?:c/)?(.*)/(\d+)"
         matches = re.match(pattern,message.text)
         if not matches:
             return 0
@@ -275,6 +276,37 @@ async def get_shortlink(url, api, link):
     shortzy = Shortzy(api_key=api, base_site=url)
     link = await shortzy.convert(link)
     return link
+
+async def fetch_anilist_data(title):
+    query = """
+    query ($search: String) {
+      Media (search: $search, type: ANIME) {
+        title {
+          romaji
+          english
+          native
+        }
+        description
+        averageScore
+        genres
+        bannerImage
+        coverImage {
+          extraLarge
+        }
+      }
+    }
+    """
+    variables = {'search': title}
+    url = 'https://graphql.anilist.co'
+    try:
+        async with aiohttp.ClientSession() as session:
+            async with session.post(url, json={'query': query, 'variables': variables}) as response:
+                if response.status == 200:
+                    data = await response.json()
+                    return data['data']['Media']
+    except Exception as e:
+        print(f"Anilist Error: {e}")
+    return None
 
 
 subscribed = filters.create(is_subscribed)

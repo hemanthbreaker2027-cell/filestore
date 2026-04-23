@@ -49,6 +49,7 @@ class OTAKULUX:
         self.rqst_fsub_data = self.database['request_forcesub']
         self.rqst_fsub_Channel_data = self.database['request_forcesub_channel']
         self.bypass_data = self.database['bypass_attempts']
+        self.anime_data = self.database['anime_metadata']
         
 
 
@@ -293,6 +294,27 @@ class OTAKULUX:
 
     async def reset_bypass_attempts(self, identifier: str):
         await self.bypass_data.delete_one({'_id': identifier})
+
+    # ANIME METADATA MANAGEMENT
+    async def save_anime_metadata(self, msg_id: int, metadata: dict):
+        await self.anime_data.update_one(
+            {'_id': msg_id},
+            {'$set': metadata},
+            upsert=True
+        )
+
+    async def get_anime_metadata(self, msg_id: int):
+        return await self.anime_data.find_one({'_id': msg_id})
+
+    async def get_anime_by_letter(self, letter: str):
+        if letter == "#":
+            # Search for titles starting with a number
+            query = {"anime_name": {"$regex": "^[0-9]"}}
+        else:
+            query = {"anime_name": {"$regex": f"^{letter}", "$options": "i"}}
+
+        cursor = self.anime_data.find(query)
+        return await cursor.to_list(length=100)
 
 
 db = OTAKULUX(DB_URI, DB_NAME)

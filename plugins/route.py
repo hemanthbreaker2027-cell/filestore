@@ -8,7 +8,7 @@ import uuid
 import asyncio
 from config import TURNSTILE_SITE_KEY, TURNSTILE_SECRET_KEY, JWT_SECRET, WEBSITE_URL, SHORTLINK_URL, SHORTLINK_API
 from plugins.turnstile_html import TURNSTILE_HTML, BANNED_HTML, BOT_DETECTED_HTML
-from helper_func import get_shortlink
+from helper_func import get_shortlink, decode
 from database.database import db
 
 routes = web.RouteTableDef()
@@ -211,3 +211,60 @@ async def final_redirect(request):
         return web.HTTPFound(f"https://t.me/{username}?start=yu3elk{payload}7")
     except:
         return web.HTTPFound(f"/verify/{payload}")
+
+@routes.get("/stream/{payload}")
+async def stream_handler(request):
+    payload = request.match_info['payload']
+    session_cookie = request.cookies.get('session')
+
+    if not session_cookie:
+        return web.HTTPForbidden(text="Access denied. Please verify via bot first.")
+
+    try:
+        decoded = jwt.decode(session_cookie, JWT_SECRET, algorithms=['HS256'])
+        if decoded.get('payload') != payload:
+             return web.HTTPForbidden(text="Invalid session for this file.")
+    except:
+        return web.HTTPForbidden(text="Session expired or invalid.")
+
+    bot = request.app['bot']
+
+    try:
+        decoded_string = await decode(payload)
+        # Handle both "get-ID" and raw ID if needed
+        if decoded_string.startswith("get-"):
+            msg_id = int(int(decoded_string.split("-")[1]) / abs(bot.db_channel.id))
+        else:
+            msg_id = int(int(decoded_string) / abs(bot.db_channel.id))
+
+        message = await bot.get_messages(bot.db_channel.id, msg_id)
+        if not message or not message.media:
+            return web.HTTPNotFound(text="File not found or not a media file.")
+
+        media = getattr(message, message.media.value)
+        file_size = media.file_size
+        file_name = getattr(media, 'file_name', 'video.mp4')
+        mime_type = getattr(media, 'mime_type', 'video/mp4')
+
+        response = web.StreamResponse(
+            status=200,
+            reason='OK',
+            headers={
+                'Content-Type': mime_type,
+                'Content-Disposition': f'attachment; filename="{file_name}"',
+                'Content-Length': str(file_size),
+                'Accept-Ranges': 'bytes',
+            }
+        )
+
+        await response.prepare(request)
+
+        async for chunk in bot.stream_media(message):
+            await response.write(chunk)
+
+        await response.write_eof()
+        return response
+
+    except Exception as e:
+        print(f"Stream Error: {e}")
+        return web.HTTPInternalServerError(text=str(e))
