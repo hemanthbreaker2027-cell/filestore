@@ -106,6 +106,71 @@ async def api_latest(request):
         })
     return web.json_response(data)
 
+@routes.get("/api/search")
+async def api_search(request):
+    query = request.query.get('q', '')
+    genre = request.query.get('genre', '')
+
+    filter_query = {}
+    if query:
+        filter_query["anime_name"] = {"$regex": query, "$options": "i"}
+    if genre:
+        filter_query["anilist.genres"] = {"$regex": genre, "$options": "i"}
+
+    cursor = db.anime_data.find(filter_query).sort("_id", -1).limit(20)
+    results = await cursor.to_list(length=20)
+
+    data = []
+    for res in results:
+        bot = request.app['bot']
+        converted_id = res['_id'] * abs(bot.db_channel.id)
+        payload = await encode(f"get-{converted_id}")
+
+        anilist = res.get('anilist', {})
+        img = anilist.get('coverImage', {}).get('extraLarge') or "https://telegra.ph/file/e292b12890b8b4b9dcbd1.jpg"
+
+        data.append({
+            "id": payload,
+            "title": res.get('anime_name'),
+            "ep": res.get('episode'),
+            "img": img
+        })
+    return web.json_response(data)
+
+@routes.get("/api/episodes/{payload}")
+async def api_episodes(request):
+    payload = request.match_info['payload']
+    bot = request.app['bot']
+    try:
+        decoded_string = await decode(payload)
+        if decoded_string.startswith("get-"):
+            msg_id = int(int(decoded_string.split("-")[1]) / abs(bot.db_channel.id))
+        else:
+            msg_id = int(int(decoded_string) / abs(bot.db_channel.id))
+
+        current_anime = await db.get_anime_metadata(msg_id)
+        if not current_anime:
+            return web.json_response([])
+
+        name = current_anime.get('anime_name')
+        season = current_anime.get('season')
+
+        # Find other episodes of same anime and season
+        cursor = db.anime_data.find({"anime_name": name, "season": season}).sort("episode", 1)
+        results = await cursor.to_list(length=100)
+
+        data = []
+        for res in results:
+            converted_id = res['_id'] * abs(bot.db_channel.id)
+            payload_id = await encode(f"get-{converted_id}")
+            data.append({
+                "id": payload_id,
+                "ep": res.get('episode')
+            })
+        return web.json_response(data)
+    except:
+        return web.json_response([])
+
 @routes.get("/stream/{payload}")
 @routes.get("/stream/{payload}/{token}")
 async def stream_handler(request):

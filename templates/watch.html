@@ -96,15 +96,30 @@
         document.getElementById('mx-btn').href = "intent:" + streamUrl + "#Intent;package=com.mxtech.videoplayer.ad;end";
         document.getElementById('playit-btn').href = "playit://" + streamUrl;
 
-        // Mock episode list
-        const epGrid = document.getElementById('episode-grid');
-        for (let i = 1; i <= 12; i++) {
-            const btn = document.createElement('button');
-            btn.className = `py-2 rounded-lg border text-sm font-medium transition-all ${i === 1 ? 'bg-pink-600 border-pink-500' : 'bg-white/5 border-white/5 hover:border-pink-500/50'}`;
-            btn.textContent = i;
-            epGrid.appendChild(btn);
+        async function loadEpisodes() {
+            try {
+                const res = await fetch(`/api/episodes/${payload}`);
+                const data = await res.json();
+                const epGrid = document.getElementById('episode-grid');
+                epGrid.innerHTML = '';
+
+                if (data.length > 0) {
+                    data.forEach(ep => {
+                        const link = document.createElement('a');
+                        link.href = `/watch/${ep.id}`;
+                        link.className = `py-2 rounded-lg border text-sm font-medium transition-all text-center ${ep.id === payload ? 'bg-pink-600 border-pink-500' : 'bg-white/5 border-white/5 hover:border-pink-500/50'}`;
+                        link.textContent = ep.ep.replace('E', '');
+                        epGrid.appendChild(link);
+                    });
+                } else {
+                    epGrid.innerHTML = '<p class="col-span-full text-xs text-gray-500">No other episodes found.</p>';
+                }
+            } catch (err) {
+                console.error("Failed to load episodes:", err);
+            }
         }
 
+        loadEpisodes();
     </script>
 </body>
 </html>
