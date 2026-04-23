@@ -8,7 +8,8 @@ from pyrogram.types import ReplyKeyboardMarkup, ReplyKeyboardRemove
 import asyncio
 from asyncio import TimeoutError
 from config import OWNER_ID
-from helper_func import encode, get_message_id, admin, get_messages
+from helper_func import encode, get_message_id, admin, get_messages, parse_media_metadata, fetch_anilist_data
+from database.database import db
 
 @Bot.on_message(filters.private & admin & filters.command('batch'))
 async def batch(client: Client, message: Message):
@@ -70,6 +71,16 @@ async def batch(client: Client, message: Message):
                         msgs = await get_messages(client, to_fetch)
                         for m in msgs:
                             if m and not m.empty:
+                                if m.video or m.document:
+                                    # Auto-index while batching
+                                    media = m.video or m.document
+                                    text = m.caption or getattr(media, "file_name", "")
+                                    metadata = parse_media_metadata(text)
+                                    anilist = await fetch_anilist_data(metadata["anime_name"])
+                                    metadata["anilist"] = anilist
+                                    metadata["search_name"] = metadata["anime_name"].lower()
+                                    await db.save_anime_metadata(m.id, metadata)
+
                                 found_ids.append(m.id)
                                 if len(found_ids) == num_messages:
                                     break

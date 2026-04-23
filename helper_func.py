@@ -282,6 +282,79 @@ async def get_shortlink(url, api, link):
         print(f"Error in shortlink generation: {e}")
     return link
 
+def parse_media_metadata(text):
+    if not text:
+        return {
+            "anime_name": "Unknown",
+            "season": "S01",
+            "episode": "Unknown",
+            "quality": "Unknown"
+        }
+
+    # Extract Quality
+    quality_pattern = r"(360p|480p|720p|1080p|2160p|4K)"
+    quality_match = re.search(quality_pattern, text, re.IGNORECASE)
+    quality = quality_match.group(0).lower() if quality_match else "Unknown"
+
+    # Extract Season
+    season_pattern = r"(?:S|Season\s*)(\d{1,2})"
+    season_match = re.search(season_pattern, text, re.IGNORECASE)
+    season_num = int(season_match.group(1)) if season_match else 1
+    if not (1 <= season_num <= 50):
+        season_num = 1
+    season = f"S{season_num:02d}"
+
+    # Extract Episode
+    episode_pattern = r"(?:EP|EP\s*|Episode\s*|E)(\d{1,4})"
+    episode_match = re.search(episode_pattern, text, re.IGNORECASE)
+    episode_num = int(episode_match.group(1)) if episode_match else None
+    if episode_num and not (1 <= episode_num <= 2000):
+        episode_num = None
+    episode = f"E{episode_num}" if episode_num else "Unknown"
+
+    # Clean Name
+    clean_name = text
+
+    # Remove extension
+    if "." in clean_name:
+        clean_name = ".".join(clean_name.split(".")[:-1])
+
+    # Remove extra tags
+    tags = [
+        r"HDRip", r"Dual\s*Audio", r"ESub", r"HEVC", r"10bit", r"BluRay", r"Multi\s*Audio",
+        r"x264", r"x265", r"WEB-DL", r"NF", r"AMZN", r"H\.264", r"H\.265"
+    ]
+    for tag in tags:
+        clean_name = re.sub(tag, "", clean_name, flags=re.IGNORECASE)
+
+    # Remove the regex matches found earlier
+    if quality_match:
+        clean_name = clean_name.replace(quality_match.group(0), "")
+    if season_match:
+        clean_name = clean_name.replace(season_match.group(0), "")
+    if episode_match:
+        clean_name = clean_name.replace(episode_match.group(0), "")
+
+    # Remove square/round brackets and content inside
+    clean_name = re.sub(r"\[.*?\]|\(.*?\)", "", clean_name)
+
+    # Replace separators with spaces
+    clean_name = re.sub(r"[\._\-]", " ", clean_name)
+
+    # Remove extra symbols and multiple spaces
+    clean_name = re.sub(r"[^a-zA-Z0-9\s]", "", clean_name)
+    clean_name = re.sub(r"\s+", " ", clean_name).strip()
+
+    # Title Case
+    clean_name = clean_name.title()
+
+    return {
+        "anime_name": clean_name or "Unknown",
+        "season": season,
+        "episode": episode,
+        "quality": quality
+    }
+
 async def fetch_anilist_data(title):
     query = """
     query ($search: String) {
