@@ -6,7 +6,7 @@ import time
 import hashlib
 import uuid
 import asyncio
-from config import TURNSTILE_SITE_KEY, TURNSTILE_SECRET_KEY, JWT_SECRET, WEBSITE_URL, SHORTLINK_URL, SHORTLINK_API
+from config import TURNSTILE_SITE_KEY, TURNSTILE_SECRET_KEY, JWT_SECRET, WEBSITE_URL
 from plugins.turnstile_html import TURNSTILE_HTML, BANNED_HTML, BOT_DETECTED_HTML
 from helper_func import get_shortlink, decode
 from database.database import db
@@ -118,7 +118,7 @@ async def verify_turnstile(request):
 
             # If not banned, generate new shortlink loop
             new_verify_link = f"{WEBSITE_URL}/verify/{payload}"
-            new_short_link = await get_shortlink(SHORTLINK_URL, SHORTLINK_API, new_verify_link)
+            new_short_link = new_verify_link
 
             return web.json_response({
                 "success": False,
@@ -150,7 +150,7 @@ async def verify_turnstile(request):
             }, JWT_SECRET, algorithm='HS256')
 
             final_dest = f"{WEBSITE_URL}/f/{payload}"
-            short_url_result = await get_shortlink(SHORTLINK_URL, SHORTLINK_API, final_dest)
+            short_url_result = final_dest
 
             response = web.json_response({"success": True, "redirect": short_url_result})
             response.set_cookie('session', final_token, httponly=True, secure=True, samesite='Lax')
@@ -213,19 +213,30 @@ async def final_redirect(request):
         return web.HTTPFound(f"/verify/{payload}")
 
 @routes.get("/stream/{payload}")
+@routes.get("/stream/{payload}/{token}")
 async def stream_handler(request):
     payload = request.match_info['payload']
-    session_cookie = request.cookies.get('session')
+    token = request.match_info.get('token')
 
-    if not session_cookie:
-        return web.HTTPForbidden(text="Access denied. Please verify via bot first.")
-
-    try:
-        decoded = jwt.decode(session_cookie, JWT_SECRET, algorithms=['HS256'])
-        if decoded.get('payload') != payload:
-             return web.HTTPForbidden(text="Invalid session for this file.")
-    except:
-        return web.HTTPForbidden(text="Session expired or invalid.")
+    if token:
+        try:
+            decoded = jwt.decode(token, JWT_SECRET, algorithms=['HS256'])
+            if decoded.get('payload') != payload:
+                return web.HTTPForbidden(text="Invalid token for this file.")
+        except jwt.ExpiredSignatureError:
+            return web.HTTPForbidden(text="Stream token expired.")
+        except:
+            return web.HTTPForbidden(text="Invalid stream token.")
+    else:
+        session_cookie = request.cookies.get('session')
+        if not session_cookie:
+            return web.HTTPForbidden(text="Access denied. Please verify via bot first.")
+        try:
+            decoded = jwt.decode(session_cookie, JWT_SECRET, algorithms=['HS256'])
+            if decoded.get('payload') != payload:
+                 return web.HTTPForbidden(text="Invalid session for this file.")
+        except:
+            return web.HTTPForbidden(text="Session expired or invalid.")
 
     bot = request.app['bot']
 

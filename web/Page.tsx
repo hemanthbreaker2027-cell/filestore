@@ -65,6 +65,28 @@ const WatchPage: React.FC<WatchPageProps> = ({ params, searchParams }) => {
               <div ref={videoRef} />
             </div>
 
+            {/* External Players */}
+            <div className="mt-4 flex flex-wrap gap-3">
+              <a
+                href={`vlc://${streamUrl}`}
+                className="bg-orange-600/20 hover:bg-orange-600/40 text-orange-400 border border-orange-600/30 px-4 py-2 rounded-lg text-sm font-medium transition-all"
+              >
+                Open in VLC
+              </a>
+              <a
+                href={`intent:${streamUrl}#Intent;package=com.mxtech.videoplayer.ad;end`}
+                className="bg-blue-600/20 hover:bg-blue-600/40 text-blue-400 border border-blue-600/30 px-4 py-2 rounded-lg text-sm font-medium transition-all"
+              >
+                Open in MX Player
+              </a>
+              <a
+                href={`playit://${streamUrl}`}
+                className="bg-purple-600/20 hover:bg-purple-600/40 text-purple-400 border border-purple-600/30 px-4 py-2 rounded-lg text-sm font-medium transition-all"
+              >
+                Open in PlayIt
+              </a>
+            </div>
+
             <div className="mt-6">
               <h2 className="text-2xl font-semibold text-pink-400 mb-2">{anime || 'Loading Anime...'}</h2>
               <div className="flex gap-4 text-sm text-gray-400">

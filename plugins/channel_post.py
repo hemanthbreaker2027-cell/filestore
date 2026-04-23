@@ -67,7 +67,8 @@ async def channel_post(client: Client, message: Message):
         "season": season,
         "episode": episode,
         "quality": quality,
-        "anilist": anilist_metadata
+        "anilist": anilist_metadata,
+        "search_name": anime_name.lower()
     }
     await db.save_anime_metadata(post_message.id, metadata)
 

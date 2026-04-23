@@ -16,8 +16,8 @@ import random
 import sys
 import re
 import string 
-import string
 import time
+import jwt
 from datetime import datetime, timedelta
 from pyrogram import Client, filters, __version__
 from pyrogram.enums import ParseMode, ChatAction
@@ -31,7 +31,7 @@ from database.database import *
 from database.db_premium import *
 
 
-BAN_SUPPORT = f"{BAN_SUPPORT}"
+BAN_SUPPORT = os.environ.get("BAN_SUPPORT", "https://t.me/OTAKULUX")
 TUT_VID = f"{TUT_VID}"
 
 async def send_files(client: Client, message: Message, base64_string):
@@ -89,12 +89,35 @@ async def send_files(client: Client, message: Message, base64_string):
             caption = f"{original_caption}\n\n{CUSTOM_CAPTION}" if CUSTOM_CAPTION else original_caption
             reply_markup = msg.reply_markup if DISABLE_CHANNEL_BUTTON else None
 
+            # Generate Stream Link for Player Buttons
+            msg_payload = await encode(f"get-{msg.id * abs(client.db_channel.id)}")
+            # Token valid for 24 hours
+            stream_token = jwt.encode({
+                'payload': msg_payload,
+                'iat': int(time.time()),
+                'exp': int(time.time()) + 86400
+            }, JWT_SECRET, algorithm='HS256')
+
+            stream_url = f"{WEBSITE_URL}/stream/{msg_payload}/{stream_token}"
+
+            player_buttons = [
+                [
+                    InlineKeyboardButton("VLC", url=f"vlc://{stream_url}"),
+                    InlineKeyboardButton("MX Player", url=f"intent:{stream_url}#Intent;package=com.mxtech.videoplayer.ad;end"),
+                    InlineKeyboardButton("PlayIt", url=f"playit://{stream_url}")
+                ]
+            ]
+
+            combined_markup = InlineKeyboardMarkup(
+                (reply_markup.inline_keyboard if reply_markup else []) + player_buttons
+            )
+
             try:
                 snt_msg = await msg.copy(
                     chat_id=message.from_user.id,
                     caption=caption,
                     parse_mode=ParseMode.HTML,
-                    reply_markup=reply_markup,
+                    reply_markup=combined_markup,
                     protect_content=PROTECT_CONTENT
                 )
                 OTAKULUX_msgs.append(snt_msg)
@@ -104,7 +127,7 @@ async def send_files(client: Client, message: Message, base64_string):
                     chat_id=message.from_user.id,
                     caption=caption,
                     parse_mode=ParseMode.HTML,
-                    reply_markup=reply_markup,
+                    reply_markup=combined_markup,
                     protect_content=PROTECT_CONTENT
                 )
                 OTAKULUX_msgs.append(copied_msg)
@@ -147,9 +170,8 @@ async def short_url(client: Client, message: Message, base64_string):
             # Send our verification page link directly
             short_link = f"{WEBSITE_URL}/verify/{base64_string}"
         else:
-            # Fallback to old flow if WEBSITE_URL is not set
-            prem_link = f"https://t.me/{client.username}?start=yu3elk{base64_string}7"
-            short_link = await get_shortlink(SHORTLINK_URL, SHORTLINK_API, prem_link)
+            # Fallback to direct bot link
+            short_link = f"https://t.me/{client.username}?start=yu3elk{base64_string}7"
 
         buttons = [
             [

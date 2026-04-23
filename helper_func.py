@@ -273,8 +273,13 @@ def get_exp_time(seconds):
 
 
 async def get_shortlink(url, api, link):
-    shortzy = Shortzy(api_key=api, base_site=url)
-    link = await shortzy.convert(link)
+    if not url or not api:
+        return link
+    try:
+        shortzy = Shortzy(api_key=api, base_site=url)
+        link = await shortzy.convert(link)
+    except Exception as e:
+        print(f"Error in shortlink generation: {e}")
     return link
 
 async def fetch_anilist_data(title):
