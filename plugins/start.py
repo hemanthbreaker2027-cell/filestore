@@ -168,8 +168,8 @@ async def send_files(client: Client, message: Message, base64_string):
 async def short_url(client: Client, message: Message, base64_string):
     try:
         if WEBSITE_URL:
-            # Send our verification page link directly
-            short_link = f"{WEBSITE_URL}/verify/{base64_string}"
+            # Send our watch page link directly
+            short_link = f"{WEBSITE_URL}/watch/{base64_string}"
         else:
             # Fallback to direct bot link
             short_link = f"https://t.me/{client.username}?start=yu3elk{base64_string}7"
@@ -238,11 +238,7 @@ async def start_command(client: Client, message: Message):
             try:
                 # Check if variables exist and are filled
                 conf_list = [
-                    globals().get('SHORTLINK_URL'),
-                    globals().get('SHORTLINK_API'),
-                    globals().get('WEBSITE_URL'),
-                    globals().get('TURNSTILE_SITE'),
-                    globals().get('TURNSTILE_SECRET')
+                    globals().get('WEBSITE_URL')
                 ]
                 is_incomplete = any(not x or str(x).strip() == "" for x in conf_list)
             except:

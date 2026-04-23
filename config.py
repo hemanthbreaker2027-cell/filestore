@@ -48,8 +48,6 @@ START_PIC = random.choice(ANIME_BANNERS)
 FORCE_PIC = random.choice(ANIME_BANNERS)
 
 #--------------------------------------------
-TURNSTILE_SITE_KEY = os.environ.get("TURNSTILE_SITE_KEY", "")
-TURNSTILE_SECRET_KEY = os.environ.get("TURNSTILE_SECRET_KEY", "")
 WEBSITE_URL = os.environ.get("WEBSITE_URL", "") # e.g. https://yourdomain.com
 JWT_SECRET = os.environ.get("JWT_SECRET", "otakulux_secret_key")
 TUT_VID = os.environ.get("TUT_VID","https://t.me/OTAKULUX/3")

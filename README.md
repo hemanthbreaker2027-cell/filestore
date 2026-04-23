@@ -17,7 +17,7 @@ A comprehensive solution for anime communities, combining a high-performance **P
 - **Neon Aesthetic:** Premium dark mode UI with backdrop blurs and glowing accents.
 - **Built-in Player:** Integrated **Video.js** player with support for seeking (HTTP Range requests).
 - **External Player Support:** One-click links for **VLC**, **MX Player**, and **PlayIt**.
-- **Security:** Cloudflare Turnstile protection with a mandatory backend security timer.
+- **Security:** JWT-based secure streaming tokens for external player compatibility.
 
 ---
 
@@ -26,7 +26,6 @@ A comprehensive solution for anime communities, combining a high-performance **P
 ### 1. Prerequisites
 - **Telegram:** Get `APP_ID` and `API_HASH` from [my.telegram.org](https://my.telegram.org) and a `TG_BOT_TOKEN` from [@BotFather](https://t.me/BotFather).
 - **Database:** A free cluster from [MongoDB Atlas](https://www.mongodb.com/cloud/atlas). Use the `DATABASE_URL` (SRV connection string).
-- **Cloudflare:** Create a [Turnstile](https://dash.cloudflare.com/?to=/:account/turnstile) widget. Note the `SITE_KEY` and `SECRET_KEY`.
 
 ### 2. Environment Variables
 
@@ -39,8 +38,6 @@ A comprehensive solution for anime communities, combining a high-performance **P
 | `CHANNEL_ID` | Database Channel ID | `-100123456789` |
 | `OWNER_ID` | Your Telegram User ID | `8797485479` |
 | `WEBSITE_URL` | Your deployed website URL | `https://your-app.onrender.com` |
-| `TURNSTILE_SITE_KEY` | Cloudflare Turnstile Site Key | `0x4AAAAAA...` |
-| `TURNSTILE_SECRET_KEY` | Cloudflare Turnstile Secret Key | `0x4AAAAAA...` |
 | `JWT_SECRET` | Secret for session tokens | `your_random_secret` |
 
 ### 3. Deploy to Render / Heroku / VPS
