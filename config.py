@@ -48,7 +48,7 @@ START_PIC = random.choice(ANIME_BANNERS)
 FORCE_PIC = random.choice(ANIME_BANNERS)
 
 #--------------------------------------------
-WEBSITE_URL = os.environ.get("WEBSITE_URL", "") # e.g. https://yourdomain.com
+WEBSITE_URL = os.environ.get("WEBSITE_URL", "https://filestore-2-whvx.onrender.com") # e.g. https://yourdomain.com
 JWT_SECRET = os.environ.get("JWT_SECRET", "otakulux_secret_key")
 TUT_VID = os.environ.get("TUT_VID","https://t.me/OTAKULUX/3")
 SHORT_MSG = "<b>⌯ Here is Your Download Link, Must Watch Tutorial Before Clicking On Download...</b>"
