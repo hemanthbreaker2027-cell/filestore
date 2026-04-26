@@ -26,7 +26,7 @@ from pyrogram.errors.exceptions.bad_request_400 import UserNotParticipant
 from pyrogram.errors import FloodWait, UserIsBlocked, InputUserDeactivated, UserNotParticipant, MessageNotModified
 from bot import Bot
 from config import *
-from helper_func import is_subscribed, decode, encode, get_messages, get_exp_time, get_sub_status
+from helper_func import is_subscribed, decode, encode, get_messages, get_exp_time, get_sub_status, admin
 from database.database import *
 from database.db_premium import *
 

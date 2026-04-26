@@ -1,19 +1,14 @@
-#
-# Copyright (C) 2025 by OTAKULUX@OTAKULUX, < https://github.com/OTAKULUX >.
-#
-# This file is part of < https://t.me/OTAKULUX > project,
-# and is released under the MIT License.
-# Please see < https://t.me/OTAKULUX/blob/master/LICENSE >
-#
-# All rights reserved.
-
 import asyncio
-from pyrogram import Client 
-from bot import Bot
-from config import *
+import random
+from pyrogram import Client, filters
 from pyrogram.types import Message, InlineKeyboardMarkup, InlineKeyboardButton, CallbackQuery
-from database.database import *
-from helper_func import *
+from bot import Bot
+from config import (
+    HELP_TXT, ABOUT_TXT, START_MSG, PRICE1, PRICE2, PRICE3, PRICE4, PRICE5,
+    UPI_ID, SCREENSHOT_URL, OWNER_ID, ANIME_BANNERS
+)
+from database.database import db
+from helper_func import is_subscribed, get_sub_status
 
 @Bot.on_callback_query()
 async def cb_handler(client: Bot, query: CallbackQuery):
@@ -49,20 +44,6 @@ async def cb_handler(client: Bot, query: CallbackQuery):
             ])
         )
 
-
-# Don't Remove Credit @OTAKULUX, @OTAKULUX
-# Ask Doubt on telegram @OTAKULUX
-#
-# Copyright (C) 2025 by OTAKULUX@OTAKULUX, < https://github.com/OTAKULUX >.
-#
-# This file is part of < https://t.me/OTAKULUX > project,
-# and is released under the MIT License.
-# Please see < https://t.me/OTAKULUX/blob/master/LICENSE >
-#
-# All rights reserved.
-#
-
-
     elif data == "premium":
         await query.message.delete()
         await client.send_photo(
@@ -91,8 +72,6 @@ async def cb_handler(client: Bot, query: CallbackQuery):
                 ]
             )
         )
-
-
 
     elif data == "close":
         await query.message.delete()
@@ -255,16 +234,3 @@ async def cb_handler(client: Bot, query: CallbackQuery):
                 )
             except Exception as e:
                 print(f"Error editing fsub message: {e}")
-
-
-# Don't Remove Credit @OTAKULUX, @OTAKULUX
-# Ask Doubt on telegram @OTAKULUX
-#
-# Copyright (C) 2025 by OTAKULUX@OTAKULUX, < https://github.com/OTAKULUX >.
-#
-# This file is part of < https://t.me/OTAKULUX > project,
-# and is released under the MIT License.
-# Please see < https://t.me/OTAKULUX/blob/master/LICENSE >
-#
-# All rights reserved.
-#

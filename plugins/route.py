@@ -1,16 +1,17 @@
-
-from aiohttp import web
-import aiohttp
+import asyncio
 import jwt
 import time
 import hashlib
 import uuid
-import asyncio
 import os
+from aiohttp import web
 from jinja2 import Environment, FileSystemLoader
-from config import TURNSTILE_SITE_KEY, TURNSTILE_SECRET_KEY, JWT_SECRET, WEBSITE_URL, SHORTLINK_URL, SHORTLINK_API
+from config import (
+    TURNSTILE_SITE_KEY, TURNSTILE_SECRET_KEY, JWT_SECRET, WEBSITE_URL,
+    SHORTLINK_URL, SHORTLINK_API
+)
 from plugins.turnstile_html import TURNSTILE_HTML, BANNED_HTML, BOT_DETECTED_HTML
-from helper_func import get_shortlink
+from helper_func import get_shortlink, decode
 from database.database import db
 
 routes = web.RouteTableDef()
@@ -31,9 +32,6 @@ def is_external_player(ua):
         'com.mxtech.videoplayer', 'org.videolan.vlc', 'com.playit.videoplayer'
     ]
     return any(player in ua for player in external_players)
-BAN_STRIKE_1 = 3   # 1 hour ban
-BAN_STRIKE_2 = 5   # 24 hour ban
-BAN_STRIKE_3 = 10  # Permanent ban
 
 def get_real_ip(request):
     return request.headers.get('CF-Connecting-IP') or request.headers.get('X-Forwarded-For', request.remote)
@@ -122,13 +120,13 @@ async def verify_turnstile(request):
             attempts = record.get('attempts_count', 0)
 
             # Progressive Banning
-            if attempts >= BAN_STRIKE_3:
+            if attempts >= 10: # BAN_STRIKE_3
                 await db.ban_user_bypass(identifier, -1) # Permanent
                 return web.json_response({"success": False, "message": "Bypass detected. Permanent block issued.", "banned": True}, status=403)
-            elif attempts == BAN_STRIKE_2:
+            elif attempts == 5: # BAN_STRIKE_2
                 await db.ban_user_bypass(identifier, 24)
                 return web.json_response({"success": False, "message": "Bypass detected. 24h block issued.", "banned": True}, status=403)
-            elif attempts == BAN_STRIKE_1:
+            elif attempts == 3: # BAN_STRIKE_1
                 await db.ban_user_bypass(identifier, 1)
                 return web.json_response({"success": False, "message": "Bypass detected. 1h block issued.", "banned": True}, status=403)
 
@@ -213,7 +211,6 @@ async def bot_detected(request):
 async def vlc_redirect(request):
     payload = request.match_info['payload']
     bot = request.app.get('bot')
-    from helper_func import decode
     decoded = await decode(payload)
     msg_id = int(int(decoded.split("-")[1]) / abs(bot.db_channel.id))
     msg = await bot.get_messages(bot.db_channel.id, msg_id)
@@ -242,7 +239,6 @@ async def vlc_redirect(request):
 async def mx_redirect(request):
     payload = request.match_info['payload']
     bot = request.app.get('bot')
-    from helper_func import decode
     decoded = await decode(payload)
     msg_id = int(int(decoded.split("-")[1]) / abs(bot.db_channel.id))
     msg = await bot.get_messages(bot.db_channel.id, msg_id)
@@ -270,7 +266,6 @@ async def mx_redirect(request):
 async def playit_redirect(request):
     payload = request.match_info['payload']
     bot = request.app.get('bot')
-    from helper_func import decode
     decoded = await decode(payload)
     msg_id = int(int(decoded.split("-")[1]) / abs(bot.db_channel.id))
     msg = await bot.get_messages(bot.db_channel.id, msg_id)
@@ -298,7 +293,6 @@ async def playit_redirect(request):
 async def best_redirect(request):
     payload = request.match_info['payload']
     bot = request.app.get('bot')
-    from helper_func import decode
     decoded = await decode(payload)
     msg_id = int(int(decoded.split("-")[1]) / abs(bot.db_channel.id))
     msg = await bot.get_messages(bot.db_channel.id, msg_id)
@@ -348,7 +342,6 @@ async def best_redirect(request):
 
 async def stream_controller(request, payload):
     bot = request.app.get('bot')
-    from helper_func import decode
     try:
         decoded_payload = await decode(payload)
         argument = decoded_payload.split("-")
@@ -411,7 +404,7 @@ async def stream_controller(request, payload):
         try:
             async for chunk in bot.stream_media(media, offset=start, limit=end-start+1):
                 await res.write(chunk)
-        except Exception as e:
+        except Exception:
             pass # Connection reset by player is common
 
         return res
@@ -432,7 +425,6 @@ async def watch_route_handler(request):
         return await stream_controller(request, payload)
 
     bot = request.app.get('bot')
-    from helper_func import decode
 
     try:
         decoded_payload = await decode(payload)
@@ -469,7 +461,6 @@ async def watch_route_handler(request):
 async def direct_download(request):
     payload = request.match_info['payload']
     bot = request.app.get('bot')
-    from helper_func import decode
 
     try:
         decoded_payload = await decode(payload)
@@ -526,8 +517,8 @@ async def direct_download(request):
         try:
             async for chunk in bot.stream_media(media, offset=start, limit=end-start+1):
                 await res.write(chunk)
-        except Exception as e:
-            print(f"Error during streaming: {e}")
+        except Exception:
+            pass
 
         return res
 
@@ -549,7 +540,6 @@ async def final_redirect(request):
             return web.HTTPFound(f"/verify/{payload}")
 
         bot = request.app.get('bot')
-        from helper_func import decode
 
         try:
             decoded_payload = await decode(payload)
@@ -581,7 +571,6 @@ async def final_redirect(request):
             if start >= file_size:
                 return web.Response(status=416)
 
-            chunk_size = 1024 * 1024 # 1MB
             headers = {
                 'Content-Type': mime_type,
                 'Content-Disposition': f'attachment; filename="{file_name}"',
@@ -596,8 +585,8 @@ async def final_redirect(request):
             try:
                 async for chunk in bot.stream_media(media, offset=start, limit=end-start+1):
                     await res.write(chunk)
-            except Exception as e:
-                print(f"Error during streaming: {e}")
+            except Exception:
+                pass
 
             return res
 

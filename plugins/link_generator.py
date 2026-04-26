@@ -1,12 +1,8 @@
-#(©)Codexbotz
-
 import re
-from pyrogram import Client, filters
-from pyrogram.types import Message, InlineKeyboardMarkup, InlineKeyboardButton
-from bot import Bot
-from pyrogram.types import ReplyKeyboardMarkup, ReplyKeyboardRemove
 import asyncio
-from asyncio import TimeoutError
+from pyrogram import Client, filters
+from pyrogram.types import Message, InlineKeyboardMarkup, InlineKeyboardButton, ReplyKeyboardMarkup, ReplyKeyboardRemove
+from bot import Bot
 from config import OWNER_ID
 from helper_func import encode, get_message_id, admin, get_messages
 
@@ -36,7 +32,6 @@ async def batch(client: Client, message: Message):
                 start_id = int(single_match.group(1))
 
                 # Check if link belongs to DB channel
-                # We do a basic check by trying to fetch the message
                 try:
                     test_msg = await client.get_messages(client.db_channel.id, start_id)
                     if not test_msg or test_msg.empty:
@@ -64,7 +59,7 @@ async def batch(client: Client, message: Message):
                 current_id = start_id
 
                 while len(found_ids) < num_messages:
-                    # Fetch messages in small chunks to avoid rate limits and handle sparse IDs
+                    # Fetch messages in small chunks
                     to_fetch = list(range(current_id, current_id + 50))
                     try:
                         msgs = await get_messages(client, to_fetch)
@@ -77,11 +72,10 @@ async def batch(client: Client, message: Message):
                                     try: await progress.edit_text(f"🔍 Processing {len(found_ids)}/{num_messages}...")
                                     except: pass
 
-                        if not msgs: # Safety break if no messages returned
+                        if not msgs:
                             break
 
                         current_id += 50
-                        # If we have reached a very high ID without finding enough, we might want to stop
                         if current_id > start_id + num_messages + 1000:
                             break
                     except Exception as e:

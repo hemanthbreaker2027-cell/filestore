@@ -4,7 +4,6 @@ from pyrogram.enums import ChatMemberStatus, ChatType
 from pyrogram.types import InlineKeyboardMarkup, InlineKeyboardButton, Message, ChatMemberUpdated
 from pyrogram.errors.exceptions.bad_request_400 import UserNotParticipant
 from bot import Bot
-from config import OWNER_ID
 from helper_func import admin
 from database.database import db
 
@@ -205,15 +204,9 @@ async def delete_requested_users(client, message: Message):
             print(f"[!] Error checking user {user_id}: {e}")
             skipped += 1
 
-    for user_id in user_ids:
-        if not await db.req_user_exist(channel_id, user_id):
-            await db.del_req_user(channel_id, user_id)
-            removed += 1
-
     return await message.reply(
         f"✅ Cʟᴇᴀɴᴜᴘ ᴄᴏᴍᴘʟᴇᴛᴇᴅ ғᴏʀ ᴄʜᴀɴɴᴇʟ `{channel_id}`\n\n"
         f"👤 Rᴇᴍᴏᴠᴇᴅ ᴜsᴇʀs ɴᴏᴛ ɪɴ ᴄʜᴀɴɴᴇʟ: `{left_users}`\n"
-        f"🗑️ Rᴇᴍᴏᴠᴇᴅ ʟᴇғᴛᴏᴠᴇʀ ɴᴏɴ-ʀᴇǫᴜᴇsᴛ ᴜsᴇʀs: `{removed}`\n"
         f"✅ Sᴛɪʟʟ ᴍᴇᴍʙᴇʀs: `{skipped}`",
         quote=True
     )

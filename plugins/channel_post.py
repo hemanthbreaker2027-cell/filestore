@@ -1,22 +1,10 @@
-# Don't Remove Credit @OTAKULUX, @OTAKULUX
-# Ask Doubt on telegram @OTAKULUX
-#
-# Copyright (C) 2025 by OTAKULUX@OTAKULUX, < https://github.com/OTAKULUX >.
-#
-# This file is part of < https://t.me/OTAKULUX > project,
-# and is released under the MIT License.
-# Please see < https://t.me/OTAKULUX/blob/master/LICENSE >
-#
-# All rights reserved.
-#
-
 import asyncio
 from pyrogram import filters, Client
 from pyrogram.types import Message, InlineKeyboardMarkup, InlineKeyboardButton
 from pyrogram.errors import FloodWait
 
 from bot import Bot
-from config import *
+from config import DISABLE_CHANNEL_BUTTON
 from helper_func import encode, admin
 
 @Bot.on_message(filters.private & admin & ~filters.command(['start', 'commands','users','broadcast','batch', 'custom_batch', 'genlink','stats', 'dlt_time', 'check_dlt_time', 'auto_delete', 'check_auto_delete', 'autodelete', 'checkautodelete', 'dbroadcast', 'ban', 'unban', 'banlist', 'addchnl', 'delchnl', 'listchnl', 'fsub_mode', 'pbroadcast', 'add_admin', 'deladmin', 'admins', 'addpremium', 'premium_users', 'remove_premium', 'myplan', 'count', 'delreq']))
@@ -42,15 +30,3 @@ async def channel_post(client: Client, message: Message):
 
     if not DISABLE_CHANNEL_BUTTON:
         await post_message.edit_reply_markup(reply_markup)
-
-# Don't Remove Credit @OTAKULUX, @OTAKULUX
-# Ask Doubt on telegram @OTAKULUX
-#
-# Copyright (C) 2025 by OTAKULUX@OTAKULUX, < https://github.com/OTAKULUX >.
-#
-# This file is part of < https://t.me/OTAKULUX > project,
-# and is released under the MIT License.
-# Please see < https://t.me/OTAKULUX/blob/master/LICENSE >
-#
-# All rights reserved.
-#
