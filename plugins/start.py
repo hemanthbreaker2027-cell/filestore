@@ -130,8 +130,13 @@ async def send_files(client: Client, message: Message, base64_string):
                     dl_button = InlineKeyboardButton("📥 Download", url=dl_url)
                     watch_button = InlineKeyboardButton("▶️ Stream Online", url=watch_url)
 
+                    vlc_button = InlineKeyboardButton("▶️ VLC", url=f"{dl_config['domain']}/vlc/{payload}")
+                    mx_button = InlineKeyboardButton("▶️ MX Player", url=f"{dl_config['domain']}/mx/{payload}")
+                    playit_button = InlineKeyboardButton("▶️ PLAYit", url=f"{dl_config['domain']}/playit/{payload}")
+
                     new_buttons = list(reply_markup.inline_keyboard) if reply_markup else []
                     new_buttons.append([dl_button, watch_button])
+                    new_buttons.append([vlc_button, mx_button, playit_button])
                     reply_markup = InlineKeyboardMarkup(new_buttons)
                 except Exception as e:
                     print(f"Error generating downlink for message {msg.id}: {e}")

@@ -193,6 +193,30 @@ async def banned_page(request):
 async def bot_detected(request):
     return web.Response(text=BOT_DETECTED_HTML, content_type='text/html')
 
+@routes.get("/vlc/{payload}")
+async def vlc_redirect(request):
+    payload = request.match_info['payload']
+    stream_url = f"{request.scheme}://{request.host}/file/{payload}"
+    vlc_url = f"vlc://{stream_url}"
+    html = f"<html><head><script>window.location.replace('{vlc_url}');</script></head><body>Redirecting to VLC...</body></html>"
+    return web.Response(text=html, content_type='text/html')
+
+@routes.get("/mx/{payload}")
+async def mx_redirect(request):
+    payload = request.match_info['payload']
+    stream_url = f"{request.scheme}://{request.host}/file/{payload}"
+    mx_url = f"intent://{stream_url}#Intent;package=com.mxtech.videoplayer.ad;end"
+    html = f"<html><head><script>window.location.replace('{mx_url}');</script></head><body>Redirecting to MX Player...</body></html>"
+    return web.Response(text=html, content_type='text/html')
+
+@routes.get("/playit/{payload}")
+async def playit_redirect(request):
+    payload = request.match_info['payload']
+    stream_url = f"{request.scheme}://{request.host}/file/{payload}"
+    playit_url = f"intent://{stream_url}#Intent;package=com.playit.videoplayer;end"
+    html = f"<html><head><script>window.location.replace('{playit_url}');</script></head><body>Redirecting to PLAYit...</body></html>"
+    return web.Response(text=html, content_type='text/html')
+
 @routes.get("/watch/{payload}")
 async def watch_page(request):
     payload = request.match_info['payload']
