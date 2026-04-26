@@ -193,7 +193,78 @@ async def banned_page(request):
 async def bot_detected(request):
     return web.Response(text=BOT_DETECTED_HTML, content_type='text/html')
 
-@routes.get("/dl/{payload}")
+@routes.get("/watch/{payload}")
+async def watch_page(request):
+    payload = request.match_info['payload']
+    bot = request.app.get('bot')
+    from helper_func import decode
+
+    try:
+        decoded_payload = await decode(payload)
+        argument = decoded_payload.split("-")
+        if len(argument) < 2:
+             return web.Response(text="Invalid Payload", status=400)
+
+        msg_id = int(int(argument[1]) / abs(bot.db_channel.id))
+        msg = await bot.get_messages(bot.db_channel.id, msg_id)
+
+        if not msg or not (msg.video or msg.document):
+            return web.Response(text="Video not found.", status=404)
+
+        media = msg.video or msg.document
+        file_name = media.file_name or "video"
+
+        # Use relative paths for the stream URL
+        stream_url = f"/file/{payload}"
+
+        html = f"""
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Streaming: {file_name} - OTAKULUX</title>
+    <style>
+        body {{ background-color: #0f0f12; color: #fff; font-family: 'Segoe UI', sans-serif; margin: 0; display: flex; flex-direction: column; align-items: center; min-height: 100vh; }}
+        .header {{ width: 100%; padding: 1rem; text-align: center; background: #1a1a24; border-bottom: 1px solid #333; }}
+        .player-container {{ width: 100%; max-width: 900px; margin-top: 2rem; background: #000; border-radius: 8px; overflow: hidden; box-shadow: 0 10px 30px rgba(0,0,0,0.5); }}
+        video {{ width: 100%; display: block; }}
+        .controls {{ margin-top: 2rem; display: flex; flex-wrap: wrap; justify-content: center; gap: 1rem; padding: 0 1rem 3rem; }}
+        .btn {{ text-decoration: none; padding: 0.8rem 1.5rem; border-radius: 5px; font-weight: bold; transition: 0.2s; color: #000; background: #00ffcc; text-align: center; min-width: 150px; }}
+        .btn:hover {{ transform: scale(1.05); opacity: 0.9; }}
+        .vlc {{ background: #ff9900; }}
+        .mx {{ background: #0088cc; color: #fff; }}
+        .playit {{ background: #ff4d4d; color: #fff; }}
+        .title {{ margin: 1rem; color: #00ffcc; font-size: 1.2rem; text-align: center; }}
+    </style>
+</head>
+<body>
+    <div class="header">
+        <h1>OTAKULUX Stream</h1>
+    </div>
+    <div class="title">{file_name}</div>
+    <div class="player-container">
+        <video controls autoplay>
+            <source src="{stream_url}" type="video/mp4">
+            Your browser does not support the video tag.
+        </video>
+    </div>
+    <div class="controls">
+        <a href="{stream_url}" class="btn">📥 Download</a>
+        <a href="vlc://{request.scheme}://{request.host}{stream_url}" class="btn vlc">▶️ Play in VLC</a>
+        <a href="intent://{request.scheme}://{request.host}{stream_url}#Intent;package=com.mxtech.videoplayer.ad;end" class="btn mx">▶️ Play in MX Player</a>
+        <a href="intent://{request.scheme}://{request.host}{stream_url}#Intent;package=com.playit.videoplayer;end" class="btn playit">▶️ Play in PLAYit</a>
+    </div>
+</body>
+</html>
+"""
+        return web.Response(text=html, content_type='text/html')
+
+    except Exception as e:
+        print(f"Watch Page Error: {e}")
+        return web.Response(text=f"Error loading stream page: {e}", status=500)
+
+@routes.get("/file/{payload}")
 async def direct_download(request):
     payload = request.match_info['payload']
     bot = request.app.get('bot')

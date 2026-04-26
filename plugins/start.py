@@ -124,16 +124,15 @@ async def send_files(client: Client, message: Message, base64_string):
             if dl_config['status'] == 'on' and (msg.video or msg.document):
                 try:
                     payload = await encode(f"get-{msg.id * abs(client.db_channel.id)}")
-                    dl_url = f"{dl_config['domain']}/dl/{payload}"
-                    dl_button = InlineKeyboardButton("Download ⚡", url=dl_url)
+                    dl_url = f"{dl_config['domain']}/file/{payload}"
+                    watch_url = f"{dl_config['domain']}/watch/{payload}"
 
-                    if reply_markup:
-                        # Append to existing markup if possible
-                        new_buttons = list(reply_markup.inline_keyboard)
-                        new_buttons.append([dl_button])
-                        reply_markup = InlineKeyboardMarkup(new_buttons)
-                    else:
-                        reply_markup = InlineKeyboardMarkup([[dl_button]])
+                    dl_button = InlineKeyboardButton("📥 Download", url=dl_url)
+                    watch_button = InlineKeyboardButton("▶️ Stream Online", url=watch_url)
+
+                    new_buttons = list(reply_markup.inline_keyboard) if reply_markup else []
+                    new_buttons.append([dl_button, watch_button])
+                    reply_markup = InlineKeyboardMarkup(new_buttons)
                 except Exception as e:
                     print(f"Error generating downlink for message {msg.id}: {e}")
 
