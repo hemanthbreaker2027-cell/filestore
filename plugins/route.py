@@ -6,12 +6,17 @@ import time
 import hashlib
 import uuid
 import asyncio
+import os
+from jinja2 import Environment, FileSystemLoader
 from config import TURNSTILE_SITE_KEY, TURNSTILE_SECRET_KEY, JWT_SECRET, WEBSITE_URL, SHORTLINK_URL, SHORTLINK_API
 from plugins.turnstile_html import TURNSTILE_HTML, BANNED_HTML, BOT_DETECTED_HTML
 from helper_func import get_shortlink
 from database.database import db
 
 routes = web.RouteTableDef()
+
+# Jinja2 Environment
+template_env = Environment(loader=FileSystemLoader('templates'))
 
 # Configuration
 TIMER_THRESHOLD = 100 # 100 seconds
@@ -197,17 +202,21 @@ async def bot_detected(request):
 async def vlc_redirect(request):
     payload = request.match_info['payload']
     stream_url = f"{request.scheme}://{request.host}/file/{payload}"
-    return web.HTTPFound(f"vlc://{stream_url}")
+    watch_url = f"{request.scheme}://{request.host}/watch/{payload}"
+    from urllib.parse import quote
+    encoded_url = quote(stream_url, safe='')
+    vlc_url = f"intent://{encoded_url}#Intent;package=org.videolan.vlc;type=video/*;S.browser_fallback_url={watch_url};end;"
+    html = f"<html><head><script>window.location.replace('{vlc_url}');</script></head><body>Redirecting to VLC...</body></html>"
+    return web.Response(text=html, content_type='text/html')
 
 @routes.get("/mx/{payload}")
 async def mx_redirect(request):
     payload = request.match_info['payload']
     stream_url = f"{request.scheme}://{request.host}/file/{payload}"
     watch_url = f"{request.scheme}://{request.host}/watch/{payload}"
-    # Remove scheme from stream_url for the intent data part
-    data_url = stream_url.replace("https://", "").replace("http://", "")
-    scheme = "https" if "https" in stream_url else "http"
-    mx_url = f"intent://{data_url}#Intent;scheme={scheme};package=com.mxtech.videoplayer.ad;S.title=OTAKULUX;S.browser_fallback_url={watch_url};end"
+    from urllib.parse import quote
+    encoded_url = quote(stream_url, safe='')
+    mx_url = f"intent://{encoded_url}#Intent;package=com.mxtech.videoplayer.ad;type=video/*;S.browser_fallback_url={watch_url};end;"
     html = f"<html><head><script>window.location.replace('{mx_url}');</script></head><body>Redirecting to MX Player...</body></html>"
     return web.Response(text=html, content_type='text/html')
 
@@ -216,10 +225,51 @@ async def playit_redirect(request):
     payload = request.match_info['payload']
     stream_url = f"{request.scheme}://{request.host}/file/{payload}"
     watch_url = f"{request.scheme}://{request.host}/watch/{payload}"
-    data_url = stream_url.replace("https://", "").replace("http://", "")
-    scheme = "https" if "https" in stream_url else "http"
-    playit_url = f"intent://{data_url}#Intent;scheme={scheme};package=com.playit.videoplayer;S.title=OTAKULUX;S.browser_fallback_url={watch_url};end"
+    from urllib.parse import quote
+    encoded_url = quote(stream_url, safe='')
+    playit_url = f"intent://{encoded_url}#Intent;package=com.playit.videoplayer;type=video/*;S.browser_fallback_url={watch_url};end;"
     html = f"<html><head><script>window.location.replace('{playit_url}');</script></head><body>Redirecting to PLAYit...</body></html>"
+    return web.Response(text=html, content_type='text/html')
+
+@routes.get("/best/{payload}")
+async def best_redirect(request):
+    payload = request.match_info['payload']
+    stream_url = f"{request.scheme}://{request.host}/file/{payload}"
+    watch_url = f"{request.scheme}://{request.host}/watch/{payload}"
+
+    html = f"""
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Opening Best Player...</title>
+    <script>
+        function openBestPlayer(videoUrl, fallback) {{
+            const encodedUrl = encodeURIComponent(videoUrl);
+
+            // Try VLC
+            window.location.href = `intent://${{encodedUrl}}#Intent;package=org.videolan.vlc;type=video/*;end;`;
+
+            setTimeout(() => {{
+                // Try MX
+                window.location.href = `intent://${{encodedUrl}}#Intent;package=com.mxtech.videoplayer.ad;type=video/*;end;`;
+            }}, 800);
+
+            setTimeout(() => {{
+                // Try PLAYit
+                window.location.href = `intent://${{encodedUrl}}#Intent;package=com.playit.videoplayer;type=video/*;end;`;
+            }}, 1600);
+
+            setTimeout(() => {{
+                // Final fallback
+                window.location.href = fallback;
+            }}, 2500);
+        }}
+        window.onload = () => openBestPlayer('{stream_url}', '{watch_url}');
+    </script>
+</head>
+<body>Redirecting to the best available player...</body>
+</html>
+"""
     return web.Response(text=html, content_type='text/html')
 
 @routes.get("/watch/{payload}")
@@ -245,50 +295,15 @@ async def watch_page(request):
 
         # Use relative paths for the stream URL
         stream_url = f"/file/{payload}"
-        full_stream_url = f"{request.scheme}://{request.host}{stream_url}"
         mime_type = getattr(media, 'mime_type', 'video/mp4')
 
-        html = f"""
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Streaming: {file_name} - OTAKULUX</title>
-    <style>
-        body {{ background-color: #0f0f12; color: #fff; font-family: 'Segoe UI', sans-serif; margin: 0; display: flex; flex-direction: column; align-items: center; min-height: 100vh; }}
-        .header {{ width: 100%; padding: 1rem; text-align: center; background: #1a1a24; border-bottom: 1px solid #333; }}
-        .player-container {{ width: 100%; max-width: 900px; margin-top: 2rem; background: #000; border-radius: 8px; overflow: hidden; box-shadow: 0 10px 30px rgba(0,0,0,0.5); }}
-        video {{ width: 100%; display: block; }}
-        .controls {{ margin-top: 2rem; display: flex; flex-wrap: wrap; justify-content: center; gap: 1rem; padding: 0 1rem 3rem; }}
-        .btn {{ text-decoration: none; padding: 0.8rem 1.5rem; border-radius: 5px; font-weight: bold; transition: 0.2s; color: #000; background: #00ffcc; text-align: center; min-width: 150px; }}
-        .btn:hover {{ transform: scale(1.05); opacity: 0.9; }}
-        .vlc {{ background: #ff9900; }}
-        .mx {{ background: #0088cc; color: #fff; }}
-        .playit {{ background: #ff4d4d; color: #fff; }}
-        .title {{ margin: 1rem; color: #00ffcc; font-size: 1.2rem; text-align: center; }}
-    </style>
-</head>
-<body>
-    <div class="header">
-        <h1>OTAKULUX Stream</h1>
-    </div>
-    <div class="title">{file_name}</div>
-    <div class="player-container">
-        <video controls autoplay preload="auto" playsinline webkit-playsinline>
-            <source src="{stream_url}" type="{mime_type}">
-            Your browser does not support the video tag.
-        </video>
-    </div>
-    <div class="controls">
-        <a href="{stream_url}" class="btn">📥 Download</a>
-        <a href="/vlc/{payload}" class="btn vlc">▶️ Play in VLC</a>
-        <a href="/mx/{payload}" class="btn mx">▶️ Play in MX Player</a>
-        <a href="/playit/{payload}" class="btn playit">▶️ Play in PLAYit</a>
-    </div>
-</body>
-</html>
-"""
+        template = template_env.get_template('watch.html')
+        html = template.render(
+            file_name=file_name,
+            stream_url=stream_url,
+            mime_type=mime_type,
+            payload=payload
+        )
         return web.Response(text=html, content_type='text/html')
 
     except Exception as e:
@@ -338,6 +353,10 @@ async def direct_download(request):
             'Content-Length': str(end - start + 1),
             'Content-Range': f'bytes {start}-{end}/{file_size}',
             'Cache-Control': 'public, max-age=3600',
+            'Access-Control-Allow-Origin': '*',
+            'Access-Control-Allow-Methods': 'GET, OPTIONS',
+            'Access-Control-Allow-Headers': '*',
+            'Access-Control-Expose-Headers': 'Content-Range, Content-Length, Accept-Ranges',
         }
 
         res = web.StreamResponse(status=206 if range_header else 200, headers=headers)
