@@ -65,6 +65,10 @@ async def auto_delete_task(client, message, OTAKULUX_msgs, FILE_AUTO_DELETE, bas
 async def send_files(client: Client, message: Message, base64_string):
     user_id = message.from_user.id
 
+    # Handle yu3elk stripping if passed directly (e.g. from callback)
+    if base64_string.startswith("yu3elk"):
+        base64_string = base64_string[6:-1]
+
     temp_msg = await message.reply_photo(
         photo=random.choice(ANIME_BANNERS),
         caption="━━━━━━━━━━━━━━━━━━━\n🔍 Checking Subscription...\n━━━━━━━━━━━━━━━━━━━"
@@ -72,7 +76,7 @@ async def send_files(client: Client, message: Message, base64_string):
 
     if not await is_subscribed(client, user_id):
         await temp_msg.delete()
-        return await not_joined(client, message)
+        return await not_joined(client, message, base64_string)
 
     try:
         string = await decode(base64_string)
@@ -86,6 +90,7 @@ async def send_files(client: Client, message: Message, base64_string):
                 ids = range(start, end + 1) if start <= end else list(range(start, end - 1, -1))
             except Exception as e:
                 print(f"Error decoding IDs: {e}")
+                await message.reply_text("<b>❌ Error: Invalid link format.</b>")
                 return
 
         elif len(argument) == 2:
@@ -93,6 +98,7 @@ async def send_files(client: Client, message: Message, base64_string):
                 ids = [int(int(argument[1]) / abs(client.db_channel.id))]
             except Exception as e:
                 print(f"Error decoding ID: {e}")
+                await message.reply_text("<b>❌ Error: Invalid link format.</b>")
                 return
 
         try:
@@ -115,7 +121,7 @@ async def send_files(client: Client, message: Message, base64_string):
 
         async def deliver_file(msg, index):
             nonlocal OTAKULUX_msgs
-            if not msg: return
+            if not msg or msg.empty: return
 
             async with sem:
                 try:
@@ -176,6 +182,8 @@ async def send_files(client: Client, message: Message, base64_string):
 
         if final_msgs:
             asyncio.create_task(auto_delete_task(client, message, final_msgs, FILE_AUTO_DELETE, base64_string))
+        else:
+            await message.reply_text("<b>❌ Error: No files were found or could be delivered. Please check the link or contact admin.</b>")
 
     except Exception as e:
         print(f"Final Error in send_files: {e}")
@@ -225,8 +233,26 @@ async def start_command(client: Client, message: Message):
             pass
 
     # ✅ Check Force Subscription
-    if not await is_subscribed(client, user_id):
-        return await not_joined(client, message)
+    # Handle normal message flow
+    text = message.text
+
+    if len(text) > 7:
+        try:
+            basic = text.split(" ", 1)[1]
+            if basic.startswith("yu3elk"):
+                base64_string = basic[6:-1]
+            else:
+                base64_string = basic
+
+            # ✅ Check Force Subscription
+            if not await is_subscribed(client, user_id):
+                return await not_joined(client, message, base64_string)
+        except:
+            pass
+    else:
+        # ✅ Check Force Subscription for normal start
+        if not await is_subscribed(client, user_id):
+            return await not_joined(client, message)
 
     # Check if user is banned
     banned_users = await db.get_ban_users()
@@ -329,7 +355,7 @@ async def start_command(client: Client, message: Message):
 
 
 
-async def not_joined(client: Client, message: Message):
+async def not_joined(client: Client, message: Message, payload=None):
     user_id = message.from_user.id
 
     # Get detailed subscription status
@@ -347,7 +373,9 @@ async def not_joined(client: Client, message: Message):
 
     # Add Try Again button
     try_again_data = "ck"
-    if hasattr(message, 'command') and len(message.command) > 1:
+    if payload:
+        try_again_data = f"ck_{payload}"
+    elif hasattr(message, 'command') and len(message.command) > 1:
         try_again_data = f"ck_{message.command[1]}"
 
     buttons.append([InlineKeyboardButton("🔄 Try Again", callback_data=try_again_data)])
