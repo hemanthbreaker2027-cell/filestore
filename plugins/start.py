@@ -64,6 +64,7 @@ async def auto_delete_task(client, message, OTAKULUX_msgs, FILE_AUTO_DELETE, bas
 
 async def send_files(client: Client, message: Message, base64_string):
     user_id = message.from_user.id
+    chat_id = message.chat.id
 
     # Handle yu3elk stripping if passed directly (e.g. from callback)
     if base64_string.startswith("yu3elk"):
@@ -83,10 +84,11 @@ async def send_files(client: Client, message: Message, base64_string):
         argument = string.split("-")
 
         ids = []
+        db_id = abs(client.db_channel.id)
         if len(argument) == 3:
             try:
-                start = int(int(argument[1]) / abs(client.db_channel.id))
-                end = int(int(argument[2]) / abs(client.db_channel.id))
+                start = int(int(argument[1]) // db_id)
+                end = int(int(argument[2]) // db_id)
                 ids = range(start, end + 1) if start <= end else list(range(start, end - 1, -1))
             except Exception as e:
                 print(f"Error decoding IDs: {e}")
@@ -95,7 +97,7 @@ async def send_files(client: Client, message: Message, base64_string):
 
         elif len(argument) == 2:
             try:
-                ids = [int(int(argument[1]) / abs(client.db_channel.id))]
+                ids = [int(int(argument[1]) // db_id)]
             except Exception as e:
                 print(f"Error decoding ID: {e}")
                 await message.reply_text("<b>❌ Error: Invalid link format.</b>")
@@ -117,7 +119,6 @@ async def send_files(client: Client, message: Message, base64_string):
         sem = asyncio.Semaphore(3)
         OTAKULUX_msgs = []
         FILE_AUTO_DELETE = await db.get_del_timer()
-        dl_config = await db.get_downlink_config()
 
         async def deliver_file(msg, index):
             nonlocal OTAKULUX_msgs
@@ -131,34 +132,9 @@ async def send_files(client: Client, message: Message, base64_string):
                     # UI Upgrade: Premium Buttons
                     reply_markup = None if DISABLE_CHANNEL_BUTTON else msg.reply_markup
 
-                    if dl_config['status'] == 'on' and (msg.video or msg.document):
-                        media = msg.video or msg.document
-                        file_name = media.file_name or "video.mp4"
-                        payload = await encode(f"get-{msg.id * abs(client.db_channel.id)}")
-
-                        # Include file name in URL for player stability
-                        dl_url = f"{dl_config['domain']}/file/{payload}/{file_name}"
-                        watch_url = f"{dl_config['domain']}/watch/{payload}/{file_name}"
-
-                        btn_dl = InlineKeyboardButton("📥 Dᴏᴡɴʟᴏᴀᴅ", url=dl_url)
-                        btn_watch = InlineKeyboardButton("🎬 Sᴛʀᴇᴀᴍ Oɴʟɪɴᴇ", url=watch_url)
-                        btn_best = InlineKeyboardButton("🚀 Oᴘᴇɴ Iɴ Bᴇsᴛ Pʟᴀʏᴇʀ", url=f"{dl_config['domain']}/best/{payload}")
-
-                        btn_vlc = InlineKeyboardButton("VLC", url=f"{dl_config['domain']}/vlc/{payload}")
-                        btn_mx = InlineKeyboardButton("MX", url=f"{dl_config['domain']}/mx/{payload}")
-                        btn_playit = InlineKeyboardButton("PLAYɪᴛ", url=f"{dl_config['domain']}/playit/{payload}")
-                        btn_km = InlineKeyboardButton("KM Pʟᴀʏᴇʀ", url=f"{dl_config['domain']}/km/{payload}")
-
-                        keyboard = list(reply_markup.inline_keyboard) if reply_markup else []
-                        keyboard.append([btn_dl, btn_watch])
-                        keyboard.append([btn_best])
-                        keyboard.append([btn_vlc, btn_mx])
-                        keyboard.append([btn_playit, btn_km])
-                        reply_markup = InlineKeyboardMarkup(keyboard)
-
                     # Delivery
                     snt_msg = await msg.copy(
-                        chat_id=message.from_user.id,
+                        chat_id=chat_id,
                         caption=caption,
                         parse_mode=ParseMode.HTML,
                         reply_markup=reply_markup,
@@ -222,8 +198,7 @@ async def short_url(client: Client, message: Message, base64_string):
 @Bot.on_message(filters.command('start') & filters.private)
 async def start_command(client: Client, message: Message):
     user_id = message.from_user.id
-    id = message.from_user.id
-    is_premium = await is_premium_user(id)
+    is_premium = await is_premium_user(user_id)
 
     # Add user if not already present
     if not await db.present_user(user_id):
@@ -232,10 +207,8 @@ async def start_command(client: Client, message: Message):
         except:
             pass
 
-    # ✅ Check Force Subscription
-    # Handle normal message flow
+    # Handle start payload
     text = message.text
-
     if len(text) > 7:
         try:
             basic = text.split(" ", 1)[1]
@@ -247,48 +220,30 @@ async def start_command(client: Client, message: Message):
             # ✅ Check Force Subscription
             if not await is_subscribed(client, user_id):
                 return await not_joined(client, message, base64_string)
-        except:
-            pass
-    else:
-        # ✅ Check Force Subscription for normal start
-        if not await is_subscribed(client, user_id):
-            return await not_joined(client, message)
 
-    # Check if user is banned
-    banned_users = await db.get_ban_users()
-    if user_id in banned_users:
-        return await message.reply_text(
-            "<b>⛔️ You are Bᴀɴɴᴇᴅ from using this bot.</b>\n\n"
-            "<i>Contact support if you think this is a mistake.</i>",
-            reply_markup=InlineKeyboardMarkup(
-                [[InlineKeyboardButton("Contact Support", url=BAN_SUPPORT)]]
-            )
-        )
+            # Check if user is banned
+            banned_users = await db.get_ban_users()
+            if user_id in banned_users:
+                return await message.reply_text(
+                    "<b>⛔️ You are Bᴀɴɴᴇᴅ from using this bot.</b>\n\n"
+                    "<i>Contact support if you think this is a mistake.</i>",
+                    reply_markup=InlineKeyboardMarkup(
+                        [[InlineKeyboardButton("Contact Support", url=BAN_SUPPORT)]]
+                    )
+                )
 
-    # Handle normal message flow
-    text = message.text
-
-    if len(text) > 7:
-        try:
-            basic = text.split(" ", 1)[1]
-            if basic.startswith("yu3elk"):
-                base64_string = basic[6:-1]
-            else:
-                base64_string = basic
-
-                                    # --- SAFE BLOCK START ---
+            # --- SAFE BLOCK START ---
             try:
-                # Check if variables exist and are filled
                 conf_list = [
-                    globals().get('SHORTLINK_URL'),
-                    globals().get('SHORTLINK_API'),
-                    globals().get('WEBSITE_URL'),
-                    globals().get('TURNSTILE_SITE_KEY'),
-                    globals().get('TURNSTILE_SECRET_KEY')
+                    SHORTLINK_URL,
+                    SHORTLINK_API,
+                    WEBSITE_URL,
+                    TURNSTILE_SITE_KEY,
+                    TURNSTILE_SECRET_KEY
                 ]
                 is_incomplete = any(not x or str(x).strip() == "" for x in conf_list)
             except:
-                is_incomplete = True # If variables don't even exist, skip to send_files
+                is_incomplete = True
 
             # Direct send logic
             if is_premium or user_id == OWNER_ID or basic.startswith("yu3elk") or is_incomplete:
@@ -304,6 +259,11 @@ async def start_command(client: Client, message: Message):
         except Exception as e:
             print(f"Error processing start payload: {e}")
             return
+
+    # Normal start (no payload)
+    if not await is_subscribed(client, user_id):
+        return await not_joined(client, message)
+
     else:
         # Premium Start UI Redesign
         buttons = [

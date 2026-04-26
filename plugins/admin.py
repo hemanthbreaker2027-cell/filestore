@@ -115,28 +115,3 @@ async def get_admins(client: Client, message: Message):
 
     reply_markup = InlineKeyboardMarkup([[InlineKeyboardButton("ᴄʟᴏsᴇ", callback_data="close")]])
     await pro.edit(f"<b>⚡ Current Admin List:</b>\n\n{admin_list}", reply_markup=reply_markup)
-
-
-@Bot.on_message(filters.command(['add_downlink', 'add_dowlink']) & filters.private & filters.user(OWNER_ID))
-async def add_downlink_cmd(client: Client, message: Message):
-    config = await db.get_downlink_config()
-    status = config['status']
-    domain = config['domain'] or "Not Set"
-
-    status_text = "🟢 ON" if status == "on" else "🔴 OFF"
-    toggle_text = "Turn OFF 🔴" if status == "on" else "Turn ON 🟢"
-
-    text = (
-        "<b>🛠 Dᴏᴡɴʟɪɴᴋ Cᴏɴғɪɢᴜʀᴀᴛɪᴏɴ</b>\n\n"
-        f"<b>Cᴜʀʀᴇɴᴛ Sᴛᴀᴛᴜs:</b> {status_text}\n"
-        f"<b>Dᴏᴍᴀɪɴ URL:</b> <code>{domain}</code>\n\n"
-        "<i>Wʜᴇɴ ON, ᴛʜᴇ ʙᴏᴛ ᴀᴜᴛᴏᴍᴀᴛɪᴄᴀʟʟʏ ᴀᴛᴛᴀᴄʜᴇs ᴘʀᴇᴍɪᴜᴍ ᴅᴏᴡɴʟᴏᴀᴅ ᴀɴᴅ sᴛʀᴇᴀᴍɪɴɢ ʙᴜᴛᴛᴏɴs ᴛᴏ ᴅᴇʟɪᴠᴇʀᴇᴅ ғɪʟᴇs.</i>"
-    )
-
-    buttons = [
-        [InlineKeyboardButton(toggle_text, callback_data="dl_toggle")],
-        [InlineKeyboardButton("🔄 Cʜᴀɴɢᴇ Dᴏᴍᴀɪɴ", callback_data="dl_set_domain")],
-        [InlineKeyboardButton("ᴄʟᴏsᴇ", callback_data="close")]
-    ]
-
-    await message.reply_text(text, reply_markup=InlineKeyboardMarkup(buttons))

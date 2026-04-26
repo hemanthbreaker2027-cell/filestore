@@ -85,8 +85,7 @@ class Bot(Client):
             BotCommand("auto_delete", "🕒 Set file auto-delete timer (Admin)"),
             BotCommand("check_auto_delete", "🔍 Check auto-delete timer (Admin)"),
             BotCommand("batch", "📦 Create a batch link (Admin)"),
-            BotCommand("genlink", "🔗 Generate a single link (Admin)"),
-            BotCommand("add_downlink", "🛠 Configure download links (Owner)")
+            BotCommand("genlink", "🔗 Generate a single link (Admin)")
         ])
 
         try:

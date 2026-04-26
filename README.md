@@ -24,7 +24,6 @@ OTAKULUX is a high-speed, secure Telegram bot designed for seamless file sharing
 | `/batch` | Generate a link for a range of files |
 | `/genlink` | Generate a link for a single file |
 | `/auto_delete` | Set the auto-deletion timer (in seconds) |
-| `/add_downlink` | (Owner Only) Toggle and configure external download domains |
 | `/add_admin` | (Owner Only) Add new administrators |
 | `/broadcast` | Send messages to all bot users |
 | `/dbroadcast` | Broadcast with auto-deletion |

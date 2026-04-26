@@ -294,29 +294,6 @@ class OTAKULUX:
     async def reset_bypass_attempts(self, identifier: str):
         await self.bypass_data.delete_one({'_id': identifier})
 
-    # DOWNLINK SETTINGS
-    async def get_downlink_config(self):
-        data = await self.settings_data.find_one({'_id': 'downlink'})
-        if data:
-            return {
-                'status': data.get('status', 'off'),
-                'domain': data.get('domain', '')
-            }
-        return {'status': 'off', 'domain': ''}
-
-    async def set_downlink_config(self, status=None, domain=None):
-        update_data = {}
-        if status is not None:
-            update_data['status'] = status
-        if domain is not None:
-            update_data['domain'] = domain
-
-        if update_data:
-            await self.settings_data.update_one(
-                {'_id': 'downlink'},
-                {'$set': update_data},
-                upsert=True
-            )
 
 
 db = OTAKULUX(DB_URI, DB_NAME)
