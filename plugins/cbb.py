@@ -101,21 +101,37 @@ async def cb_handler(client: Bot, query: CallbackQuery):
         except:
             pass
 
-    elif data == "dl_on":
+    elif data == "dl_toggle":
+        if query.from_user.id != OWNER_ID:
+            return await query.answer("Access Denied!", show_alert=True)
+
+        config = await db.get_downlink_config()
+        new_status = "off" if config['status'] == "on" else "on"
+
+        if new_status == "on" and not config['domain']:
+            # Force domain set if turning on for the first time
+            return await cb_handler(client, type('obj', (object,), {'data': 'dl_set_domain', 'from_user': query.from_user, 'message': query.message, 'answer': query.answer})())
+
+        await db.set_downlink_config(status=new_status)
+        await query.answer(f"Downlink status set to {new_status.upper()}")
+
+        from plugins.admin import add_downlink_cmd
+        await query.message.delete()
+        await add_downlink_cmd(client, query.message)
+
+    elif data == "dl_set_domain":
         if query.from_user.id != OWNER_ID:
             return await query.answer("Access Denied!", show_alert=True)
 
         try:
             ask_msg = await client.ask(
                 chat_id=query.message.chat.id,
-                text="<b>Please send the Domain URL (e.g., <code>https://otakulux.com</code>):</b>",
+                text="<b>Pʟᴇᴀsᴇ sᴇɴᴅ ᴛʜᴇ Dᴏᴍᴀɪɴ URL (ᴇ.ɢ., <code>https://otakulux.com</code>):</b>",
                 filters=filters.text,
                 timeout=60
             )
         except asyncio.TimeoutError:
             return await query.message.edit_text("<b>Timed out! Please try again.</b>")
-        except Exception as e:
-            return await query.message.edit_text(f"<b>Error: {e}</b>")
 
         domain = ask_msg.text.strip()
         if not domain.startswith(("http://", "https://")):
@@ -123,22 +139,13 @@ async def cb_handler(client: Bot, query: CallbackQuery):
         domain = domain.rstrip("/")
 
         await db.set_downlink_config(status="on", domain=domain)
-        await ask_msg.delete()
+        try: await ask_msg.delete()
+        except: pass
 
-        await query.message.edit_text(
-            f"<b>✅ Downlink configuration updated!</b>\n\n<b>Status:</b> 🟢 ON\n<b>Domain:</b> <code>{domain}</code>",
-            reply_markup=InlineKeyboardMarkup([[InlineKeyboardButton("ᴄʟᴏsᴇ", callback_data="close")]])
-        )
-
-    elif data == "dl_off":
-        if query.from_user.id != OWNER_ID:
-            return await query.answer("Access Denied!", show_alert=True)
-
-        await db.set_downlink_config(status="off")
-        await query.message.edit_text(
-            "<b>🔴 Downlink configuration turned OFF!</b>",
-            reply_markup=InlineKeyboardMarkup([[InlineKeyboardButton("ᴄʟᴏsᴇ", callback_data="close")]])
-        )
+        await query.answer("Domain updated successfully!")
+        from plugins.admin import add_downlink_cmd
+        await query.message.delete()
+        await add_downlink_cmd(client, query.message)
 
     elif data.startswith("rfs_ch_"):
         cid = int(data.split("_")[2])

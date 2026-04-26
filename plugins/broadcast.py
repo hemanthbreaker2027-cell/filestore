@@ -165,18 +165,21 @@ async def delete_broadcast(client: Bot, message: Message):
         unsuccessful = 0
 
         pls_wait = await message.reply("<i>Broadcast with auto-delete processing....</i>")
-        for chat_id in query:
+
+        async def del_later(msg, d):
+            await asyncio.sleep(d)
+            try: await msg.delete()
+            except: pass
+
+        async def send_and_del(chat_id):
+            nonlocal successful, blocked, deleted, unsuccessful
             try:
                 sent_msg = await broadcast_msg.copy(chat_id)
-                await asyncio.sleep(duration)  # Wait for the specified duration
-                await sent_msg.delete()  # Delete the message after the duration
+                asyncio.create_task(del_later(sent_msg, duration))
                 successful += 1
             except FloodWait as e:
                 await asyncio.sleep(e.x)
-                sent_msg = await broadcast_msg.copy(chat_id)
-                await asyncio.sleep(duration)
-                await sent_msg.delete()
-                successful += 1
+                return await send_and_del(chat_id)
             except UserIsBlocked:
                 await db.del_user(chat_id)
                 blocked += 1
@@ -185,8 +188,10 @@ async def delete_broadcast(client: Bot, message: Message):
                 deleted += 1
             except:
                 unsuccessful += 1
-                pass
+
+        for chat_id in query:
             total += 1
+            await send_and_del(chat_id)
 
         status = f"""<b><u>Bʀᴏᴀᴅᴄᴀsᴛɪɴɢ ᴡɪᴛʜ Aᴜᴛᴏ-Dᴇʟᴇᴛᴇ...</u>
 

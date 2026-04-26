@@ -27,7 +27,8 @@ def is_external_player(ua):
     ua = ua.lower()
     external_players = [
         'vlc', 'mxplayer', 'playit', 'dalvik', 'mpv', 'stagefright',
-        'lavf', 'lua-resty-http', 'okhttp', 'gstreamer', 'androidplayer'
+        'lavf', 'lua-resty-http', 'okhttp', 'gstreamer', 'androidplayer',
+        'com.mxtech.videoplayer', 'org.videolan.vlc', 'com.playit.videoplayer'
     ]
     return any(player in ua for player in external_players)
 BAN_STRIKE_1 = 3   # 1 hour ban
@@ -220,18 +221,19 @@ async def vlc_redirect(request):
     host = request.host
     scheme = request.scheme
     watch_url = f"{scheme}://{host}/watch/{payload}/{file_name}"
-    intent_url = f"intent://{host}/watch/{payload}/{file_name}#Intent;scheme={scheme};type=video/*;package=org.videolan.vlc;end"
+    # Optimized VLC Intent formatting
+    intent_url = f"intent://{host}/watch/{payload}/{file_name}#Intent;scheme={scheme};type=video/*;package=org.videolan.vlc;S.browser_fallback_url={watch_url};end"
     html = f"""
     <html>
     <head>
+        <title>Opening VLC...</title>
         <script>
             window.onload = function() {{
                 window.location.href = "{intent_url}";
-                setTimeout(function() {{ window.location.href = "{watch_url}"; }}, 1500);
             }};
         </script>
     </head>
-    <body>Redirecting to VLC... if it doesn't open, <a href="{watch_url}">click here</a></body>
+    <body>Redirecting to VLC... If it doesn't open, <a href="{watch_url}">click here</a></body>
     </html>
     """
     return web.Response(text=html, content_type='text/html')
@@ -248,18 +250,18 @@ async def mx_redirect(request):
     host = request.host
     scheme = request.scheme
     watch_url = f"{scheme}://{host}/watch/{payload}/{file_name}"
-    intent_url = f"intent://{host}/watch/{payload}/{file_name}#Intent;scheme={scheme};package=com.mxtech.videoplayer.ad;end"
+    intent_url = f"intent://{host}/watch/{payload}/{file_name}#Intent;scheme={scheme};package=com.mxtech.videoplayer.ad;S.browser_fallback_url={watch_url};end"
     html = f"""
     <html>
     <head>
+        <title>Opening MX Player...</title>
         <script>
             window.onload = function() {{
                 window.location.href = "{intent_url}";
-                setTimeout(function() {{ window.location.href = "{watch_url}"; }}, 1500);
             }};
         </script>
     </head>
-    <body>Redirecting to MX Player... if it doesn't open, <a href="{watch_url}">click here</a></body>
+    <body>Redirecting to MX Player... If it doesn't open, <a href="{watch_url}">click here</a></body>
     </html>
     """
     return web.Response(text=html, content_type='text/html')
@@ -276,18 +278,18 @@ async def playit_redirect(request):
     host = request.host
     scheme = request.scheme
     watch_url = f"{scheme}://{host}/watch/{payload}/{file_name}"
-    intent_url = f"intent://{host}/watch/{payload}/{file_name}#Intent;scheme={scheme};package=com.playit.videoplayer;end"
+    intent_url = f"intent://{host}/watch/{payload}/{file_name}#Intent;scheme={scheme};package=com.playit.videoplayer;S.browser_fallback_url={watch_url};end"
     html = f"""
     <html>
     <head>
+        <title>Opening PLAYit...</title>
         <script>
             window.onload = function() {{
                 window.location.href = "{intent_url}";
-                setTimeout(function() {{ window.location.href = "{watch_url}"; }}, 1500);
             }};
         </script>
     </head>
-    <body>Redirecting to PLAYit... if it doesn't open, <a href="{watch_url}">click here</a></body>
+    <body>Redirecting to PLAYit... If it doesn't open, <a href="{watch_url}">click here</a></body>
     </html>
     """
     return web.Response(text=html, content_type='text/html')
@@ -360,13 +362,19 @@ async def stream_controller(request, payload):
             return web.Response(text="File not found or not a media file.", status=404)
 
         media = msg.document or msg.video or msg.audio
-        file_name = media.file_name or "file"
+        file_name = media.file_name or "video.mp4"
         file_size = media.file_size
 
+        # Enhanced MIME type detection for mobile players
         mime_type = media.mime_type or "application/octet-stream"
-        if "video" in mime_type or file_name.endswith((".mp4", ".mkv", ".mov", ".webm", ".avi")):
+        if "video" in mime_type or file_name.lower().endswith((".mp4", ".mkv", ".mov", ".webm", ".avi", ".ts")):
             if not mime_type or mime_type == "application/octet-stream":
-                mime_type = "video/mp4" if file_name.endswith(".mp4") else "video/x-matroska"
+                if file_name.lower().endswith(".mkv"):
+                    mime_type = "video/x-matroska"
+                elif file_name.lower().endswith(".mp4"):
+                    mime_type = "video/mp4"
+                else:
+                    mime_type = "video/webm"
 
         range_header = request.headers.get('Range')
         start = 0
@@ -386,12 +394,15 @@ async def stream_controller(request, payload):
             'Accept-Ranges': 'bytes',
             'Content-Length': str(end - start + 1),
             'Content-Range': f'bytes {start}-{end}/{file_size}',
-            'Cache-Control': 'public, max-age=3600',
+            'Cache-Control': 'no-cache, no-store, must-revalidate',
+            'Pragma': 'no-cache',
+            'Expires': '0',
             'Access-Control-Allow-Origin': '*',
-            'Access-Control-Allow-Methods': 'GET, OPTIONS',
+            'Access-Control-Allow-Methods': 'GET, HEAD, OPTIONS',
             'Access-Control-Allow-Headers': '*',
-            'Access-Control-Expose-Headers': 'Content-Range, Content-Length, Accept-Ranges',
+            'Access-Control-Expose-Headers': 'Content-Range, Content-Length, Accept-Ranges, Content-Type',
             'X-Content-Type-Options': 'nosniff',
+            'Connection': 'keep-alive',
         }
 
         res = web.StreamResponse(status=206 if range_header else 200, headers=headers)
@@ -401,7 +412,7 @@ async def stream_controller(request, payload):
             async for chunk in bot.stream_media(media, offset=start, limit=end-start+1):
                 await res.write(chunk)
         except Exception as e:
-            print(f"Error during streaming: {e}")
+            pass # Connection reset by player is common
 
         return res
     except Exception as e:

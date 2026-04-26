@@ -128,21 +128,22 @@ async def get_admins(client: Client, message: Message):
 @Bot.on_message(filters.command(['add_downlink', 'add_dowlink']) & filters.private & filters.user(OWNER_ID))
 async def add_downlink_cmd(client: Client, message: Message):
     config = await db.get_downlink_config()
-    status = config['status'].upper()
+    status = config['status']
     domain = config['domain'] or "Not Set"
 
+    status_text = "🟢 ON" if status == "on" else "🔴 OFF"
+    toggle_text = "Turn OFF 🔴" if status == "on" else "Turn ON 🟢"
+
     text = (
-        "<b>🛠 Downlink Configuration</b>\n\n"
-        f"<b>Current Status:</b> {'🟢 ON' if status == 'ON' else '🔴 OFF'}\n"
-        f"<b>Domain URL:</b> <code>{domain}</code>\n\n"
-        "<i>If ON, bot will attach a download link button to each delivered file using the domain URL.</i>"
+        "<b>🛠 Dᴏᴡɴʟɪɴᴋ Cᴏɴғɪɢᴜʀᴀᴛɪᴏɴ</b>\n\n"
+        f"<b>Cᴜʀʀᴇɴᴛ Sᴛᴀᴛᴜs:</b> {status_text}\n"
+        f"<b>Dᴏᴍᴀɪɴ URL:</b> <code>{domain}</code>\n\n"
+        "<i>Wʜᴇɴ ON, ᴛʜᴇ ʙᴏᴛ ᴀᴜᴛᴏᴍᴀᴛɪᴄᴀʟʟʏ ᴀᴛᴛᴀᴄʜᴇs ᴘʀᴇᴍɪᴜᴍ ᴅᴏᴡɴʟᴏᴀᴅ ᴀɴᴅ sᴛʀᴇᴀᴍɪɴɢ ʙᴜᴛᴛᴏɴs ᴛᴏ ᴅᴇʟɪᴠᴇʀᴇᴅ ғɪʟᴇs.</i>"
     )
 
     buttons = [
-        [
-            InlineKeyboardButton("🟢 Turn ON", callback_data="dl_on"),
-            InlineKeyboardButton("🔴 Turn OFF", callback_data="dl_off")
-        ],
+        [InlineKeyboardButton(toggle_text, callback_data="dl_toggle")],
+        [InlineKeyboardButton("🔄 Cʜᴀɴɢᴇ Dᴏᴍᴀɪɴ", callback_data="dl_set_domain")],
         [InlineKeyboardButton("ᴄʟᴏsᴇ", callback_data="close")]
     ]
 

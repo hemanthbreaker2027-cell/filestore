@@ -26,7 +26,7 @@ from pyrogram.errors.exceptions.bad_request_400 import UserNotParticipant
 from pyrogram.errors import FloodWait, UserIsBlocked, InputUserDeactivated, UserNotParticipant, MessageNotModified
 from bot import Bot
 from config import *
-from helper_func import *
+from helper_func import is_subscribed, decode, encode, get_messages, get_exp_time, get_sub_status, not_joined
 from database.database import *
 from database.db_premium import *
 
@@ -107,67 +107,73 @@ async def send_files(client: Client, message: Message, base64_string):
             except:
                 pass
 
+        # Speed Boost: Concurrent Delivery with Semaphore
+        sem = asyncio.Semaphore(3)
         OTAKULUX_msgs = []
-        # File auto-delete time in seconds
         FILE_AUTO_DELETE = await db.get_del_timer()
         dl_config = await db.get_downlink_config()
 
-        for msg in messages:
-            if not msg: continue
-            original_caption = msg.caption.html if msg.caption else ""
-            caption = f"{original_caption}\n\n{CUSTOM_CAPTION}" if CUSTOM_CAPTION else original_caption
+        async def deliver_file(msg, index):
+            nonlocal OTAKULUX_msgs
+            if not msg: return
 
-            # Fix DISABLE_CHANNEL_BUTTON logic
-            reply_markup = None if DISABLE_CHANNEL_BUTTON else msg.reply_markup
-
-            # Downlink Integration
-            if dl_config['status'] == 'on' and (msg.video or msg.document):
+            async with sem:
                 try:
-                    payload = await encode(f"get-{msg.id * abs(client.db_channel.id)}")
-                    dl_url = f"{dl_config['domain']}/file/{payload}"
-                    watch_url = f"{dl_config['domain']}/watch/{payload}"
+                    original_caption = msg.caption.html if msg.caption else ""
+                    caption = f"{original_caption}\n\n{CUSTOM_CAPTION}" if CUSTOM_CAPTION else original_caption
 
-                    dl_button = InlineKeyboardButton("📥 Download", url=dl_url)
-                    watch_button = InlineKeyboardButton("▶️ Stream Online", url=watch_url)
+                    # UI Upgrade: Premium Buttons
+                    reply_markup = None if DISABLE_CHANNEL_BUTTON else msg.reply_markup
 
-                    best_button = InlineKeyboardButton("🚀 Best Player", url=f"{dl_config['domain']}/best/{payload}")
-                    vlc_button = InlineKeyboardButton("▶️ VLC", url=f"{dl_config['domain']}/vlc/{payload}")
-                    mx_button = InlineKeyboardButton("▶️ MX Player", url=f"{dl_config['domain']}/mx/{payload}")
-                    playit_button = InlineKeyboardButton("▶️ PLAYit", url=f"{dl_config['domain']}/playit/{payload}")
+                    if dl_config['status'] == 'on' and (msg.video or msg.document):
+                        media = msg.video or msg.document
+                        file_name = media.file_name or "video.mp4"
+                        payload = await encode(f"get-{msg.id * abs(client.db_channel.id)}")
 
-                    new_buttons = list(reply_markup.inline_keyboard) if reply_markup else []
-                    new_buttons.append([dl_button, watch_button])
-                    new_buttons.append([best_button])
-                    new_buttons.append([vlc_button, mx_button, playit_button])
-                    reply_markup = InlineKeyboardMarkup(new_buttons)
+                        # Include file name in URL for player stability
+                        dl_url = f"{dl_config['domain']}/file/{payload}/{file_name}"
+                        watch_url = f"{dl_config['domain']}/watch/{payload}/{file_name}"
+
+                        btn_dl = InlineKeyboardButton("📥 Dᴏᴡɴʟᴏᴀᴅ ⚡", url=dl_url)
+                        btn_watch = InlineKeyboardButton("▶️ Sᴛʀᴇᴀᴍ Oɴʟɪɴᴇ 🚀", url=watch_url)
+                        btn_best = InlineKeyboardButton("🎬 Bᴇsᴛ Pʟᴀʏᴇʀ", url=f"{dl_config['domain']}/best/{payload}")
+
+                        btn_vlc = InlineKeyboardButton("VLC", url=f"{dl_config['domain']}/vlc/{payload}")
+                        btn_mx = InlineKeyboardButton("MX", url=f"{dl_config['domain']}/mx/{payload}")
+                        btn_playit = InlineKeyboardButton("PLAYɪᴛ", url=f"{dl_config['domain']}/playit/{payload}")
+
+                        keyboard = list(reply_markup.inline_keyboard) if reply_markup else []
+                        keyboard.append([btn_dl, btn_watch])
+                        keyboard.append([btn_best])
+                        keyboard.append([btn_vlc, btn_mx, btn_playit])
+                        reply_markup = InlineKeyboardMarkup(keyboard)
+
+                    # Delivery
+                    snt_msg = await msg.copy(
+                        chat_id=message.from_user.id,
+                        caption=caption,
+                        parse_mode=ParseMode.HTML,
+                        reply_markup=reply_markup,
+                        protect_content=PROTECT_CONTENT
+                    )
+                    OTAKULUX_msgs.append((index, snt_msg))
+
+                except FloodWait as e:
+                    await asyncio.sleep(e.x)
+                    return await deliver_file(msg, index)
                 except Exception as e:
-                    print(f"Error generating downlink for message {msg.id}: {e}")
+                    print(f"Error delivering message {msg.id}: {e}")
 
-            try:
-                snt_msg = await msg.copy(
-                    chat_id=message.from_user.id,
-                    caption=caption,
-                    parse_mode=ParseMode.HTML,
-                    reply_markup=reply_markup,
-                    protect_content=PROTECT_CONTENT
-                )
-                OTAKULUX_msgs.append(snt_msg)
-            except FloodWait as e:
-                await asyncio.sleep(e.x)
-                copied_msg = await msg.copy(
-                    chat_id=message.from_user.id,
-                    caption=caption,
-                    parse_mode=ParseMode.HTML,
-                    reply_markup=reply_markup,
-                    protect_content=PROTECT_CONTENT
-                )
-                OTAKULUX_msgs.append(copied_msg)
-            except Exception as e:
-                print(f"Error copying message {msg.id}: {e}")
-                pass
+        # Dispatch tasks
+        tasks = [deliver_file(msg, i) for i, msg in enumerate(messages)]
+        await asyncio.gather(*tasks)
 
-        if OTAKULUX_msgs:
-            asyncio.create_task(auto_delete_task(client, message, OTAKULUX_msgs, FILE_AUTO_DELETE, base64_string))
+        # Re-sort messages to maintain order for auto-delete logic
+        OTAKULUX_msgs.sort(key=lambda x: x[0])
+        final_msgs = [m[1] for m in OTAKULUX_msgs]
+
+        if final_msgs:
+            asyncio.create_task(auto_delete_task(client, message, final_msgs, FILE_AUTO_DELETE, base64_string))
 
     except Exception as e:
         print(f"Final Error in send_files: {e}")
