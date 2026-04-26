@@ -34,6 +34,34 @@ from database.db_premium import *
 BAN_SUPPORT = f"{BAN_SUPPORT}"
 TUT_VID = f"{TUT_VID}"
 
+async def auto_delete_task(client, message, OTAKULUX_msgs, FILE_AUTO_DELETE, base64_string):
+    if FILE_AUTO_DELETE > 0:
+        notification_msg = await message.reply(
+            f"<b>⚠️ Tʜɪs Fɪʟᴇ ᴡɪʟʟ ʙᴇ Dᴇʟᴇᴛᴇᴅ ɪɴ {get_exp_time(FILE_AUTO_DELETE)}. Pʟᴇᴀsᴇ sᴀᴠᴇ ᴏʀ ғᴏʀᴡᴀʀᴅ ɪᴛ ᴛᴏ ʏᴏᴜʀ sᴀᴠᴇᴅ ᴍᴇssᴀɢᴇs ʙᴇғᴏʀᴇ ɪᴛ ɢᴇᴛs Dᴇʟᴇᴛᴇᴅ! ⚡</b>"
+        )
+
+        await asyncio.sleep(FILE_AUTO_DELETE)
+
+        for snt_msg in OTAKULUX_msgs:
+            if snt_msg:
+                try:
+                    await snt_msg.delete()
+                except Exception as e:
+                    print(f"Error deleting message {snt_msg.id}: {e}")
+
+        try:
+            reload_url = f"https://t.me/{client.username}?start={base64_string}"
+            keyboard = InlineKeyboardMarkup(
+                [[InlineKeyboardButton("ɢᴇᴛ ғɪʟᴇ ᴀɢᴀɪɴ!", url=reload_url)]]
+            )
+
+            await notification_msg.edit(
+                f"<b>ʏᴏᴜʀ ᴠɪᴅᴇᴏ / ꜰɪʟᴇ ɪꜱ ꜱᴜᴄᴄᴇꜱꜱꜰᴜʟʟʏ ᴅᴇʟᴇᴛᴇᴅ !!\n\nᴄʟɪᴄᴋ ʙᴇʟᴏᴡ ʙᴜᴛᴛᴏɴ ᴛᴏ ɢᴇᴛ ʏᴏᴜʀ ᴅᴇʟᴇᴛᴇᴅ ᴠɪᴅᴇᴏ / ꜰɪʟᴇ 👇\n\n<code>{reload_url}</code></b>",
+                reply_markup=keyboard
+            )
+        except Exception as e:
+            print(f"Error updating notification with 'Get File Again' button: {e}")
+
 async def send_files(client: Client, message: Message, base64_string):
     user_id = message.from_user.id
 
@@ -41,7 +69,6 @@ async def send_files(client: Client, message: Message, base64_string):
         photo=random.choice(ANIME_BANNERS),
         caption="━━━━━━━━━━━━━━━━━━━\n🔍 Checking Subscription...\n━━━━━━━━━━━━━━━━━━━"
     )
-    await asyncio.sleep(1)
 
     if not await is_subscribed(client, user_id):
         await temp_msg.delete()
@@ -83,11 +110,32 @@ async def send_files(client: Client, message: Message, base64_string):
         OTAKULUX_msgs = []
         # File auto-delete time in seconds
         FILE_AUTO_DELETE = await db.get_del_timer()
+        dl_config = await db.get_downlink_config()
 
         for msg in messages:
+            if not msg: continue
             original_caption = msg.caption.html if msg.caption else ""
             caption = f"{original_caption}\n\n{CUSTOM_CAPTION}" if CUSTOM_CAPTION else original_caption
-            reply_markup = msg.reply_markup if DISABLE_CHANNEL_BUTTON else None
+
+            # Fix DISABLE_CHANNEL_BUTTON logic
+            reply_markup = None if DISABLE_CHANNEL_BUTTON else msg.reply_markup
+
+            # Downlink Integration
+            if dl_config['status'] == 'on':
+                try:
+                    payload = await encode(f"get-{msg.id * abs(client.db_channel.id)}")
+                    dl_url = f"{dl_config['domain']}/verify/{payload}"
+                    dl_button = InlineKeyboardButton("Download ⚡", url=dl_url)
+
+                    if reply_markup:
+                        # Append to existing markup if possible
+                        new_buttons = list(reply_markup.inline_keyboard)
+                        new_buttons.append([dl_button])
+                        reply_markup = InlineKeyboardMarkup(new_buttons)
+                    else:
+                        reply_markup = InlineKeyboardMarkup([[dl_button]])
+                except Exception as e:
+                    print(f"Error generating downlink for message {msg.id}: {e}")
 
             try:
                 snt_msg = await msg.copy(
@@ -108,35 +156,12 @@ async def send_files(client: Client, message: Message, base64_string):
                     protect_content=PROTECT_CONTENT
                 )
                 OTAKULUX_msgs.append(copied_msg)
-            except:
+            except Exception as e:
+                print(f"Error copying message {msg.id}: {e}")
                 pass
 
-        if FILE_AUTO_DELETE > 0:
-            notification_msg = await message.reply(
-                f"<b>⚠️ Tʜɪs Fɪʟᴇ ᴡɪʟʟ ʙᴇ Dᴇʟᴇᴛᴇᴅ ɪɴ {get_exp_time(FILE_AUTO_DELETE)}. Pʟᴇᴀsᴇ sᴀᴠᴇ ᴏʀ ғᴏʀᴡᴀʀᴅ ɪᴛ ᴛᴏ ʏᴏᴜʀ sᴀᴠᴇᴅ ᴍᴇssᴀɢᴇs ʙᴇғᴏʀᴇ ɪᴛ ɢᴇᴛs Dᴇʟᴇᴛᴇᴅ! ⚡</b>"
-            )
-
-            await asyncio.sleep(FILE_AUTO_DELETE)
-
-            for snt_msg in OTAKULUX_msgs:
-                if snt_msg:
-                    try:    
-                        await snt_msg.delete()  
-                    except Exception as e:
-                        print(f"Error deleting message {snt_msg.id}: {e}")
-
-            try:
-                reload_url = f"https://t.me/{client.username}?start={base64_string}"
-                keyboard = InlineKeyboardMarkup(
-                    [[InlineKeyboardButton("ɢᴇᴛ ғɪʟᴇ ᴀɢᴀɪɴ!", url=reload_url)]]
-                )
-
-                await notification_msg.edit(
-                    f"<b>ʏᴏᴜʀ ᴠɪᴅᴇᴏ / ꜰɪʟᴇ ɪꜱ ꜱᴜᴄᴄᴇꜱꜱꜰᴜʟʟʏ ᴅᴇʟᴇᴛᴇᴅ !!\n\nᴄʟɪᴄᴋ ʙᴇʟᴏᴡ ʙᴜᴛᴛᴏɴ ᴛᴏ ɢᴇᴛ ʏᴏᴜʀ ᴅᴇʟᴇᴛᴇᴅ ᴠɪᴅᴇᴏ / ꜰɪʟᴇ 👇\n\n<code>{reload_url}</code></b>",
-                    reply_markup=keyboard
-                )
-            except Exception as e:
-                print(f"Error updating notification with 'Get File Again' button: {e}")
+        if OTAKULUX_msgs:
+            asyncio.create_task(auto_delete_task(client, message, OTAKULUX_msgs, FILE_AUTO_DELETE, base64_string))
 
     except Exception as e:
         print(f"Final Error in send_files: {e}")
@@ -218,8 +243,8 @@ async def start_command(client: Client, message: Message):
                     globals().get('SHORTLINK_URL'),
                     globals().get('SHORTLINK_API'),
                     globals().get('WEBSITE_URL'),
-                    globals().get('TURNSTILE_SITE'),
-                    globals().get('TURNSTILE_SECRET')
+                    globals().get('TURNSTILE_SITE_KEY'),
+                    globals().get('TURNSTILE_SECRET_KEY')
                 ]
                 is_incomplete = any(not x or str(x).strip() == "" for x in conf_list)
             except:

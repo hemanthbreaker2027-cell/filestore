@@ -123,3 +123,27 @@ async def get_admins(client: Client, message: Message):
 
     reply_markup = InlineKeyboardMarkup([[InlineKeyboardButton("ᴄʟᴏsᴇ", callback_data="close")]])
     await pro.edit(f"<b>⚡ Current Admin List:</b>\n\n{admin_list}", reply_markup=reply_markup)
+
+
+@Bot.on_message(filters.command('add_downlink') & filters.private & filters.user(OWNER_ID))
+async def add_downlink_cmd(client: Client, message: Message):
+    config = await db.get_downlink_config()
+    status = config['status'].upper()
+    domain = config['domain'] or "Not Set"
+
+    text = (
+        "<b>🛠 Downlink Configuration</b>\n\n"
+        f"<b>Current Status:</b> {'🟢 ON' if status == 'ON' else '🔴 OFF'}\n"
+        f"<b>Domain URL:</b> <code>{domain}</code>\n\n"
+        "<i>If ON, bot will attach a download link button to each delivered file using the domain URL.</i>"
+    )
+
+    buttons = [
+        [
+            InlineKeyboardButton("🟢 Turn ON", callback_data="dl_on"),
+            InlineKeyboardButton("🔴 Turn OFF", callback_data="dl_off")
+        ],
+        [InlineKeyboardButton("ᴄʟᴏsᴇ", callback_data="close")]
+    ]
+
+    await message.reply_text(text, reply_markup=InlineKeyboardMarkup(buttons))

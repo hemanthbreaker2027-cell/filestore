@@ -100,6 +100,45 @@ async def cb_handler(client: Bot, query: CallbackQuery):
         except:
             pass
 
+    elif data == "dl_on":
+        if query.from_user.id != OWNER_ID:
+            return await query.answer("Access Denied!", show_alert=True)
+
+        try:
+            ask_msg = await client.ask(
+                chat_id=query.message.chat.id,
+                text="<b>Please send the Domain URL (e.g., <code>https://otakulux.com</code>):</b>",
+                filters=filters.text,
+                timeout=60
+            )
+        except asyncio.TimeoutError:
+            return await query.message.edit_text("<b>Timed out! Please try again.</b>")
+        except Exception as e:
+            return await query.message.edit_text(f"<b>Error: {e}</b>")
+
+        domain = ask_msg.text.strip()
+        if not domain.startswith(("http://", "https://")):
+            domain = "https://" + domain
+        domain = domain.rstrip("/")
+
+        await db.set_downlink_config(status="on", domain=domain)
+        await ask_msg.delete()
+
+        await query.message.edit_text(
+            f"<b>✅ Downlink configuration updated!</b>\n\n<b>Status:</b> 🟢 ON\n<b>Domain:</b> <code>{domain}</code>",
+            reply_markup=InlineKeyboardMarkup([[InlineKeyboardButton("ᴄʟᴏsᴇ", callback_data="close")]])
+        )
+
+    elif data == "dl_off":
+        if query.from_user.id != OWNER_ID:
+            return await query.answer("Access Denied!", show_alert=True)
+
+        await db.set_downlink_config(status="off")
+        await query.message.edit_text(
+            "<b>🔴 Downlink configuration turned OFF!</b>",
+            reply_markup=InlineKeyboardMarkup([[InlineKeyboardButton("ᴄʟᴏsᴇ", callback_data="close")]])
+        )
+
     elif data.startswith("rfs_ch_"):
         cid = int(data.split("_")[2])
         try:
