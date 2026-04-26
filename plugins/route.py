@@ -207,7 +207,64 @@ async def final_redirect(request):
             return web.HTTPFound(f"/verify/{payload}")
 
         bot = request.app.get('bot')
-        username = bot.username if bot else "OTAKULUX"
-        return web.HTTPFound(f"https://t.me/{username}?start=yu3elk{payload}7")
-    except:
+        from helper_func import decode
+
+        try:
+            decoded_payload = await decode(payload)
+            argument = decoded_payload.split("-")
+            if len(argument) < 2:
+                 return web.Response(text="Invalid Payload", status=400)
+
+            msg_id = int(int(argument[1]) / abs(bot.db_channel.id))
+            msg = await bot.get_messages(bot.db_channel.id, msg_id)
+
+            if not msg or not (msg.document or msg.video or msg.audio):
+                return web.Response(text="File not found or not a media file.", status=404)
+
+            media = msg.document or msg.video or msg.audio
+            file_name = media.file_name or "file"
+            file_size = media.file_size
+            mime_type = media.mime_type or "application/octet-stream"
+
+            # Basic Range support
+            range_header = request.headers.get('Range')
+            start = 0
+            end = file_size - 1
+
+            if range_header:
+                ranges = range_header.replace('bytes=', '').split('-')
+                start = int(ranges[0]) if ranges[0] else 0
+                end = int(ranges[1]) if len(ranges) > 1 and ranges[1] else file_size - 1
+
+            if start >= file_size:
+                return web.Response(status=416)
+
+            chunk_size = 1024 * 1024 # 1MB
+            headers = {
+                'Content-Type': mime_type,
+                'Content-Disposition': f'attachment; filename="{file_name}"',
+                'Accept-Ranges': 'bytes',
+                'Content-Length': str(end - start + 1),
+                'Content-Range': f'bytes {start}-{end}/{file_size}',
+            }
+
+            res = web.StreamResponse(status=206 if range_header else 200, headers=headers)
+            await res.prepare(request)
+
+            try:
+                async for chunk in bot.stream_media(media, offset=start, limit=end-start+1):
+                    await res.write(chunk)
+            except Exception as e:
+                print(f"Error during streaming: {e}")
+
+            return res
+
+        except Exception as e:
+            print(f"Streaming Error: {e}")
+            # Fallback to bot redirect if streaming fails critically
+            username = bot.username if bot else "OTAKULUX"
+            return web.HTTPFound(f"https://t.me/{username}?start=yu3elk{payload}7")
+
+    except Exception as e:
+        print(f"JWT/Session Error: {e}")
         return web.HTTPFound(f"/verify/{payload}")
