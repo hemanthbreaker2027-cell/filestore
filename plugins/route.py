@@ -197,15 +197,17 @@ async def bot_detected(request):
 async def vlc_redirect(request):
     payload = request.match_info['payload']
     stream_url = f"{request.scheme}://{request.host}/file/{payload}"
-    vlc_url = f"vlc://{stream_url}"
-    html = f"<html><head><script>window.location.replace('{vlc_url}');</script></head><body>Redirecting to VLC...</body></html>"
-    return web.Response(text=html, content_type='text/html')
+    return web.HTTPFound(f"vlc://{stream_url}")
 
 @routes.get("/mx/{payload}")
 async def mx_redirect(request):
     payload = request.match_info['payload']
     stream_url = f"{request.scheme}://{request.host}/file/{payload}"
-    mx_url = f"intent://{stream_url}#Intent;package=com.mxtech.videoplayer.ad;end"
+    watch_url = f"{request.scheme}://{request.host}/watch/{payload}"
+    # Remove scheme from stream_url for the intent data part
+    data_url = stream_url.replace("https://", "").replace("http://", "")
+    scheme = "https" if "https" in stream_url else "http"
+    mx_url = f"intent://{data_url}#Intent;scheme={scheme};package=com.mxtech.videoplayer.ad;S.title=OTAKULUX;S.browser_fallback_url={watch_url};end"
     html = f"<html><head><script>window.location.replace('{mx_url}');</script></head><body>Redirecting to MX Player...</body></html>"
     return web.Response(text=html, content_type='text/html')
 
@@ -213,7 +215,10 @@ async def mx_redirect(request):
 async def playit_redirect(request):
     payload = request.match_info['payload']
     stream_url = f"{request.scheme}://{request.host}/file/{payload}"
-    playit_url = f"intent://{stream_url}#Intent;package=com.playit.videoplayer;end"
+    watch_url = f"{request.scheme}://{request.host}/watch/{payload}"
+    data_url = stream_url.replace("https://", "").replace("http://", "")
+    scheme = "https" if "https" in stream_url else "http"
+    playit_url = f"intent://{data_url}#Intent;scheme={scheme};package=com.playit.videoplayer;S.title=OTAKULUX;S.browser_fallback_url={watch_url};end"
     html = f"<html><head><script>window.location.replace('{playit_url}');</script></head><body>Redirecting to PLAYit...</body></html>"
     return web.Response(text=html, content_type='text/html')
 
@@ -240,6 +245,8 @@ async def watch_page(request):
 
         # Use relative paths for the stream URL
         stream_url = f"/file/{payload}"
+        full_stream_url = f"{request.scheme}://{request.host}{stream_url}"
+        mime_type = getattr(media, 'mime_type', 'video/mp4')
 
         html = f"""
 <!DOCTYPE html>
@@ -268,16 +275,16 @@ async def watch_page(request):
     </div>
     <div class="title">{file_name}</div>
     <div class="player-container">
-        <video controls autoplay>
-            <source src="{stream_url}" type="video/mp4">
+        <video controls autoplay preload="auto" playsinline webkit-playsinline>
+            <source src="{stream_url}" type="{mime_type}">
             Your browser does not support the video tag.
         </video>
     </div>
     <div class="controls">
         <a href="{stream_url}" class="btn">📥 Download</a>
-        <a href="vlc://{request.scheme}://{request.host}{stream_url}" class="btn vlc">▶️ Play in VLC</a>
-        <a href="intent://{request.scheme}://{request.host}{stream_url}#Intent;package=com.mxtech.videoplayer.ad;end" class="btn mx">▶️ Play in MX Player</a>
-        <a href="intent://{request.scheme}://{request.host}{stream_url}#Intent;package=com.playit.videoplayer;end" class="btn playit">▶️ Play in PLAYit</a>
+        <a href="/vlc/{payload}" class="btn vlc">▶️ Play in VLC</a>
+        <a href="/mx/{payload}" class="btn mx">▶️ Play in MX Player</a>
+        <a href="/playit/{payload}" class="btn playit">▶️ Play in PLAYit</a>
     </div>
 </body>
 </html>
@@ -326,10 +333,11 @@ async def direct_download(request):
 
         headers = {
             'Content-Type': mime_type,
-            'Content-Disposition': f'attachment; filename="{file_name}"',
+            'Content-Disposition': f'inline; filename="{file_name}"',
             'Accept-Ranges': 'bytes',
             'Content-Length': str(end - start + 1),
             'Content-Range': f'bytes {start}-{end}/{file_size}',
+            'Cache-Control': 'public, max-age=3600',
         }
 
         res = web.StreamResponse(status=206 if range_header else 200, headers=headers)
