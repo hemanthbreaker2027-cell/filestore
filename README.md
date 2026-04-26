@@ -1,101 +1,69 @@
-<h1 align="center">
-  <b>🌟 OTAKULUX PREMIUM FILE STORE 🌟</b>
-</h1>
+# OTAKULUX File Sharing Bot
 
-<p align="center">
-  <img src="https://graph.org/file/8581e33195ed8183a3253.jpg" alt="OTAKULUX Banner" width="500">
-</p>
+OTAKULUX is a high-speed, secure Telegram bot designed for seamless file sharing and streaming. It allows administrators to store files in a private database channel and generate unique, trackable links for users to access them.
 
-<p align="center">
-  <a href="https://t.me/OTAKULUX">
-    <img src="https://img.shields.io/badge/Telegram-Channel-blue?style=for-the-badge&logo=telegram" alt="Telegram Channel">
-  </a>
-  <a href="https://t.me/OTAKULUX">
-    <img src="https://img.shields.io/badge/Support-Group-red?style=for-the-badge&logo=telegram" alt="Support Group">
-  </a>
-</p>
+## 🚀 Key Features
 
----
+- **Concurrent File Delivery**: Optimized for speed using asynchronous semaphore-based delivery.
+- **Premium Streaming & Download**:
+  - Integrated high-quality web player with glassmorphism UI.
+  - Direct support for external Android players: **VLC, MX Player, PLAYit, and KMPlayer**.
+  - unbypassable security timers and verification system.
+- **Advanced Metadata Parsing**: Automatically extracts Quality (4K-360p), Season, and Episode from filenames.
+- **Flexible Management**:
+  - Multi-channel Force Subscription (Join Verification).
+  - Auto-deletion of delivered files to keep user chats clean.
+  - Comprehensive admin dashboard for user and channel management.
+  - /batch and /genlink commands for instant link generation.
 
-### 🚀 **OVERVIEW**
-
-**OTAKULUX PRO** is a high-performance Telegram File Store Bot designed with a premium anime aesthetic. It allows users to store files in a private channel and access them via secure, unique links. Built for speed, stability, and a top-tier user experience.
-
----
-
-### ✨ **KEY FEATURES**
-
-- 🎭 **Premium Zoro UI:** Neon-themed interface with simulated typing animations and random anime banners.
-- ⚡ **Ultra-Fast Delivery:** Files are delivered in milliseconds with strictly preserved sequential order.
-- 🔐 **Advanced Force Sub:** Multi-channel subscription check with a dynamic status checklist (✅/❌).
-- 🛠️ **Powerful Admin Tools:** Complete control over channels, users, and bot settings directly from Telegram.
-- 💎 **Premium System:** Built-in membership management for monetizing or restricting access.
-- 🗑️ **Auto-Delete:** configurable timers to automatically delete sent files for privacy and storage management.
-- 📊 **Real-time Analytics:** Track user growth, broadcast success, and bot performance instantly.
-
----
-
-### 🛠 **BOT COMMANDS**
+## ⚙️ Administrative Commands
 
 | Command | Description |
-| :--- | :--- |
-| `/start` | Activate the bot or retrieve files via link |
-| `/batch` | Create a permanent link for multiple files |
-| `/genlink` | Generate a single file sharing link |
-| `/users` | [Admin] View total user statistics |
-| `/broadcast` | [Admin] Send a message to all users |
-| `/addchnl` | [Admin] Add a new Force Sub channel |
-| `/delchnl` | [Admin] Remove a Force Sub channel |
-| `/listchnl` | [Admin] View all active Force Sub channels |
-| `/addpremium` | [Admin] Grant premium access to a user |
-| `/myplan` | Check your current subscription status |
-| `/stats` | View bot uptime and server health |
+|:---|:---|
+| `/start` | Initial interaction with the bot |
+| `/batch` | Generate a link for a range of files |
+| `/genlink` | Generate a link for a single file |
+| `/auto_delete` | Set the auto-deletion timer (in seconds) |
+| `/add_downlink` | (Owner Only) Toggle and configure external download domains |
+| `/add_admin` | (Owner Only) Add new administrators |
+| `/broadcast` | Send messages to all bot users |
+| `/dbroadcast` | Broadcast with auto-deletion |
+| `/ban` / `/unban` | Manage user access |
+
+## 🛠 Setup & Installation
+
+### Prerequisites
+- Python 3.9+
+- MongoDB Database
+- Telegram API Credentials (API_ID, API_HASH, BOT_TOKEN)
+
+### Deployment
+1. **Clone the Repository**:
+   ```bash
+   git clone https://github.com/OTAKULUX/OTAKULUX-Bot.git
+   cd OTAKULUX-Bot
+   ```
+2. **Install Dependencies**:
+   ```bash
+   pip install -r requirements.txt
+   ```
+3. **Configure Environment Variables**:
+   Create a `.env` file or set variables directly:
+   - `TG_BOT_TOKEN`: Your Telegram Bot Token
+   - `APP_ID`: Telegram API ID
+   - `API_HASH`: Telegram API Hash
+   - `DATABASE_URL`: MongoDB Connection URI
+   - `CHANNEL_ID`: Database Channel ID
+   - `OWNER_ID`: Your Telegram User ID
+   - `WEBSITE_URL`: Your public domain (for streaming/verification)
+
+4. **Run the Bot**:
+   ```bash
+   python3 bot.py
+   ```
+
+## 🤝 Support
+Join our Telegram channel for updates and support: [@OTAKULUX](https://t.me/OTAKULUX)
 
 ---
-
-### 📦 **QUICK DEPLOYMENT**
-
-Deploy OTAKULUX in minutes on your favorite platform:
-
-<p align="center">
-  <a href="https://heroku.com/deploy?template=https://t.me/OTAKULUX">
-    <img src="https://www.herokucdn.com/deploy/button.svg" alt="Deploy to Heroku">
-  </a>
-  <a href="https://app.koyeb.com/deploy?type=git&repository=https://t.me/OTAKULUX&branch=master&name=master">
-    <img src="https://www.koyeb.com/static/images/deploy/button.svg" alt="Deploy to Koyeb">
-  </a>
-</p>
-
-**VPS Deployment:**
-```bash
-git clone https://t.me/OTAKULUX
-cd OTAKULUX
-pip3 install -r requirements.txt
-# Configure config.py with your credentials
-python3 bot.py
-```
-
----
-
-### ⚙️ **ENVIRONMENT VARIABLES**
-
-- `API_ID` / `API_HASH`: Get from [my.telegram.org](https://my.telegram.org)
-- `TG_BOT_TOKEN`: Get from [@BotFather](https://t.me/BotFather)
-- `OWNER_ID`: Your Telegram User ID
-- `CHANNEL_ID`: The ID of your private database channel
-- `DATABASE_URL`: Your MongoDB connection string
-- `FORCE_SUB_CHANNELS`: List of channel IDs for mandatory join
-
----
-
-### 🤝 **CREDITS**
-
-- 👑 **[OTAKULUX](https://t.me/)** - Lead Developer & Designer
-- 🌌 **[OTAKULUX NETWORK](https://t.me/)** - Infrastructure & Assets
-- 🖤 **Contributors** - Everyone who helped optimize the code!
-
----
-
-<p align="center">
-  <b>Developed with ❤️ by <a href="https://t.me/OTAKULUX">OTAKULUX</a></b>
-</p>
+© 2025 OTAKULUX. Released under the MIT License.
