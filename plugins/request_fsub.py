@@ -1,39 +1,12 @@
-# Don't Remove Credit @OTAKULUX, @OTAKULUX
-# Ask Doubt on telegram @OTAKULUX
-#
-# Copyright (C) 2025 by OTAKULUX@OTAKULUX, < https://github.com/OTAKULUX >.
-#
-# This file is part of < https://t.me/OTAKULUX > project,
-# and is released under the MIT License.
-# Please see < https://t.me/OTAKULUX/blob/master/LICENSE >
-#
-# All rights reserved.
-#
 import asyncio
-import os
-import random
-import sys
-import time
-from pyrogram import Client, filters, __version__
-from pyrogram.enums import ParseMode, ChatAction, ChatMemberStatus, ChatType
-from pyrogram.types import Message, InlineKeyboardMarkup, InlineKeyboardButton, CallbackQuery, ReplyKeyboardMarkup, ChatMemberUpdated, ChatPermissions
-from pyrogram.errors.exceptions.bad_request_400 import UserNotParticipant, InviteHashEmpty, ChatAdminRequired, PeerIdInvalid, UserIsBlocked, InputUserDeactivated, UserNotParticipant
+from pyrogram import Client, filters
+from pyrogram.enums import ChatMemberStatus, ChatType
+from pyrogram.types import InlineKeyboardMarkup, InlineKeyboardButton, Message, ChatMemberUpdated
+from pyrogram.errors.exceptions.bad_request_400 import UserNotParticipant
 from bot import Bot
-from config import *
-from helper_func import *
-from database.database import *
-
-# Don't Remove Credit @OTAKULUX, @OTAKULUX
-# Ask Doubt on telegram @OTAKULUX
-#
-# Copyright (C) 2025 by OTAKULUX@OTAKULUX, < https://github.com/OTAKULUX >.
-#
-# This file is part of < https://t.me/OTAKULUX > project,
-# and is released under the MIT License.
-# Please see < https://t.me/OTAKULUX/blob/master/LICENSE >
-#
-# All rights reserved.
-#
+from config import OWNER_ID
+from helper_func import admin
+from database.database import db
 
 #Request force sub mode commad,,,,,,
 @Bot.on_message(filters.command('fsub_mode') & filters.private & admin)
@@ -87,28 +60,11 @@ async def handle_join_request(client, chat_join_request):
     chat_id = chat_join_request.chat.id
     user_id = chat_join_request.from_user.id
 
-    #print(f"[JOIN REQUEST] User {user_id} sent join request to {chat_id}")
-
-    # Print the result of db.reqChannel_exist to check if the channel exists
     channel_exists = await db.reqChannel_exist(chat_id)
-    #print(f"Channel {chat_id} exists in the database: {channel_exists}")
 
     if channel_exists:
         if not await db.req_user_exist(chat_id, user_id):
             await db.req_user(chat_id, user_id)
-            #print(f"Added user {user_id} to request list for {chat_id}")
-
-# Don't Remove Credit @OTAKULUX, @OTAKULUX
-# Ask Doubt on telegram @OTAKULUX
-#
-# Copyright (C) 2025 by OTAKULUX@OTAKULUX, < https://github.com/OTAKULUX >.
-#
-# This file is part of < https://t.me/OTAKULUX > project,
-# and is released under the MIT License.
-# Please see < https://t.me/OTAKULUX/blob/master/LICENSE >
-#
-# All rights reserved.
-#
 
 # Add channel
 @Bot.on_message(filters.command('addchnl') & filters.private & admin)
@@ -157,19 +113,6 @@ async def add_force_sub(client: Client, message: Message):
         return await temp.edit(f"❌ Failed to add chat:\n<code>{chat_id}</code>\n\n<i>{e}</i>")
         
 
-
-# Don't Remove Credit @OTAKULUX, @OTAKULUX
-# Ask Doubt on telegram @OTAKULUX
-#
-# Copyright (C) 2025 by OTAKULUX@OTAKULUX, < https://github.com/OTAKULUX >.
-#
-# This file is part of < https://t.me/OTAKULUX > project,
-# and is released under the MIT License.
-# Please see < https://t.me/OTAKULUX/blob/master/LICENSE >
-#
-# All rights reserved.
-#
-
 # Delete channel
 @Bot.on_message(filters.command('delchnl') & filters.private & admin)
 async def del_force_sub(client: Client, message: Message):
@@ -184,7 +127,7 @@ async def del_force_sub(client: Client, message: Message):
         if not all_channels:
             return await temp.edit("<b>❌ No force-sub channels found.</b>")
         for ch_id in all_channels:
-            await db.del_channel(ch_id)
+            await db.rem_channel(ch_id)
         return await temp.edit("<b>✅ All force-sub channels have been removed.</b>")
 
     try:
@@ -217,18 +160,6 @@ async def list_force_sub_channels(client: Client, message: Message):
             result += f"<b>•</b> <code>{ch_id}</code> — <i>Unavailable</i>\n"
 
     await temp.edit(result, disable_web_page_preview=True, reply_markup=InlineKeyboardMarkup([[InlineKeyboardButton("Close ✖️", callback_data="close")]]))
-
-# Don't Remove Credit @OTAKULUX, @OTAKULUX
-# Ask Doubt on telegram @OTAKULUX
-#
-# Copyright (C) 2025 by OTAKULUX@OTAKULUX, < https://github.com/OTAKULUX >.
-#
-# This file is part of < https://t.me/OTAKULUX > project,
-# and is released under the MIT License.
-# Please see < https://t.me/OTAKULUX/blob/master/LICENSE >
-#
-# All rights reserved.
-#
 
 
 @Bot.on_message(filters.command('delreq') & filters.private & admin)
@@ -286,15 +217,3 @@ async def delete_requested_users(client, message: Message):
         f"✅ Sᴛɪʟʟ ᴍᴇᴍʙᴇʀs: `{skipped}`",
         quote=True
     )
-
-# Don't Remove Credit @OTAKULUX, @OTAKULUX
-# Ask Doubt on telegram @OTAKULUX
-#
-# Copyright (C) 2025 by OTAKULUX@OTAKULUX, < https://github.com/OTAKULUX >.
-#
-# This file is part of < https://t.me/OTAKULUX > project,
-# and is released under the MIT License.
-# Please see < https://t.me/OTAKULUX/blob/master/LICENSE >
-#
-# All rights reserved.
-#

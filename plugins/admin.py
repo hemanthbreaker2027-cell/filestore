@@ -1,18 +1,10 @@
 import asyncio
-import os
-import random
-import sys
-import time
-from pyrogram import Client, filters, __version__
-from pyrogram.enums import ParseMode, ChatAction, ChatMemberStatus, ChatType
-from pyrogram.types import Message, InlineKeyboardMarkup, InlineKeyboardButton, CallbackQuery, ReplyKeyboardMarkup, ChatMemberUpdated, ChatPermissions
-from pyrogram.errors.exceptions.bad_request_400 import UserNotParticipant, InviteHashEmpty, ChatAdminRequired, PeerIdInvalid, UserIsBlocked, InputUserDeactivated
+from pyrogram import Client, filters
+from pyrogram.types import Message, InlineKeyboardMarkup, InlineKeyboardButton
 from bot import Bot
-from config import *
-from helper_func import *
-from database.database import *
-
-
+from config import OWNER_ID
+from helper_func import admin
+from database.database import db
 
 # Commands for adding admins by owner
 @Bot.on_message(filters.command('add_admin') & filters.private & filters.user(OWNER_ID))
@@ -46,12 +38,12 @@ async def add_admins(client: Client, message: Message):
             admin_list += f"<blockquote><b>ID <code>{id}</code> already exists.</b></blockquote>\n"
             continue
 
-        id = str(id)
-        if id.isdigit() and len(id) == 10:
+        id_str = str(id)
+        if len(id_str) >= 8: # Telegram IDs vary in length
             admin_list += f"<b><blockquote>(ID: <code>{id}</code>) added.</blockquote></b>\n"
             check += 1
         else:
-            admin_list += f"<blockquote><b>Invalid ID: <code>{id}</code></b></blockquote>\n"
+            admin_list += f"<blockquote><b>Invalid ID length: <code>{id}</code></b></blockquote>\n"
 
     if check == len(admins):
         for id in admins:

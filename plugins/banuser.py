@@ -1,32 +1,11 @@
-# Don't Remove Credit @OTAKULUX, @OTAKULUX
-# Ask Doubt on telegram @OTAKULUX
-#
-# Copyright (C) 2025 by OTAKULUX@OTAKULUX, < https://github.com/OTAKULUX >.
-#
-# This file is part of < https://t.me/OTAKULUX > project,
-# and is released under the MIT License.
-# Please see < https://t.me/OTAKULUX/blob/master/LICENSE >
-#
-# All rights reserved.
-#
-
 import asyncio
-import os
-import random
-import sys
-import time
-from datetime import datetime, timedelta
-from pyrogram import Client, filters, __version__
-from pyrogram.enums import ParseMode, ChatAction
-from pyrogram.types import Message, InlineKeyboardMarkup, InlineKeyboardButton, CallbackQuery, ReplyKeyboardMarkup, ChatInviteLink, ChatPrivileges
-from pyrogram.errors.exceptions.bad_request_400 import UserNotParticipant
-from pyrogram.errors import FloodWait, UserIsBlocked, InputUserDeactivated, UserNotParticipant
+from pyrogram import Client, filters
+from pyrogram.enums import ChatAction
+from pyrogram.types import Message, InlineKeyboardMarkup, InlineKeyboardButton
 from bot import Bot
-from config import *
-from helper_func import *
-from database.database import *
-
-
+from config import OWNER_ID
+from helper_func import admin
+from database.database import db
 
 #BAN-USER-SYSTEM
 @Bot.on_message(filters.private & filters.command('ban') & admin)
@@ -61,7 +40,7 @@ async def add_banuser(client: Client, message: Message):
             report += f"⚠️ Aʟʀᴇᴀᴅʏ : <code>{uid_int}</code>\n"
             continue
 
-        if len(str(uid_int)) == 10:
+        if len(str(uid_int)) >= 8:
             await db.add_ban_user(uid_int)
             report += f"✅ Bᴀɴɴᴇᴅ: <code>{uid_int}</code>\n"
             success_count += 1
