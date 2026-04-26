@@ -10,52 +10,58 @@
     <link href="https://vjs.zencdn.net/8.10.0/video-js.css" rel="stylesheet" />
     <!-- City Theme -->
     <link href="https://unpkg.com/@videojs/themes@1.0.1/dist/city/index.css" rel="stylesheet">
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600;800&display=swap" rel="stylesheet">
 
     <style>
         :root {
-            --bg-dark: #080808;
-            --accent-neon: #ff00ff; /* Neon Pink */
-            --accent-blue: #00f2ff; /* Neon Blue */
-            --text-main: #e0e0e0;
-            --card-bg: rgba(20, 20, 25, 0.85);
+            --bg-dark: #050505;
+            --accent-pink: #ff007f;
+            --accent-blue: #00d2ff;
+            --glass-bg: rgba(255, 255, 255, 0.03);
             --glass-border: rgba(255, 255, 255, 0.1);
+            --text-glow: 0 0 10px rgba(0, 210, 255, 0.5);
+        }
+
+        * {
+            box-sizing: border-box;
+            -webkit-tap-highlight-color: transparent;
         }
 
         body {
             background-color: var(--bg-dark);
             background-image:
-                radial-gradient(circle at 10% 20%, rgba(255, 0, 255, 0.05) 0%, transparent 20%),
-                radial-gradient(circle at 90% 80%, rgba(0, 242, 255, 0.05) 0%, transparent 20%);
-            color: var(--text-main);
-            font-family: 'Inter', 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+                radial-gradient(circle at 10% 20%, rgba(255, 0, 127, 0.08) 0%, transparent 25%),
+                radial-gradient(circle at 90% 80%, rgba(0, 210, 255, 0.08) 0%, transparent 25%);
+            color: #ffffff;
+            font-family: 'Poppins', sans-serif;
             margin: 0;
             display: flex;
             flex-direction: column;
             align-items: center;
             min-height: 100vh;
-            padding-bottom: 5rem;
             overflow-x: hidden;
         }
 
-        .navbar {
+        /* --- Header --- */
+        .header {
             width: 100%;
             padding: 1.5rem;
             text-align: center;
             background: rgba(0, 0, 0, 0.8);
-            backdrop-filter: blur(25px);
+            backdrop-filter: blur(20px);
             border-bottom: 1px solid var(--glass-border);
             position: sticky;
             top: 0;
             z-index: 1000;
-            box-shadow: 0 4px 30px rgba(0, 0, 0, 0.5);
         }
 
-        .navbar h1 {
+        .header h1 {
             margin: 0;
-            font-size: 1.8rem;
-            font-weight: 900;
-            letter-spacing: 4px;
-            background: linear-gradient(90deg, var(--accent-neon), var(--accent-blue));
+            font-size: 1.5rem;
+            font-weight: 800;
+            letter-spacing: 3px;
+            background: linear-gradient(90deg, var(--accent-pink), var(--accent-blue));
             -webkit-background-clip: text;
             -webkit-text-fill-color: transparent;
             text-transform: uppercase;
@@ -63,24 +69,24 @@
 
         .container {
             width: 95%;
-            max-width: 1200px;
+            max-width: 1000px;
             margin-top: 2rem;
-            animation: slideUp 0.6s cubic-bezier(0.23, 1, 0.32, 1);
+            animation: fadeIn 0.8s ease-out;
         }
 
-        @keyframes slideUp {
-            from { opacity: 0; transform: translateY(30px); }
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(20px); }
             to { opacity: 1; transform: translateY(0); }
         }
 
-        /* Player Styling */
-        .player-card {
-            background: #000;
-            border-radius: 24px;
-            overflow: hidden;
-            box-shadow: 0 25px 80px rgba(0, 0, 0, 0.9);
-            border: 1px solid var(--glass-border);
+        /* --- Player Section --- */
+        .player-wrapper {
             position: relative;
+            background: #000;
+            border-radius: 20px;
+            overflow: hidden;
+            box-shadow: 0 20px 50px rgba(0, 0, 0, 0.8);
+            border: 1px solid var(--glass-border);
         }
 
         .video-js {
@@ -88,143 +94,225 @@
             aspect-ratio: 16 / 9;
         }
 
-        /* Customize Video.js Theme */
-        .vjs-theme-city {
-            --vjs-theme-city--primary: var(--accent-neon);
-            --vjs-theme-city--secondary: var(--accent-blue);
-        }
-
-        .watermark-overlay {
+        .watermark {
             position: absolute;
             top: 20px;
             right: 20px;
-            background: rgba(0,0,0,0.4);
-            padding: 5px 12px;
+            background: rgba(0, 0, 0, 0.5);
+            padding: 4px 12px;
             border-radius: 8px;
+            font-size: 0.7rem;
             font-weight: 800;
-            font-size: 0.8rem;
             letter-spacing: 2px;
-            color: white;
-            pointer-events: none;
-            z-index: 10;
-            border: 1px solid rgba(255,255,255,0.1);
+            color: var(--accent-blue);
+            border: 1px solid rgba(0, 210, 255, 0.2);
             backdrop-filter: blur(5px);
+            z-index: 10;
         }
 
-        /* Info & Buttons Section */
-        .info-section {
-            margin-top: 2rem;
-            padding: 2.5rem;
-            background: var(--card-bg);
-            backdrop-filter: blur(20px);
-            border-radius: 24px;
+        /* --- Info Section --- */
+        .info-card {
+            margin-top: 1.5rem;
+            padding: 1.5rem;
+            background: var(--glass-bg);
+            backdrop-filter: blur(15px);
+            border-radius: 20px;
             border: 1px solid var(--glass-border);
-            box-shadow: 0 20px 40px rgba(0,0,0,0.4);
-        }
-
-        .file-info {
-            text-align: center;
-            margin-bottom: 2.5rem;
         }
 
         .file-title {
-            font-size: 1.4rem;
-            font-weight: 700;
+            font-size: 1.1rem;
+            font-weight: 600;
             color: #fff;
+            margin-bottom: 1rem;
             word-break: break-all;
-            line-height: 1.4;
-            margin-bottom: 0.5rem;
+            line-height: 1.5;
+            border-left: 4px solid var(--accent-pink);
+            padding-left: 15px;
         }
 
-        .file-meta {
-            font-size: 0.9rem;
+        /* --- Buttons Grid --- */
+        .section-label {
+            font-size: 0.8rem;
+            font-weight: 700;
             color: var(--accent-blue);
-            font-weight: 600;
-            letter-spacing: 1px;
+            margin-bottom: 1rem;
             text-transform: uppercase;
+            letter-spacing: 2px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .section-label::after {
+            content: '';
+            flex: 1;
+            height: 1px;
+            background: linear-gradient(90deg, rgba(0, 210, 255, 0.3), transparent);
         }
 
         .button-grid {
             display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-            gap: 1.2rem;
+            grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+            gap: 12px;
+            margin-bottom: 2rem;
         }
 
         .btn {
             display: flex;
+            flex-direction: column;
             align-items: center;
             justify-content: center;
-            gap: 0.8rem;
-            padding: 1rem;
-            border-radius: 14px;
-            font-weight: 700;
+            gap: 8px;
+            padding: 12px;
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid var(--glass-border);
+            border-radius: 16px;
             text-decoration: none;
-            transition: all 0.3s ease;
+            transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
             cursor: pointer;
-            border: none;
-            font-size: 1rem;
-            color: #fff;
-            text-transform: uppercase;
         }
 
         .btn:hover {
-            transform: translateY(-3px);
-            filter: brightness(1.2);
-            box-shadow: 0 8px 20px rgba(0,0,0,0.3);
+            background: rgba(255, 255, 255, 0.1);
+            transform: translateY(-5px);
+            border-color: var(--accent-blue);
+            box-shadow: 0 10px 20px rgba(0, 0, 0, 0.3);
         }
 
-        .btn:active { transform: translateY(0); }
-
-        .btn-dl { background: linear-gradient(135deg, #ff0080, var(--accent-neon)); }
-        .btn-vlc { background: #f97316; }
-        .btn-mx { background: #0088cc; }
-        .btn-playit { background: #ef4444; }
-        .btn-best {
-            grid-column: 1 / -1;
-            background: linear-gradient(90deg, #6366f1, #a855f7);
-            padding: 1.2rem;
-            font-size: 1.1rem;
+        .btn img {
+            width: 32px;
+            height: 32px;
+            object-fit: contain;
         }
 
-        /* Player error overlay customization */
-        .vjs-error-display {
-            background: rgba(0,0,0,0.9) !important;
-        }
-
-        .footer {
-            margin-top: 4rem;
-            opacity: 0.2;
-            font-weight: 900;
-            letter-spacing: 15px;
-            font-size: 1.2rem;
+        .btn-text {
+            font-size: 0.75rem;
+            font-weight: 600;
+            color: #ccc;
             text-transform: uppercase;
         }
 
+        .btn:hover .btn-text {
+            color: #fff;
+        }
+
+        .btn-main {
+            grid-column: 1 / -1;
+            flex-direction: row;
+            background: linear-gradient(90deg, var(--accent-pink), #ff0055);
+            border: none;
+            padding: 16px;
+        }
+
+        .btn-main .btn-text {
+            color: #fff;
+            font-size: 1rem;
+            font-weight: 800;
+            letter-spacing: 1px;
+        }
+
+        /* --- Footer / Ecosystem --- */
+        .footer {
+            width: 100%;
+            margin-top: 4rem;
+            padding: 3rem 1.5rem;
+            background: rgba(0, 0, 0, 0.9);
+            border-top: 1px solid var(--glass-border);
+            text-align: center;
+        }
+
+        .ecosystem-title {
+            font-size: 1.2rem;
+            font-weight: 800;
+            color: #fff;
+            margin-bottom: 2rem;
+            letter-spacing: 2px;
+        }
+
+        .eco-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 20px;
+            max-width: 800px;
+            margin: 0 auto;
+        }
+
+        .eco-item {
+            padding: 20px;
+            background: var(--glass-bg);
+            border-radius: 15px;
+            border: 1px solid var(--glass-border);
+            text-decoration: none;
+            color: #999;
+            transition: 0.3s;
+        }
+
+        .eco-item:hover {
+            border-color: var(--accent-pink);
+            color: #fff;
+        }
+
+        .eco-item h4 {
+            margin: 0 0 5px 0;
+            color: #fff;
+        }
+
+        .copy-info {
+            margin-top: 3rem;
+            font-size: 0.7rem;
+            color: #555;
+            letter-spacing: 1px;
+        }
+
+        /* --- Toast --- */
+        #toast {
+            visibility: hidden;
+            min-width: 200px;
+            background-color: var(--accent-blue);
+            color: #000;
+            text-align: center;
+            border-radius: 10px;
+            padding: 16px;
+            position: fixed;
+            z-index: 2000;
+            bottom: 30px;
+            font-weight: 700;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
+        }
+
+        #toast.show {
+            visibility: visible;
+            animation: fadein 0.5s, fadeout 0.5s 2.5s;
+        }
+
+        @keyframes fadein { from { bottom: 0; opacity: 0; } to { bottom: 30px; opacity: 1; } }
+        @keyframes fadeout { from { bottom: 30px; opacity: 1; } to { bottom: 0; opacity: 0; } }
+
         @media (max-width: 600px) {
-            .info-section { padding: 1.5rem; }
-            .button-grid { grid-template-columns: 1fr 1fr; }
-            .btn-best { grid-column: 1 / 3; }
-            .file-title { font-size: 1.1rem; }
+            .button-grid {
+                grid-template-columns: 1fr 1fr;
+            }
+            .header h1 { font-size: 1.2rem; }
         }
     </style>
 </head>
 <body>
-    <div class="navbar">
-        <h1>OTAKULUX PREMIUM</h1>
-    </div>
+    <header class="header">
+        <h1>OTAKULUX Premium</h1>
+    </header>
 
     <div class="container">
-        <div class="player-card">
-            <div class="watermark-overlay">OTAKULUX</div>
+        <div class="player-wrapper">
+            <div class="watermark">OTAKULUX 4K</div>
             <video
-                id="otakulux-player"
+                id="main-player"
                 class="video-js vjs-big-play-centered vjs-theme-city"
                 controls
                 preload="auto"
                 data-setup='{
                     "playbackRates": [0.5, 1, 1.25, 1.5, 2],
-                    "fluid": true,
-                    "responsive": true
+                    "fluid": true
                 }'>
                 <source src="{{ stream_url }}" type="{{ mime_type }}">
                 <p class="vjs-no-js">
@@ -234,23 +322,62 @@
             </video>
         </div>
 
-        <div class="info-section">
-            <div class="file-info">
-                <div class="file-title">{{ file_name }}</div>
-                <div class="file-meta">PREMIUM ULTRA STREAM • OTAKULUX</div>
+        <div class="info-card">
+            <div class="file-title">{{ file_name }}</div>
+
+            <div class="section-label">Main Actions</div>
+            <div class="button-grid">
+                <a href="{{ stream_url }}" download class="btn btn-main">
+                    <span class="btn-text">📥 High Speed Download</span>
+                </a>
+                <div class="btn" onclick="copyLink()">
+                    <img src="https://cdn-icons-png.flaticon.com/512/1621/1621635.png" alt="Link">
+                    <span class="btn-text">Copy Link</span>
+                </div>
+                <div class="btn" onclick="openBestPlayer()">
+                    <img src="https://cdn-icons-png.flaticon.com/512/771/771216.png" alt="Best">
+                    <span class="btn-text">Best Player</span>
+                </div>
             </div>
 
+            <div class="section-label">External Players</div>
             <div class="button-grid">
-                <button onclick="openBest()" class="btn btn-best">🚀 OPEN IN BEST PLAYER</button>
-                <a href="{{ stream_url }}" download class="btn btn-dl">📥 DOWNLOAD</a>
-                <button onclick="openExternal('vlc')" class="btn btn-vlc">VLC</button>
-                <button onclick="openExternal('mx')" class="btn btn-mx">MX PLAYER</button>
-                <button onclick="openExternal('playit')" class="btn btn-playit">PLAYIT</button>
+                <a href="vlc-redirect" class="btn" onclick="event.preventDefault(); openExternal('vlc')">
+                    <img src="https://i.postimg.cc/15TQ4y7B/vlc.png" alt="VLC">
+                    <span class="btn-text">VLC</span>
+                </a>
+                <a href="mx-redirect" class="btn" onclick="event.preventDefault(); openExternal('mx')">
+                    <img src="https://i.postimg.cc/sx4Msv4T/mx.png" alt="MX">
+                    <span class="btn-text">MX Player</span>
+                </a>
+                <a href="playit-redirect" class="btn" onclick="event.preventDefault(); openExternal('playit')">
+                    <img src="https://i.postimg.cc/RVGWYJFF/playit.png" alt="PLAYit">
+                    <span class="btn-text">PLAYit</span>
+                </a>
+                <a href="km-redirect" class="btn" onclick="event.preventDefault(); openExternal('km')">
+                    <img src="https://cdn-icons-png.flaticon.com/512/2111/2111450.png" alt="KM">
+                    <span class="btn-text">KMPlayer</span>
+                </a>
             </div>
         </div>
     </div>
 
-    <div class="footer">OTAKULUX</div>
+    <footer class="footer">
+        <div class="ecosystem-title">OTAKULUX Universe</div>
+        <div class="eco-grid">
+            <a href="https://t.me/OTAKULUX" class="eco-item">
+                <h4>📢 Main Channel</h4>
+                <span>Join for latest updates</span>
+            </a>
+            <a href="https://t.me/OTAKULUX_Support" class="eco-item">
+                <h4>🎧 Live Support</h4>
+                <span>24/7 technical help</span>
+            </a>
+        </div>
+        <div class="copy-info">© 2026 OTAKULUX PREMIUM SYSTEMS. ALL RIGHTS RESERVED.</div>
+    </footer>
+
+    <div id="toast">Link Copied Successfully!</div>
 
     <!-- Video.js Script -->
     <script src="https://vjs.zencdn.net/8.10.0/video.min.js"></script>
@@ -258,37 +385,32 @@
     <script>
         const payload = "{{ payload }}";
         const fileName = "{{ file_name }}";
-        const host = window.location.host;
-        const protocol = window.location.protocol.replace(':', '');
+        const streamUrl = window.location.origin + "/file/" + payload + "/" + fileName;
 
-        function getRedirectUrl(player) {
-            return `${window.location.origin}/${player}/${payload}`;
+        function showToast(msg) {
+            const t = document.getElementById("toast");
+            t.innerText = msg;
+            t.className = "show";
+            setTimeout(() => { t.className = t.className.replace("show", ""); }, 3000);
+        }
+
+        function copyLink() {
+            navigator.clipboard.writeText(streamUrl);
+            showToast("Stream Link Copied!");
         }
 
         function openExternal(player) {
-            window.location.href = getRedirectUrl(player);
+            window.location.href = `/${player}/${payload}`;
         }
 
-        function openBest() {
-            window.location.href = `${window.location.origin}/best/${payload}`;
+        function openBestPlayer() {
+            window.location.href = `/best/${payload}`;
         }
 
-        // Initialize player with error handling
-        var player = videojs('otakulux-player');
-
+        // Error handling for player
+        var player = videojs('main-player');
         player.on('error', function() {
-            var error = player.error();
-            console.error('Video.js Error:', error);
-        });
-
-        // Auto-play attempt
-        player.ready(function() {
-            var promise = player.play();
-            if (promise !== undefined) {
-                promise.catch(error => {
-                    console.log("Auto-play prevented. User interaction required.");
-                });
-            }
+            showToast("Buffering issue? Try external players!");
         });
     </script>
 </body>

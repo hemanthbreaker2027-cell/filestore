@@ -134,18 +134,20 @@ async def send_files(client: Client, message: Message, base64_string):
                         dl_url = f"{dl_config['domain']}/file/{payload}/{file_name}"
                         watch_url = f"{dl_config['domain']}/watch/{payload}/{file_name}"
 
-                        btn_dl = InlineKeyboardButton("📥 Dᴏᴡɴʟᴏᴀᴅ ⚡", url=dl_url)
-                        btn_watch = InlineKeyboardButton("▶️ Sᴛʀᴇᴀᴍ Oɴʟɪɴᴇ 🚀", url=watch_url)
-                        btn_best = InlineKeyboardButton("🎬 Bᴇsᴛ Pʟᴀʏᴇʀ", url=f"{dl_config['domain']}/best/{payload}")
+                        btn_dl = InlineKeyboardButton("📥 Dᴏᴡɴʟᴏᴀᴅ", url=dl_url)
+                        btn_watch = InlineKeyboardButton("🎬 Sᴛʀᴇᴀᴍ Oɴʟɪɴᴇ", url=watch_url)
+                        btn_best = InlineKeyboardButton("🚀 Oᴘᴇɴ Iɴ Bᴇsᴛ Pʟᴀʏᴇʀ", url=f"{dl_config['domain']}/best/{payload}")
 
                         btn_vlc = InlineKeyboardButton("VLC", url=f"{dl_config['domain']}/vlc/{payload}")
                         btn_mx = InlineKeyboardButton("MX", url=f"{dl_config['domain']}/mx/{payload}")
                         btn_playit = InlineKeyboardButton("PLAYɪᴛ", url=f"{dl_config['domain']}/playit/{payload}")
+                        btn_km = InlineKeyboardButton("KM Pʟᴀʏᴇʀ", url=f"{dl_config['domain']}/km/{payload}")
 
                         keyboard = list(reply_markup.inline_keyboard) if reply_markup else []
                         keyboard.append([btn_dl, btn_watch])
                         keyboard.append([btn_best])
-                        keyboard.append([btn_vlc, btn_mx, btn_playit])
+                        keyboard.append([btn_vlc, btn_mx])
+                        keyboard.append([btn_playit, btn_km])
                         reply_markup = InlineKeyboardMarkup(keyboard)
 
                     # Delivery

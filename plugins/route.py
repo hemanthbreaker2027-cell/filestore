@@ -214,23 +214,35 @@ async def vlc_redirect(request):
     decoded = await decode(payload)
     msg_id = int(int(decoded.split("-")[1]) / abs(bot.db_channel.id))
     msg = await bot.get_messages(bot.db_channel.id, msg_id)
-    file_name = (msg.video or msg.document or msg.audio).file_name or "video.mp4"
-    host = request.host
-    scheme = request.scheme
-    watch_url = f"{scheme}://{host}/watch/{payload}/{file_name}"
-    # Optimized VLC Intent formatting
-    intent_url = f"intent://{host}/watch/{payload}/{file_name}#Intent;scheme={scheme};type=video/*;package=org.videolan.vlc;S.browser_fallback_url={watch_url};end"
+    media = msg.video or msg.document or msg.audio
+    file_name = media.file_name or "video.mp4"
+
+    # Use WEBSITE_URL if set, else fallback to request host
+    domain = WEBSITE_URL.rstrip('/') if WEBSITE_URL else f"{request.scheme}://{request.host}"
+    stream_url = f"{domain}/file/{payload}/{file_name}"
+    watch_url = f"{domain}/watch/{payload}/{file_name}"
+
+    # VLC Intent formatting - using both vlc:// and intent:// for max compatibility
+    intent_url = f"intent://{stream_url.replace('https://','').replace('http://','')}/#Intent;scheme={domain.split(':')[0]};package=org.videolan.vlc;S.browser_fallback_url={watch_url};end"
+
     html = f"""
     <html>
     <head>
-        <title>Opening VLC...</title>
+        <title>OTAKULUX | Opening VLC...</title>
         <script>
             window.onload = function() {{
-                window.location.href = "{intent_url}";
+                window.location.href = "vlc://{stream_url}";
+                setTimeout(() => {{ window.location.href = "{intent_url}"; }}, 500);
+                setTimeout(() => {{ window.location.href = "{watch_url}"; }}, 3000);
             }};
         </script>
     </head>
-    <body>Redirecting to VLC... If it doesn't open, <a href="{watch_url}">click here</a></body>
+    <body style="background:#000;color:#fff;display:flex;align-items:center;justify-content:center;height:100vh;font-family:sans-serif;">
+        <div style="text-align:center;">
+            <h3>Redirecting to VLC...</h3>
+            <p>If it doesn't open, <a href="{watch_url}" style="color:#00d2ff;">click here</a></p>
+        </div>
+    </body>
     </html>
     """
     return web.Response(text=html, content_type='text/html')
@@ -242,22 +254,35 @@ async def mx_redirect(request):
     decoded = await decode(payload)
     msg_id = int(int(decoded.split("-")[1]) / abs(bot.db_channel.id))
     msg = await bot.get_messages(bot.db_channel.id, msg_id)
-    file_name = (msg.video or msg.document or msg.audio).file_name or "video.mp4"
-    host = request.host
-    scheme = request.scheme
-    watch_url = f"{scheme}://{host}/watch/{payload}/{file_name}"
-    intent_url = f"intent://{host}/watch/{payload}/{file_name}#Intent;scheme={scheme};package=com.mxtech.videoplayer.ad;S.browser_fallback_url={watch_url};end"
+    media = msg.video or msg.document or msg.audio
+    file_name = media.file_name or "video.mp4"
+
+    domain = WEBSITE_URL.rstrip('/') if WEBSITE_URL else f"{request.scheme}://{request.host}"
+    stream_url = f"{domain}/file/{payload}/{file_name}"
+    watch_url = f"{domain}/watch/{payload}/{file_name}"
+
+    # MX Player Intent formatting - try Pro first, then Ad-supported
+    intent_pro = f"intent:{stream_url}#Intent;package=com.mxtech.videoplayer.pro;S.title={file_name};S.browser_fallback_url={watch_url};end"
+    intent_ad = f"intent:{stream_url}#Intent;package=com.mxtech.videoplayer.ad;S.title={file_name};S.browser_fallback_url={watch_url};end"
+
     html = f"""
     <html>
     <head>
-        <title>Opening MX Player...</title>
+        <title>OTAKULUX | Opening MX Player...</title>
         <script>
             window.onload = function() {{
-                window.location.href = "{intent_url}";
+                window.location.href = "{intent_pro}";
+                setTimeout(() => {{ window.location.href = "{intent_ad}"; }}, 800);
+                setTimeout(() => {{ window.location.href = "{watch_url}"; }}, 3000);
             }};
         </script>
     </head>
-    <body>Redirecting to MX Player... If it doesn't open, <a href="{watch_url}">click here</a></body>
+    <body style="background:#000;color:#fff;display:flex;align-items:center;justify-content:center;height:100vh;font-family:sans-serif;">
+        <div style="text-align:center;">
+            <h3>Redirecting to MX Player...</h3>
+            <p>If it doesn't open, <a href="{watch_url}" style="color:#00d2ff;">click here</a></p>
+        </div>
+    </body>
     </html>
     """
     return web.Response(text=html, content_type='text/html')
@@ -269,22 +294,67 @@ async def playit_redirect(request):
     decoded = await decode(payload)
     msg_id = int(int(decoded.split("-")[1]) / abs(bot.db_channel.id))
     msg = await bot.get_messages(bot.db_channel.id, msg_id)
-    file_name = (msg.video or msg.document or msg.audio).file_name or "video.mp4"
-    host = request.host
-    scheme = request.scheme
-    watch_url = f"{scheme}://{host}/watch/{payload}/{file_name}"
-    intent_url = f"intent://{host}/watch/{payload}/{file_name}#Intent;scheme={scheme};package=com.playit.videoplayer;S.browser_fallback_url={watch_url};end"
+    media = msg.video or msg.document or msg.audio
+    file_name = media.file_name or "video.mp4"
+
+    domain = WEBSITE_URL.rstrip('/') if WEBSITE_URL else f"{request.scheme}://{request.host}"
+    stream_url = f"{domain}/file/{payload}/{file_name}"
+    watch_url = f"{domain}/watch/{payload}/{file_name}"
+
+    intent_url = f"intent:{stream_url}#Intent;package=com.playit.videoplayer;S.title={file_name};S.browser_fallback_url={watch_url};end"
     html = f"""
     <html>
     <head>
-        <title>Opening PLAYit...</title>
+        <title>OTAKULUX | Opening PLAYit...</title>
         <script>
             window.onload = function() {{
                 window.location.href = "{intent_url}";
+                setTimeout(() => {{ window.location.href = "{watch_url}"; }}, 3000);
             }};
         </script>
     </head>
-    <body>Redirecting to PLAYit... If it doesn't open, <a href="{watch_url}">click here</a></body>
+    <body style="background:#000;color:#fff;display:flex;align-items:center;justify-content:center;height:100vh;font-family:sans-serif;">
+        <div style="text-align:center;">
+            <h3>Redirecting to PLAYit...</h3>
+            <p>If it doesn't open, <a href="{watch_url}" style="color:#00d2ff;">click here</a></p>
+        </div>
+    </body>
+    </html>
+    """
+    return web.Response(text=html, content_type='text/html')
+
+@routes.get("/km/{payload}")
+async def km_redirect(request):
+    payload = request.match_info['payload']
+    bot = request.app.get('bot')
+    decoded = await decode(payload)
+    msg_id = int(int(decoded.split("-")[1]) / abs(bot.db_channel.id))
+    msg = await bot.get_messages(bot.db_channel.id, msg_id)
+    media = msg.video or msg.document or msg.audio
+    file_name = media.file_name or "video.mp4"
+
+    domain = WEBSITE_URL.rstrip('/') if WEBSITE_URL else f"{request.scheme}://{request.host}"
+    stream_url = f"{domain}/file/{payload}/{file_name}"
+    watch_url = f"{domain}/watch/{payload}/{file_name}"
+
+    intent_url = f"intent:{stream_url}#Intent;package=com.kmplayer;S.title={file_name};S.browser_fallback_url={watch_url};end"
+    html = f"""
+    <html>
+    <head>
+        <title>OTAKULUX | Opening KMPlayer...</title>
+        <script>
+            window.onload = function() {{
+                window.location.href = "{intent_url}";
+                setTimeout(() => {{ window.location.href = "{watch_url}"; }}, 3000);
+            }};
+        </script>
+    </head>
+    <body style="background:#000;color:#fff;display:flex;align-items:center;justify-content:center;height:100vh;font-family:sans-serif;">
+        <div style="text-align:center;">
+            <h3>Redirecting to KMPlayer...</h3>
+            <p>If it doesn't open, <a href="{watch_url}" style="color:#00d2ff;">click here</a></p>
+        </div>
+    </body>
     </html>
     """
     return web.Response(text=html, content_type='text/html')
@@ -296,46 +366,60 @@ async def best_redirect(request):
     decoded = await decode(payload)
     msg_id = int(int(decoded.split("-")[1]) / abs(bot.db_channel.id))
     msg = await bot.get_messages(bot.db_channel.id, msg_id)
-    file_name = (msg.video or msg.document or msg.audio).file_name or "video.mp4"
-    host = request.host
-    scheme = request.scheme
+    media = msg.video or msg.document or msg.audio
+    file_name = media.file_name or "video.mp4"
 
-    # Use the dual-behavior /watch/ endpoint for all attempts
-    watch_url = f"{scheme}://{host}/watch/{payload}/{file_name}"
+    domain = WEBSITE_URL.rstrip('/') if WEBSITE_URL else f"{request.scheme}://{request.host}"
+    stream_url = f"{domain}/file/{payload}/{file_name}"
+    watch_url = f"{domain}/watch/{payload}/{file_name}"
 
+    # Sequential player attempt logic with premium UI
     html = f"""
 <!DOCTYPE html>
 <html>
 <head>
-    <title>Opening Best Player...</title>
+    <title>OTAKULUX | Detecting Best Player...</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <script>
-        function openBestPlayer(watchUrl) {{
-            // For intents, data URL should NOT have scheme at the start
-            const dataUrl = watchUrl.replace("https://", "").replace("http://", "");
-            const scheme = watchUrl.startsWith("https") ? "https" : "http";
+        function tryPlayers() {{
+            const streamUrl = "{stream_url}";
+            const watchUrl = "{watch_url}";
+            const title = "{file_name}";
 
-            // Try VLC
-            window.location.href = `intent://${{dataUrl}}#Intent;scheme=${{scheme}};package=org.videolan.vlc;type=video/*;end;`;
+            // 1. Try VLC (Direct URI)
+            window.location.href = "vlc://" + streamUrl;
 
+            // 2. Try MX Player Pro
             setTimeout(() => {{
-                // Try MX
-                window.location.href = `intent://${{dataUrl}}#Intent;scheme=${{scheme}};package=com.mxtech.videoplayer.ad;type=video/*;end;`;
+                window.location.href = "intent:" + streamUrl + "#Intent;package=com.mxtech.videoplayer.pro;S.title=" + title + ";S.browser_fallback_url=" + watchUrl + ";end";
             }}, 800);
 
+            // 3. Try MX Player (Free)
             setTimeout(() => {{
-                // Try PLAYit
-                window.location.href = `intent://${{dataUrl}}#Intent;scheme=${{scheme}};package=com.playit.videoplayer;type=video/*;end;`;
+                window.location.href = "intent:" + streamUrl + "#Intent;package=com.mxtech.videoplayer.ad;S.title=" + title + ";S.browser_fallback_url=" + watchUrl + ";end";
             }}, 1600);
 
+            // 4. Try PLAYit
             setTimeout(() => {{
-                // Final fallback
+                window.location.href = "intent:" + streamUrl + "#Intent;package=com.playit.videoplayer;S.title=" + title + ";S.browser_fallback_url=" + watchUrl + ";end";
+            }}, 2400);
+
+            // 5. Final Fallback to Web
+            setTimeout(() => {{
                 window.location.href = watchUrl;
-            }}, 2500);
+            }}, 3500);
         }}
-        window.onload = () => openBestPlayer('{watch_url}');
+        window.onload = tryPlayers;
     </script>
 </head>
-<body>Redirecting to the best available player...</body>
+<body style="background:#050505;color:#fff;font-family:'Segoe UI',sans-serif;display:flex;align-items:center;justify-content:center;height:100vh;margin:0;">
+    <div style="text-align:center;padding:20px;background:rgba(255,255,255,0.03);border:1px solid rgba(255,255,255,0.1);border-radius:20px;backdrop-filter:blur(10px);box-shadow:0 10px 30px rgba(0,0,0,0.5);">
+        <h2 style="color:#00d2ff;margin:0 0 10px 0;letter-spacing:1px;">Detecting Best Player</h2>
+        <p style="color:#888;font-size:0.9rem;">Launching external application...</p>
+        <div style="margin-top:20px;width:40px;height:40px;border:4px solid rgba(255,0,127,0.1);border-top-color:#ff007f;border-radius:50%;animation:spin 0.8s linear infinite;display:inline-block;"></div>
+    </div>
+    <style>@keyframes spin {{ to {{ transform:rotate(360deg); }} }}</style>
+</body>
 </html>
 """
     return web.Response(text=html, content_type='text/html')
@@ -387,14 +471,13 @@ async def stream_controller(request, payload):
             'Accept-Ranges': 'bytes',
             'Content-Length': str(end - start + 1),
             'Content-Range': f'bytes {start}-{end}/{file_size}',
-            'Cache-Control': 'no-cache, no-store, must-revalidate',
-            'Pragma': 'no-cache',
-            'Expires': '0',
+            'Cache-Control': 'public, max-age=3600',
             'Access-Control-Allow-Origin': '*',
             'Access-Control-Allow-Methods': 'GET, HEAD, OPTIONS',
-            'Access-Control-Allow-Headers': '*',
+            'Access-Control-Allow-Headers': 'Range, Content-Type, Accept-Ranges, Origin',
             'Access-Control-Expose-Headers': 'Content-Range, Content-Length, Accept-Ranges, Content-Type',
             'X-Content-Type-Options': 'nosniff',
+            'X-Frame-Options': 'ALLOWALL',
             'Connection': 'keep-alive',
         }
 
@@ -505,10 +588,12 @@ async def direct_download(request):
             'Content-Range': f'bytes {start}-{end}/{file_size}',
             'Cache-Control': 'public, max-age=3600',
             'Access-Control-Allow-Origin': '*',
-            'Access-Control-Allow-Methods': 'GET, OPTIONS',
-            'Access-Control-Allow-Headers': '*',
-            'Access-Control-Expose-Headers': 'Content-Range, Content-Length, Accept-Ranges',
+            'Access-Control-Allow-Methods': 'GET, HEAD, OPTIONS',
+            'Access-Control-Allow-Headers': 'Range, Content-Type, Accept-Ranges, Origin',
+            'Access-Control-Expose-Headers': 'Content-Range, Content-Length, Accept-Ranges, Content-Type',
             'X-Content-Type-Options': 'nosniff',
+            'X-Frame-Options': 'ALLOWALL',
+            'Connection': 'keep-alive',
         }
 
         res = web.StreamResponse(status=206 if range_header else 200, headers=headers)
