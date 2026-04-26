@@ -124,7 +124,7 @@ async def send_files(client: Client, message: Message, base64_string):
             if dl_config['status'] == 'on':
                 try:
                     payload = await encode(f"get-{msg.id * abs(client.db_channel.id)}")
-                    dl_url = f"{dl_config['domain']}/verify/{payload}"
+                    dl_url = f"{dl_config['domain']}/dl/{payload}"
                     dl_button = InlineKeyboardButton("Download ⚡", url=dl_url)
 
                     if reply_markup:
