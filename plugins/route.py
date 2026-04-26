@@ -20,6 +20,16 @@ template_env = Environment(loader=FileSystemLoader('templates'))
 
 # Configuration
 TIMER_THRESHOLD = 100 # 100 seconds
+
+def is_external_player(ua):
+    if not ua:
+        return False
+    ua = ua.lower()
+    external_players = [
+        'vlc', 'mxplayer', 'playit', 'dalvik', 'mpv', 'stagefright',
+        'lavf', 'lua-resty-http', 'okhttp', 'gstreamer', 'androidplayer'
+    ]
+    return any(player in ua for player in external_players)
 BAN_STRIKE_1 = 3   # 1 hour ban
 BAN_STRIKE_2 = 5   # 24 hour ban
 BAN_STRIKE_3 = 10  # Permanent ban
@@ -207,12 +217,10 @@ async def vlc_redirect(request):
     msg_id = int(int(decoded.split("-")[1]) / abs(bot.db_channel.id))
     msg = await bot.get_messages(bot.db_channel.id, msg_id)
     file_name = (msg.video or msg.document or msg.audio).file_name or "video.mp4"
-
-    stream_url = f"{request.scheme}://{request.host}/file/{payload}/{file_name}"
-    watch_url = f"{request.scheme}://{request.host}/watch/{payload}"
-    from urllib.parse import quote
-    encoded_url = quote(stream_url, safe='')
-    intent_url = f"intent://{encoded_url}#Intent;package=org.videolan.vlc;type=video/*;end;"
+    host = request.host
+    scheme = request.scheme
+    watch_url = f"{scheme}://{host}/watch/{payload}/{file_name}"
+    intent_url = f"intent://{host}/watch/{payload}/{file_name}#Intent;scheme={scheme};type=video/*;package=org.videolan.vlc;end"
     html = f"""
     <html>
     <head>
@@ -237,12 +245,10 @@ async def mx_redirect(request):
     msg_id = int(int(decoded.split("-")[1]) / abs(bot.db_channel.id))
     msg = await bot.get_messages(bot.db_channel.id, msg_id)
     file_name = (msg.video or msg.document or msg.audio).file_name or "video.mp4"
-
-    stream_url = f"{request.scheme}://{request.host}/file/{payload}/{file_name}"
-    watch_url = f"{request.scheme}://{request.host}/watch/{payload}"
-    from urllib.parse import quote
-    encoded_url = quote(stream_url, safe='')
-    intent_url = f"intent://{encoded_url}#Intent;package=com.mxtech.videoplayer.ad;type=video/*;end;"
+    host = request.host
+    scheme = request.scheme
+    watch_url = f"{scheme}://{host}/watch/{payload}/{file_name}"
+    intent_url = f"intent://{host}/watch/{payload}/{file_name}#Intent;scheme={scheme};package=com.mxtech.videoplayer.ad;end"
     html = f"""
     <html>
     <head>
@@ -267,12 +273,10 @@ async def playit_redirect(request):
     msg_id = int(int(decoded.split("-")[1]) / abs(bot.db_channel.id))
     msg = await bot.get_messages(bot.db_channel.id, msg_id)
     file_name = (msg.video or msg.document or msg.audio).file_name or "video.mp4"
-
-    stream_url = f"{request.scheme}://{request.host}/file/{payload}/{file_name}"
-    watch_url = f"{request.scheme}://{request.host}/watch/{payload}"
-    from urllib.parse import quote
-    encoded_url = quote(stream_url, safe='')
-    intent_url = f"intent://{encoded_url}#Intent;package=com.playit.videoplayer;type=video/*;end;"
+    host = request.host
+    scheme = request.scheme
+    watch_url = f"{scheme}://{host}/watch/{payload}/{file_name}"
+    intent_url = f"intent://{host}/watch/{payload}/{file_name}#Intent;scheme={scheme};package=com.playit.videoplayer;end"
     html = f"""
     <html>
     <head>
@@ -291,8 +295,17 @@ async def playit_redirect(request):
 @routes.get("/best/{payload}")
 async def best_redirect(request):
     payload = request.match_info['payload']
-    stream_url = f"{request.scheme}://{request.host}/file/{payload}"
-    watch_url = f"{request.scheme}://{request.host}/watch/{payload}"
+    bot = request.app.get('bot')
+    from helper_func import decode
+    decoded = await decode(payload)
+    msg_id = int(int(decoded.split("-")[1]) / abs(bot.db_channel.id))
+    msg = await bot.get_messages(bot.db_channel.id, msg_id)
+    file_name = (msg.video or msg.document or msg.audio).file_name or "video.mp4"
+    host = request.host
+    scheme = request.scheme
+
+    # Use the dual-behavior /watch/ endpoint for all attempts
+    watch_url = f"{scheme}://{host}/watch/{payload}/{file_name}"
 
     html = f"""
 <!DOCTYPE html>
@@ -300,28 +313,30 @@ async def best_redirect(request):
 <head>
     <title>Opening Best Player...</title>
     <script>
-        function openBestPlayer(videoUrl, fallback) {{
-            const encodedUrl = encodeURIComponent(videoUrl);
+        function openBestPlayer(watchUrl) {{
+            // For intents, data URL should NOT have scheme at the start
+            const dataUrl = watchUrl.replace("https://", "").replace("http://", "");
+            const scheme = watchUrl.startsWith("https") ? "https" : "http";
 
             // Try VLC
-            window.location.href = `intent://${{encodedUrl}}#Intent;package=org.videolan.vlc;type=video/*;end;`;
+            window.location.href = `intent://${{dataUrl}}#Intent;scheme=${{scheme}};package=org.videolan.vlc;type=video/*;end;`;
 
             setTimeout(() => {{
                 // Try MX
-                window.location.href = `intent://${{encodedUrl}}#Intent;package=com.mxtech.videoplayer.ad;type=video/*;end;`;
+                window.location.href = `intent://${{dataUrl}}#Intent;scheme=${{scheme}};package=com.mxtech.videoplayer.ad;type=video/*;end;`;
             }}, 800);
 
             setTimeout(() => {{
                 // Try PLAYit
-                window.location.href = `intent://${{encodedUrl}}#Intent;package=com.playit.videoplayer;type=video/*;end;`;
+                window.location.href = `intent://${{dataUrl}}#Intent;scheme=${{scheme}};package=com.playit.videoplayer;type=video/*;end;`;
             }}, 1600);
 
             setTimeout(() => {{
                 // Final fallback
-                window.location.href = fallback;
+                window.location.href = watchUrl;
             }}, 2500);
         }}
-        window.onload = () => openBestPlayer('{stream_url}', '{watch_url}');
+        window.onload = () => openBestPlayer('{watch_url}');
     </script>
 </head>
 <body>Redirecting to the best available player...</body>
@@ -329,9 +344,82 @@ async def best_redirect(request):
 """
     return web.Response(text=html, content_type='text/html')
 
+async def stream_controller(request, payload):
+    bot = request.app.get('bot')
+    from helper_func import decode
+    try:
+        decoded_payload = await decode(payload)
+        argument = decoded_payload.split("-")
+        if len(argument) < 2:
+             return web.Response(text="Invalid Payload", status=400)
+
+        msg_id = int(int(argument[1]) / abs(bot.db_channel.id))
+        msg = await bot.get_messages(bot.db_channel.id, msg_id)
+
+        if not msg or not (msg.document or msg.video or msg.audio):
+            return web.Response(text="File not found or not a media file.", status=404)
+
+        media = msg.document or msg.video or msg.audio
+        file_name = media.file_name or "file"
+        file_size = media.file_size
+
+        mime_type = media.mime_type or "application/octet-stream"
+        if "video" in mime_type or file_name.endswith((".mp4", ".mkv", ".mov", ".webm", ".avi")):
+            if not mime_type or mime_type == "application/octet-stream":
+                mime_type = "video/mp4" if file_name.endswith(".mp4") else "video/x-matroska"
+
+        range_header = request.headers.get('Range')
+        start = 0
+        end = file_size - 1
+
+        if range_header:
+            ranges = range_header.replace('bytes=', '').split('-')
+            start = int(ranges[0]) if ranges[0] else 0
+            end = int(ranges[1]) if len(ranges) > 1 and ranges[1] else file_size - 1
+
+        if start >= file_size:
+            return web.Response(status=416)
+
+        headers = {
+            'Content-Type': mime_type,
+            'Content-Disposition': f'inline; filename="{file_name}"',
+            'Accept-Ranges': 'bytes',
+            'Content-Length': str(end - start + 1),
+            'Content-Range': f'bytes {start}-{end}/{file_size}',
+            'Cache-Control': 'public, max-age=3600',
+            'Access-Control-Allow-Origin': '*',
+            'Access-Control-Allow-Methods': 'GET, OPTIONS',
+            'Access-Control-Allow-Headers': '*',
+            'Access-Control-Expose-Headers': 'Content-Range, Content-Length, Accept-Ranges',
+            'X-Content-Type-Options': 'nosniff',
+        }
+
+        res = web.StreamResponse(status=206 if range_header else 200, headers=headers)
+        await res.prepare(request)
+
+        try:
+            async for chunk in bot.stream_media(media, offset=start, limit=end-start+1):
+                await res.write(chunk)
+        except Exception as e:
+            print(f"Error during streaming: {e}")
+
+        return res
+    except Exception as e:
+        print(f"Stream Controller Error: {e}")
+        return web.Response(text=f"Stream Error: {e}", status=500)
+
+@routes.get("/watch/{payload}/{file_name}")
 @routes.get("/watch/{payload}")
-async def watch_page(request):
-    payload = request.match_info['payload']
+@routes.get("/watch")
+async def watch_route_handler(request):
+    payload = request.match_info.get('payload') or request.query.get('path')
+    if not payload:
+        return web.Response(text="Payload missing", status=400)
+
+    ua = request.headers.get('User-Agent', '')
+    if is_external_player(ua):
+        return await stream_controller(request, payload)
+
     bot = request.app.get('bot')
     from helper_func import decode
 
@@ -349,8 +437,6 @@ async def watch_page(request):
 
         media = msg.video or msg.document
         file_name = media.file_name or "video"
-
-        # Use relative paths for the stream URL
         stream_url = f"/file/{payload}"
         mime_type = getattr(media, 'mime_type', 'video/mp4')
 

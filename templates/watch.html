@@ -173,11 +173,11 @@
         <div class="info-card">
             <div class="file-title">{{ file_name }}</div>
             <div class="button-grid">
-                <button onclick="openBestPlayer('{{ stream_url }}')" class="btn btn-best">🚀 Best Player</button>
+                <button onclick="openBestPlayer('{{ payload }}')" class="btn btn-best">🚀 Best Player</button>
                 <a href="{{ stream_url }}" download class="btn btn-main">📥 Download</a>
-                <button onclick="openExternalPlayer('vlc', '{{ stream_url }}')" class="btn btn-vlc">▶️ VLC Player</button>
-                <button onclick="openExternalPlayer('mx', '{{ stream_url }}')" class="btn btn-mx">▶️ MX Player</button>
-                <button onclick="openExternalPlayer('playit', '{{ stream_url }}')" class="btn btn-playit">▶️ PLAYit</button>
+                <button onclick="openExternalPlayer('vlc', '{{ payload }}')" class="btn btn-vlc">▶️ VLC Player</button>
+                <button onclick="openExternalPlayer('mx', '{{ payload }}')" class="btn btn-mx">▶️ MX Player</button>
+                <button onclick="openExternalPlayer('playit', '{{ payload }}')" class="btn btn-playit">▶️ PLAYit</button>
             </div>
         </div>
     </div>
@@ -185,42 +185,48 @@
     <div class="footer-watermark">OTAKULUX</div>
 
     <script>
-        function openExternalPlayer(player, videoUrl) {
-            const absoluteUrl = new URL(videoUrl, window.location.origin).href;
-            const encodedUrl = encodeURIComponent(absoluteUrl);
+        function openExternalPlayer(player, payload) {
+            const host = window.location.host;
+            const protocol = window.location.protocol.replace(':', '');
+            const watchUrl = `${protocol}://${host}/watch?path=${payload}`;
+            const encodedUrl = host + "/watch?path=" + payload; // Intent data doesn't usually like protocol here
+
             let intentUrl = "";
 
             if (player === "vlc") {
-                intentUrl = `intent://${encodedUrl}#Intent;package=org.videolan.vlc;type=video/*;end;`;
+                intentUrl = `intent://${encodedUrl}#Intent;scheme=${protocol};package=org.videolan.vlc;type=video/*;end;`;
             } else if (player === "mx") {
-                intentUrl = `intent://${encodedUrl}#Intent;package=com.mxtech.videoplayer.ad;type=video/*;end;`;
+                intentUrl = `intent://${encodedUrl}#Intent;scheme=${protocol};package=com.mxtech.videoplayer.ad;type=video/*;end;`;
             } else if (player === "playit") {
-                intentUrl = `intent://${encodedUrl}#Intent;package=com.playit.videoplayer;type=video/*;end;`;
+                intentUrl = `intent://${encodedUrl}#Intent;scheme=${protocol};package=com.playit.videoplayer;type=video/*;end;`;
             }
 
             if (intentUrl) {
                 window.location.href = intentUrl;
 
                 setTimeout(() => {
-                    window.location.href = absoluteUrl; // fallback to browser
+                    window.location.href = watchUrl; // fallback to browser (this page)
                 }, 1500);
             }
         }
 
-        function openBestPlayer(videoUrl) {
-            const absoluteUrl = new URL(videoUrl, window.location.origin).href;
-            openExternalPlayer("vlc", absoluteUrl);
+        function openBestPlayer(payload) {
+            const host = window.location.host;
+            const protocol = window.location.protocol.replace(':', '');
+            const watchUrl = `${protocol}://${host}/watch?path=${payload}`;
+
+            openExternalPlayer("vlc", payload);
 
             setTimeout(() => {
-                openExternalPlayer("mx", absoluteUrl);
+                openExternalPlayer("mx", payload);
             }, 800);
 
             setTimeout(() => {
-                openExternalPlayer("playit", absoluteUrl);
+                openExternalPlayer("playit", payload);
             }, 1600);
 
             setTimeout(() => {
-                window.location.href = absoluteUrl;
+                window.location.href = watchUrl;
             }, 2500);
         }
     </script>
