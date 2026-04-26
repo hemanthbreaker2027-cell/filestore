@@ -201,34 +201,91 @@ async def bot_detected(request):
 @routes.get("/vlc/{payload}")
 async def vlc_redirect(request):
     payload = request.match_info['payload']
-    stream_url = f"{request.scheme}://{request.host}/file/{payload}"
+    bot = request.app.get('bot')
+    from helper_func import decode
+    decoded = await decode(payload)
+    msg_id = int(int(decoded.split("-")[1]) / abs(bot.db_channel.id))
+    msg = await bot.get_messages(bot.db_channel.id, msg_id)
+    file_name = (msg.video or msg.document or msg.audio).file_name or "video.mp4"
+
+    stream_url = f"{request.scheme}://{request.host}/file/{payload}/{file_name}"
     watch_url = f"{request.scheme}://{request.host}/watch/{payload}"
     from urllib.parse import quote
     encoded_url = quote(stream_url, safe='')
-    vlc_url = f"intent://{encoded_url}#Intent;package=org.videolan.vlc;type=video/*;S.browser_fallback_url={watch_url};end;"
-    html = f"<html><head><script>window.location.replace('{vlc_url}');</script></head><body>Redirecting to VLC...</body></html>"
+    intent_url = f"intent://{encoded_url}#Intent;package=org.videolan.vlc;type=video/*;end;"
+    html = f"""
+    <html>
+    <head>
+        <script>
+            window.onload = function() {{
+                window.location.href = "{intent_url}";
+                setTimeout(function() {{ window.location.href = "{watch_url}"; }}, 1500);
+            }};
+        </script>
+    </head>
+    <body>Redirecting to VLC... if it doesn't open, <a href="{watch_url}">click here</a></body>
+    </html>
+    """
     return web.Response(text=html, content_type='text/html')
 
 @routes.get("/mx/{payload}")
 async def mx_redirect(request):
     payload = request.match_info['payload']
-    stream_url = f"{request.scheme}://{request.host}/file/{payload}"
+    bot = request.app.get('bot')
+    from helper_func import decode
+    decoded = await decode(payload)
+    msg_id = int(int(decoded.split("-")[1]) / abs(bot.db_channel.id))
+    msg = await bot.get_messages(bot.db_channel.id, msg_id)
+    file_name = (msg.video or msg.document or msg.audio).file_name or "video.mp4"
+
+    stream_url = f"{request.scheme}://{request.host}/file/{payload}/{file_name}"
     watch_url = f"{request.scheme}://{request.host}/watch/{payload}"
     from urllib.parse import quote
     encoded_url = quote(stream_url, safe='')
-    mx_url = f"intent://{encoded_url}#Intent;package=com.mxtech.videoplayer.ad;type=video/*;S.browser_fallback_url={watch_url};end;"
-    html = f"<html><head><script>window.location.replace('{mx_url}');</script></head><body>Redirecting to MX Player...</body></html>"
+    intent_url = f"intent://{encoded_url}#Intent;package=com.mxtech.videoplayer.ad;type=video/*;end;"
+    html = f"""
+    <html>
+    <head>
+        <script>
+            window.onload = function() {{
+                window.location.href = "{intent_url}";
+                setTimeout(function() {{ window.location.href = "{watch_url}"; }}, 1500);
+            }};
+        </script>
+    </head>
+    <body>Redirecting to MX Player... if it doesn't open, <a href="{watch_url}">click here</a></body>
+    </html>
+    """
     return web.Response(text=html, content_type='text/html')
 
 @routes.get("/playit/{payload}")
 async def playit_redirect(request):
     payload = request.match_info['payload']
-    stream_url = f"{request.scheme}://{request.host}/file/{payload}"
+    bot = request.app.get('bot')
+    from helper_func import decode
+    decoded = await decode(payload)
+    msg_id = int(int(decoded.split("-")[1]) / abs(bot.db_channel.id))
+    msg = await bot.get_messages(bot.db_channel.id, msg_id)
+    file_name = (msg.video or msg.document or msg.audio).file_name or "video.mp4"
+
+    stream_url = f"{request.scheme}://{request.host}/file/{payload}/{file_name}"
     watch_url = f"{request.scheme}://{request.host}/watch/{payload}"
     from urllib.parse import quote
     encoded_url = quote(stream_url, safe='')
-    playit_url = f"intent://{encoded_url}#Intent;package=com.playit.videoplayer;type=video/*;S.browser_fallback_url={watch_url};end;"
-    html = f"<html><head><script>window.location.replace('{playit_url}');</script></head><body>Redirecting to PLAYit...</body></html>"
+    intent_url = f"intent://{encoded_url}#Intent;package=com.playit.videoplayer;type=video/*;end;"
+    html = f"""
+    <html>
+    <head>
+        <script>
+            window.onload = function() {{
+                window.location.href = "{intent_url}";
+                setTimeout(function() {{ window.location.href = "{watch_url}"; }}, 1500);
+            }};
+        </script>
+    </head>
+    <body>Redirecting to PLAYit... if it doesn't open, <a href="{watch_url}">click here</a></body>
+    </html>
+    """
     return web.Response(text=html, content_type='text/html')
 
 @routes.get("/best/{payload}")
@@ -310,6 +367,7 @@ async def watch_page(request):
         print(f"Watch Page Error: {e}")
         return web.Response(text=f"Error loading stream page: {e}", status=500)
 
+@routes.get("/file/{payload}/{file_name}")
 @routes.get("/file/{payload}")
 async def direct_download(request):
     payload = request.match_info['payload']
@@ -331,7 +389,12 @@ async def direct_download(request):
         media = msg.document or msg.video or msg.audio
         file_name = media.file_name or "file"
         file_size = media.file_size
+
+        # Optimize for PLAYit and some picky players
         mime_type = media.mime_type or "application/octet-stream"
+        if "video" in mime_type or file_name.endswith((".mp4", ".mkv", ".mov", ".webm", ".avi")):
+            if not mime_type or mime_type == "application/octet-stream":
+                mime_type = "video/mp4" if file_name.endswith(".mp4") else "video/x-matroska"
 
         # Basic Range support
         range_header = request.headers.get('Range')
@@ -357,6 +420,7 @@ async def direct_download(request):
             'Access-Control-Allow-Methods': 'GET, OPTIONS',
             'Access-Control-Allow-Headers': '*',
             'Access-Control-Expose-Headers': 'Content-Range, Content-Length, Accept-Ranges',
+            'X-Content-Type-Options': 'nosniff',
         }
 
         res = web.StreamResponse(status=206 if range_header else 200, headers=headers)

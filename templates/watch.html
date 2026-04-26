@@ -7,58 +7,70 @@
     <title>OTAKULUX Premium Stream - {{ file_name }}</title>
     <style>
         :root {
-            --bg-dark: #09090b;
-            --accent-neon: #00ffcc;
-            --text-main: #f4f4f5;
-            --card-bg: #18181b;
+            --bg-dark: #050505;
+            --accent-neon: #ff00ff; /* Neon Pink */
+            --accent-blue: #00f2ff; /* Neon Blue */
+            --text-main: #ffffff;
+            --card-bg: rgba(20, 20, 25, 0.7);
         }
 
         body {
             background-color: var(--bg-dark);
+            background-image: radial-gradient(circle at 50% 50%, #1a1a2e 0%, #050505 100%);
             color: var(--text-main);
-            font-family: 'Inter', system-ui, -apple-system, sans-serif;
+            font-family: 'Poppins', sans-serif;
             margin: 0;
             display: flex;
             flex-direction: column;
             align-items: center;
             min-height: 100vh;
-            padding-bottom: 3rem;
+            padding-bottom: 5rem;
         }
 
         .navbar {
             width: 100%;
-            padding: 1.5rem;
+            padding: 2rem;
             text-align: center;
-            background: rgba(24, 24, 27, 0.8);
-            backdrop-filter: blur(10px);
-            border-bottom: 1px solid #27272a;
+            background: rgba(0, 0, 0, 0.6);
+            backdrop-filter: blur(20px);
+            border-bottom: 2px solid var(--accent-neon);
             position: sticky;
             top: 0;
             z-index: 100;
+            box-shadow: 0 0 30px rgba(255, 0, 255, 0.2);
         }
 
         .navbar h1 {
             margin: 0;
-            font-size: 1.5rem;
-            letter-spacing: 2px;
-            color: var(--accent-neon);
+            font-size: 2rem;
+            font-weight: 800;
+            letter-spacing: 5px;
+            background: linear-gradient(to right, var(--accent-neon), var(--accent-blue));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
             text-transform: uppercase;
         }
 
         .container {
             width: 95%;
-            max-width: 1000px;
-            margin-top: 2rem;
+            max-width: 1100px;
+            margin-top: 3rem;
+            animation: fadeIn 0.8s ease-out;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
         }
 
         .player-wrapper {
             position: relative;
             background: #000;
-            border-radius: 12px;
+            border-radius: 20px;
             overflow: hidden;
-            box-shadow: 0 20px 50px rgba(0, 255, 204, 0.1);
+            box-shadow: 0 25px 60px rgba(0, 0, 0, 0.8);
             aspect-ratio: 16 / 9;
-            border: 1px solid #27272a;
+            border: 1px solid rgba(255, 255, 255, 0.1);
         }
 
         video {
@@ -69,69 +81,78 @@
 
         .watermark {
             position: absolute;
-            top: 20px;
-            right: 20px;
-            opacity: 0.6;
-            color: var(--accent-neon);
-            font-weight: bold;
-            font-size: 0.9rem;
+            bottom: 30px;
+            left: 30px;
+            opacity: 0.5;
+            color: #fff;
+            font-weight: 900;
+            font-size: 1.2rem;
             pointer-events: none;
-            text-shadow: 0 0 10px rgba(0, 255, 204, 0.5);
+            text-shadow: 0 0 10px var(--accent-neon);
+            letter-spacing: 2px;
         }
 
         .info-card {
-            margin-top: 1.5rem;
-            padding: 1.5rem;
+            margin-top: 2rem;
+            padding: 2.5rem;
             background: var(--card-bg);
-            border-radius: 12px;
-            border: 1px solid #27272a;
+            backdrop-filter: blur(15px);
+            border-radius: 20px;
+            border: 1px solid rgba(255, 255, 255, 0.05);
+            box-shadow: 0 15px 35px rgba(0,0,0,0.4);
         }
 
         .file-title {
-            font-size: 1.2rem;
-            margin-bottom: 0.5rem;
-            color: var(--accent-neon);
+            font-size: 1.5rem;
+            font-weight: 700;
+            margin-bottom: 1.5rem;
+            color: var(--accent-blue);
             word-break: break-all;
+            text-align: center;
         }
 
         .button-grid {
             display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
-            gap: 1rem;
-            margin-top: 2rem;
+            grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+            gap: 1.5rem;
+            margin-top: 2.5rem;
         }
 
         .btn {
             display: flex;
             align-items: center;
             justify-content: center;
-            gap: 0.8rem;
-            padding: 0.9rem;
-            border-radius: 8px;
-            font-weight: 600;
+            gap: 1rem;
+            padding: 1.2rem;
+            border-radius: 15px;
+            font-weight: 700;
             text-decoration: none;
-            transition: all 0.3s ease;
+            transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
             cursor: pointer;
-            border: none;
-            font-size: 0.95rem;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            font-size: 1.1rem;
+            text-transform: uppercase;
         }
 
         .btn:hover {
-            transform: translateY(-3px);
-            box-shadow: 0 5px 15px rgba(0,0,0,0.3);
+            transform: scale(1.05) translateY(-5px);
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
+            filter: brightness(1.2);
         }
 
-        .btn-main { background: var(--accent-neon); color: #000; }
-        .btn-best { background: #8b5cf6; color: #fff; }
+        .btn-main { background: linear-gradient(45deg, var(--accent-neon), #ff0080); color: #fff; }
+        .btn-best { background: linear-gradient(45deg, #8b5cf6, #6366f1); color: #fff; border-color: #8b5cf6; }
         .btn-vlc { background: #f97316; color: #fff; }
-        .btn-mx { background: #0ea5e9; color: #fff; }
+        .btn-mx { background: #0088cc; color: #fff; }
         .btn-playit { background: #ef4444; color: #fff; }
 
         .footer-watermark {
-            margin-top: 3rem;
-            font-size: 0.8rem;
-            opacity: 0.3;
-            letter-spacing: 5px;
+            margin-top: 5rem;
+            font-size: 1.5rem;
+            font-weight: 900;
+            opacity: 0.1;
+            letter-spacing: 20px;
+            color: var(--accent-blue);
         }
     </style>
 </head>
