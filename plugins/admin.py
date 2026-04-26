@@ -125,7 +125,7 @@ async def get_admins(client: Client, message: Message):
     await pro.edit(f"<b>⚡ Current Admin List:</b>\n\n{admin_list}", reply_markup=reply_markup)
 
 
-@Bot.on_message(filters.command('add_downlink') & filters.private & filters.user(OWNER_ID))
+@Bot.on_message(filters.command(['add_downlink', 'add_dowlink']) & filters.private & filters.user(OWNER_ID))
 async def add_downlink_cmd(client: Client, message: Message):
     config = await db.get_downlink_config()
     status = config['status'].upper()

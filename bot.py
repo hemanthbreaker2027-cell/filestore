@@ -85,7 +85,8 @@ class Bot(Client):
             BotCommand("auto_delete", "🕒 Set file auto-delete timer (Admin)"),
             BotCommand("check_auto_delete", "🔍 Check auto-delete timer (Admin)"),
             BotCommand("batch", "📦 Create a batch link (Admin)"),
-            BotCommand("genlink", "🔗 Generate a single link (Admin)")
+            BotCommand("genlink", "🔗 Generate a single link (Admin)"),
+            BotCommand("add_downlink", "🛠 Configure download links (Owner)")
         ])
 
         try:
@@ -101,7 +102,7 @@ class Bot(Client):
 
         self.set_parse_mode(ParseMode.HTML)
         self.LOGGER(__name__).info(f"Bot Running..!\n\nCreated by \nhttps://t.me/OTAKULUX")
-        self.LOGGER(__name__).info(f"""       
+        self.LOGGER(__name__).info(r"""
 
 
   ___ ___  ___  ___ ___ _    _____  _____  ___ _____ ___ 
