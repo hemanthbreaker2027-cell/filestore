@@ -121,7 +121,7 @@ async def send_files(client: Client, message: Message, base64_string):
             reply_markup = None if DISABLE_CHANNEL_BUTTON else msg.reply_markup
 
             # Downlink Integration
-            if dl_config['status'] == 'on':
+            if dl_config['status'] == 'on' and (msg.video or msg.document):
                 try:
                     payload = await encode(f"get-{msg.id * abs(client.db_channel.id)}")
                     dl_url = f"{dl_config['domain']}/dl/{payload}"
