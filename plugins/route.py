@@ -5,9 +5,11 @@ import os
 from aiohttp import web
 from jinja2 import Environment, FileSystemLoader
 from config import (
-    RECAPTCHA_SITE_KEY, RECAPTCHA_SECRET_KEY, WEBSITE_URL
+    RECAPTCHA_SITE_KEY, RECAPTCHA_SECRET_KEY, WEBSITE_URL,
+    SHORTLINK_URL, SHORTLINK_API
 )
 from helper_security import secure_redirect
+from helper_func import get_shortlink
 from database.database import db
 
 routes = web.RouteTableDef()
@@ -38,54 +40,44 @@ def is_bot(request):
 async def root_route_handler(request):
     return web.json_response("OTAKULUX Secure Redirect v3 (Non-Cloudflare)")
 
-@routes.get("/r/{noise}/{token}")
-async def intermediate_redirect_handler(request):
-    # 1. Anti-Bot: rate limiting
+@routes.get("/safe")
+async def safe_page_handler(request):
+    link = request.query.get('link')
+    if not link:
+        return web.Response(text="Missing link parameter.", status=400)
+
+    # Anti-Bot: rate limiting
     ip = get_real_ip(request)
     if not await db.check_rate_limit(ip):
-        return web.Response(text="Rate limit exceeded. Try again later.", status=429)
+        return web.Response(text="Rate limit exceeded.", status=429)
 
-    # 2. Anti-Bot: Header validation
-    if is_bot(request):
-        return web.Response(text="Bot access denied.", status=403)
-
-    token = request.match_info['token']
-    noise = request.match_info['noise']
-
-    # 3. Validate token signature and decrypt early
-    payload = secure_redirect.decrypt(token)
-    if not payload:
-        return web.Response(text="Invalid or corrupted security token.", status=403)
-
-    if time.time() > payload.get('exp', 0):
-        return web.Response(text="Security token has expired.", status=403)
-
-    template = template_env.get_template('redirect.html')
+    template = template_env.get_template('safe.html')
     html = template.render(
         RECAPTCHA_SITE_KEY=RECAPTCHA_SITE_KEY,
-        TOKEN=token,
-        NOISE=noise
+        LINK=link
     )
     return web.Response(text=html, content_type='text/html')
 
-@routes.post("/api/get_redirect")
-async def secure_api_redirect(request):
-    # 1. Anti-Bot: Rate limiting
+@routes.post("/api/verify_safe")
+async def verify_safe_handler(request):
     ip = get_real_ip(request)
-    if not await db.check_rate_limit(ip, limit=3, window=30): # Stricter for API
+    ua = request.headers.get('User-Agent', '')
+
+    # 1. Anti-Bot: Rate limiting
+    if not await db.check_rate_limit(ip, limit=3, window=30):
         return web.json_response({"success": False, "message": "Too many attempts."}, status=429)
 
     # 2. Anti-Bot: Header validation
     if is_bot(request) or request.headers.get('X-Requested-With') != 'XMLHttpRequest':
-        return web.json_response({"success": False, "message": "Access denied."}, status=403)
+        return web.json_response({"success": False, "message": "Bypass detected."}, status=403)
 
     try:
         data = await request.json()
-        token = data.get('token')
+        link_id = data.get('link')
         captcha_token = data.get('captcha')
 
-        if not token or not captcha_token:
-            return web.json_response({"success": False, "message": "Missing credentials."}, status=400)
+        if not link_id or not captcha_token:
+            return web.json_response({"success": False, "message": "Bypass detected."}, status=400)
 
         # 3. Verify reCAPTCHA v3
         client_session = request.app['client_session']
@@ -96,39 +88,69 @@ async def secure_api_redirect(request):
         }) as resp:
             recaptcha_result = await resp.json()
 
-        if not recaptcha_result.get('success') or \
-           recaptcha_result.get('score', 0) < 0.5 or \
-           recaptcha_result.get('action') != 'redirect_access':
-            return web.json_response({"success": False, "message": "High-risk activity detected. Access denied."}, status=403)
+        if not recaptcha_result.get('success') or recaptcha_result.get('score', 0) < 0.5:
+            return web.json_response({"success": False, "message": "High-risk activity detected."}, status=403)
 
-        # 4. Validate Token
-        payload = secure_redirect.decrypt(token)
-        if not payload:
-            return web.json_response({"success": False, "message": "Invalid security token."}, status=403)
+        # 4. Generate signed redirect token (1-time use, 30s expiry)
+        payload = {
+            'link': link_id,
+            'ip': ip,
+            'exp': int(time.time()) + 30,
+            'iat': int(time.time())
+        }
+        signed_token = secure_redirect.encrypt(payload)
 
-        if time.time() > payload.get('exp', 0):
-            return web.json_response({"success": False, "message": "Security token expired."}, status=403)
+        # 5. Construct verification URL and shorten it
+        verify_url = f"{WEBSITE_URL}/verify?token={signed_token}"
+        shortlink = await get_shortlink(SHORTLINK_URL, SHORTLINK_API, verify_url)
 
-        # 5. Optional: Match IP Hash if present
-        if payload.get('ip_hash'):
-            current_ip_hash = hashlib.sha256(ip.encode()).hexdigest()
-            if payload['ip_hash'] != current_ip_hash:
-                return web.json_response({"success": False, "message": "Security context mismatch."}, status=403)
+        # 6. Return Google-style redirect method
+        google_redirect = f"https://www.google.com/url?q={shortlink}"
 
-        # 6. One-Time Token Check
-        token_hash = hashlib.sha256(token.encode()).hexdigest()
-        if not await db.use_secure_token(token_hash):
-            return web.json_response({"success": False, "message": "This link has already been used."}, status=403)
-
-        # 7. Success - Return Final URL
         return web.json_response({
             "success": True,
-            "url": payload['url']
+            "redirect": google_redirect
         })
 
     except Exception as e:
-        print(f"Secure API Error: {e}")
-        return web.json_response({"success": False, "message": "Internal security error."}, status=500)
+        print(f"Verify Safe Error: {e}")
+        return web.json_response({"success": False, "message": "Internal error."}, status=500)
+
+@routes.get("/verify")
+async def final_verify_handler(request):
+    token = request.query.get('token')
+    referer = request.headers.get('Referer', '')
+
+    if not token:
+        return web.HTTPFound("/safe")
+
+    # Anti-Bypass: Detect direct access or missing referer from shortener
+    # Note: Some browsers/shorteners might strip referer, so we use a loose check
+    # but block direct hits without ANY referer if possible.
+    # For now, we prioritize the signed token validation.
+
+    ip = get_real_ip(request)
+
+    # 1. Validate Token
+    payload = secure_redirect.decrypt(token)
+    if not payload:
+        return web.Response(text="Bypass detected. Invalid token.", status=403)
+
+    # 2. Integrity checks
+    if time.time() > payload.get('exp', 0) or payload.get('ip') != ip:
+        return web.Response(text="Bypass detected. Token expired or invalid IP.", status=403)
+
+    # 3. One-Time Use check
+    token_hash = hashlib.sha256(token.encode()).hexdigest()
+    if not await db.use_secure_token(token_hash):
+        return web.Response(text="Bypass detected. Token already used.", status=403)
+
+    # 4. Final Redirect to Bot
+    bot = request.app.get('bot')
+    username = bot.username if bot else "OTAKULUX"
+    final_payload = payload['link']
+
+    return web.HTTPFound(f"https://t.me/{username}?start=yu3elk{final_payload}7")
 
 @routes.get("/health")
 async def health_check(request):

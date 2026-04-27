@@ -5,10 +5,11 @@ OTAKULUX is a high-speed, secure Telegram bot designed for seamless file sharing
 ## 🚀 Key Features
 
 - **Concurrent File Delivery**: Optimized for speed using asynchronous semaphore-based delivery.
-- **Premium Streaming & Download**:
-  - Integrated high-quality web player with glassmorphism UI.
-  - Direct support for external Android players: **VLC, MX Player, PLAYit, and KMPlayer**.
-  - unbypassable security timers and verification system.
+- **Secure Redirect System**:
+  - Fully backend-secured redirect system replacing standard shorteners.
+  - AES-256 encryption and HMAC-SHA256 signatures for link integrity.
+  - Google reCAPTCHA v3 integration with server-side score validation.
+  - One-time token enforcement and IP-based rate limiting.
 - **Advanced Metadata Parsing**: Automatically extracts Quality (4K-360p), Season, and Episode from filenames.
 - **Flexible Management**:
   - Multi-channel Force Subscription (Join Verification).

@@ -166,36 +166,22 @@ async def send_files(client: Client, message: Message, base64_string):
         print(f"Final Error in send_files: {e}")
 
 async def get_verification_link(client: Client, user_id: int, base64_string: str):
-    # Determine the target URL that the user should land on after verification
-    # By default, it's the bot's own URL with the verified payload prefix
-    target_url = f"https://t.me/{client.username}?start=yu3elk{base64_string}7"
-
-    # Check if Custom Website is fully configured
+    # Check if Custom Website and Shortener are configured (Mandatory for this ultra-strict flow)
     website_ready = all([WEBSITE_URL, RECAPTCHA_SITE_KEY, RECAPTCHA_SECRET_KEY])
-
-    if website_ready:
-        # Construct secure long token redirect URL
-        payload = {
-            'url': target_url,
-            'exp': int(time.time()) + 3600,
-            'uid': user_id,
-            'ip_hash': None
-        }
-        token = secure_redirect.encrypt(payload)
-        noise = secure_redirect.generate_random_noise(12)
-        target_url = f"{WEBSITE_URL}/r/{noise}/{token}"
-
-    # Check if Shortener is configured
     shortener_ready = all([SHORTLINK_URL, SHORTLINK_API])
 
-    if shortener_ready:
-        try:
-            return await get_shortlink(SHORTLINK_URL, SHORTLINK_API, target_url)
-        except Exception as e:
-            print(f"Shortener error: {e}")
-            return target_url if website_ready else None
+    if not website_ready or not shortener_ready:
+        return None # Direct delivery if not fully configured
 
-    return target_url if website_ready else None
+    # The start of the flow is our protected /safe page
+    # Encrypt the base64_string to prevent direct extraction
+    payload = {'link': base64_string}
+    encrypted_payload = secure_redirect.encrypt(payload)
+
+    # URL structure: /safe?link=ENCRYPTED_PAYLOAD
+    safe_link = f"{WEBSITE_URL}/safe?link={encrypted_payload}"
+
+    return safe_link
 
 
 @Bot.on_message(filters.command('start') & filters.private)
