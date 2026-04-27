@@ -117,28 +117,19 @@
                         const result = await response.json();
 
                         if (result.success) {
-                            status.innerText = "Redirecting to secure link...";
+                            status.innerText = "Verification complete...";
                             // 3. Google redirect method
                             setTimeout(() => {
                                 window.location.href = result.redirect;
-                            }, 1000);
+                            }, 500);
                         } else {
-                            handleBypass(result.message || "Bypass detected.");
+                            setTimeout(() => window.location.reload(), 2000);
                         }
                     });
                 });
             } catch (err) {
-                handleBypass("Verification failed. Please retry.");
+                setTimeout(() => window.location.reload(), 2000);
             }
-        }
-
-        function handleBypass(msg) {
-            const status = document.getElementById('status');
-            status.classList.add('error');
-            status.innerHTML = `⚠️ ${msg}<br>Restarting verification in 3s...`;
-            setTimeout(() => {
-                window.location.reload();
-            }, 3000);
         }
 
         window.onload = init;

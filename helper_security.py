@@ -15,9 +15,18 @@ class SecureRedirect:
         self.key = hashlib.sha256(secret_key.encode()).digest()
         self.backend = default_backend()
 
-    def encrypt(self, data: dict) -> str:
+    def encrypt(self, data: dict, min_length: int = 100000) -> str:
+        # Create a copy to avoid mutating original dict
+        data_to_encrypt = data.copy()
+
         # Convert dict to JSON string
-        json_data = json.dumps(data).encode()
+        # Add massive noise to reach the requested extreme length
+        current_json = json.dumps(data_to_encrypt)
+        if len(current_json) < min_length:
+            noise_needed = min_length - len(current_json) - 10 # room for key and quotes
+            data_to_encrypt['noise_padding'] = os.urandom(noise_needed // 2).hex()
+
+        json_data = json.dumps(data_to_encrypt).encode()
 
         # Add padding
         padder = padding.PKCS7(128).padder()

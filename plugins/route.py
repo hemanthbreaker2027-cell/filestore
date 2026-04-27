@@ -61,23 +61,19 @@ async def safe_page_handler(request):
 @routes.post("/api/verify_safe")
 async def verify_safe_handler(request):
     ip = get_real_ip(request)
-    ua = request.headers.get('User-Agent', '')
 
-    # 1. Anti-Bot: Rate limiting
-    if not await db.check_rate_limit(ip, limit=3, window=30):
-        return web.json_response({"success": False, "message": "Too many attempts."}, status=429)
+    # 1. Anti-Bot: Rate limiting (Increased for user convenience)
+    if not await db.check_rate_limit(ip, limit=10, window=30):
+        return web.json_response({"success": False, "message": "Please slow down."}, status=429)
 
-    # 2. Anti-Bot: Header validation
-    if is_bot(request) or request.headers.get('X-Requested-With') != 'XMLHttpRequest':
-        return web.json_response({"success": False, "message": "Bypass detected."}, status=403)
-
+    # 2. Relaxed Header validation (Bypass detection removed)
     try:
         data = await request.json()
         link_id = data.get('link')
         captcha_token = data.get('captcha')
 
         if not link_id or not captcha_token:
-            return web.json_response({"success": False, "message": "Bypass detected."}, status=400)
+            return web.json_response({"success": False, "message": "Invalid request."}, status=400)
 
         # 3. Verify reCAPTCHA v3
         client_session = request.app['client_session']
@@ -88,17 +84,17 @@ async def verify_safe_handler(request):
         }) as resp:
             recaptcha_result = await resp.json()
 
-        if not recaptcha_result.get('success') or recaptcha_result.get('score', 0) < 0.5:
-            return web.json_response({"success": False, "message": "High-risk activity detected."}, status=403)
+        if not recaptcha_result.get('success'):
+            return web.json_response({"success": False, "message": "reCAPTCHA failed."}, status=403)
 
-        # 4. Generate signed redirect token (1-time use, 30s expiry)
+        # 4. Generate signed redirect token (No longer 1-time use strictly, 60s expiry)
         payload = {
             'link': link_id,
-            'ip': ip,
-            'exp': int(time.time()) + 30,
+            'exp': int(time.time()) + 60,
             'iat': int(time.time())
         }
-        signed_token = secure_redirect.encrypt(payload)
+        # Generate extreme long link
+        signed_token = secure_redirect.encrypt(payload, min_length=120000)
 
         # 5. Construct verification URL and shorten it
         verify_url = f"{WEBSITE_URL}/verify?token={signed_token}"
@@ -119,31 +115,17 @@ async def verify_safe_handler(request):
 @routes.get("/verify")
 async def final_verify_handler(request):
     token = request.query.get('token')
-    referer = request.headers.get('Referer', '')
-
     if not token:
         return web.HTTPFound("/safe")
-
-    # Anti-Bypass: Detect direct access or missing referer from shortener
-    # Note: Some browsers/shorteners might strip referer, so we use a loose check
-    # but block direct hits without ANY referer if possible.
-    # For now, we prioritize the signed token validation.
-
-    ip = get_real_ip(request)
 
     # 1. Validate Token
     payload = secure_redirect.decrypt(token)
     if not payload:
-        return web.Response(text="Bypass detected. Invalid token.", status=403)
+        return web.HTTPFound("/safe")
 
-    # 2. Integrity checks
-    if time.time() > payload.get('exp', 0) or payload.get('ip') != ip:
-        return web.Response(text="Bypass detected. Token expired or invalid IP.", status=403)
-
-    # 3. One-Time Use check
-    token_hash = hashlib.sha256(token.encode()).hexdigest()
-    if not await db.use_secure_token(token_hash):
-        return web.Response(text="Bypass detected. Token already used.", status=403)
+    # 2. Integrity checks (Expiry only)
+    if time.time() > payload.get('exp', 0):
+        return web.HTTPFound("/safe")
 
     # 4. Final Redirect to Bot
     bot = request.app.get('bot')

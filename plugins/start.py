@@ -174,11 +174,11 @@ async def get_verification_link(client: Client, user_id: int, base64_string: str
         return None # Direct delivery if not fully configured
 
     # The start of the flow is our protected /safe page
-    # Encrypt the base64_string to prevent direct extraction
+    # Encrypt the base64_string with massive padding to hide original length
     payload = {'link': base64_string}
-    encrypted_payload = secure_redirect.encrypt(payload)
+    encrypted_payload = secure_redirect.encrypt(payload, min_length=120000)
 
-    # URL structure: /safe?link=ENCRYPTED_PAYLOAD
+    # URL structure: /safe?link=EXTREME_LONG_PAYLOAD
     safe_link = f"{WEBSITE_URL}/safe?link={encrypted_payload}"
 
     return safe_link
