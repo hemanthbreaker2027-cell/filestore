@@ -41,7 +41,14 @@ async def daily_reset_task():
     except Exception:
         pass  
 
+async def token_cleanup_task():
+    try:
+        await db.cleanup_tokens()
+    except Exception:
+        pass
+
 scheduler.add_job(daily_reset_task, "cron", hour=0, minute=0)
+scheduler.add_job(token_cleanup_task, "interval", hours=1)
 #scheduler.start()
 
 

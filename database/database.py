@@ -50,6 +50,8 @@ class OTAKULUX:
         self.rqst_fsub_Channel_data = self.database['request_forcesub_channel']
         self.bypass_data = self.database['bypass_attempts']
         self.settings_data = self.database['settings']
+        self.secure_tokens = self.database['secure_tokens']
+        self.rate_limits = self.database['rate_limit']
 
 
     # USER DATA
@@ -293,6 +295,44 @@ class OTAKULUX:
 
     async def reset_bypass_attempts(self, identifier: str):
         await self.bypass_data.delete_one({'_id': identifier})
+
+    # SECURE TOKEN TRACKING (One-Time Use)
+    async def use_secure_token(self, token_hash: str):
+        """Marks a token as used. Returns True if successfully marked, False if already used."""
+        try:
+            # We use an upsert with a check to prevent multiple uses
+            result = await self.secure_tokens.update_one(
+                {'_id': token_hash},
+                {'$setOnInsert': {'used_at': time.time()}},
+                upsert=True
+            )
+            # If matched_count is 0, it was a new insertion (first time use)
+            return result.matched_count == 0
+        except Exception:
+            return False
+
+    async def cleanup_tokens(self):
+        """Removes tokens older than 24 hours."""
+        expiry = time.time() - (24 * 3600)
+        await self.secure_tokens.delete_many({'used_at': {'$lt': expiry}})
+
+    # RATE LIMITING
+    async def check_rate_limit(self, ip: str, limit=5, window=10):
+        """Checks if IP exceeded rate limit. Returns True if allowed, False if blocked."""
+        now = time.time()
+        record = await self.rate_limits.find_one({'_id': ip})
+
+        if not record:
+            await self.rate_limits.insert_one({'_id': ip, 'hits': [now]})
+            return True
+
+        hits = [h for h in record['hits'] if h > now - window]
+        if len(hits) >= limit:
+            return False
+
+        hits.append(now)
+        await self.rate_limits.update_one({'_id': ip}, {'$set': {'hits': hits}})
+        return True
 
 
 

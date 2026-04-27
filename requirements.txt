@@ -21,3 +21,4 @@ aiofiles
 asyncio
 PyJWT
 jinja2
+cryptography

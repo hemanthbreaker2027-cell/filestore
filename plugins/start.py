@@ -27,6 +27,7 @@ from pyrogram.errors import FloodWait, UserIsBlocked, InputUserDeactivated, User
 from bot import Bot
 from config import *
 from helper_func import is_subscribed, decode, encode, get_messages, get_exp_time, get_sub_status, admin
+from helper_security import secure_redirect
 from database.database import *
 from database.db_premium import *
 
@@ -164,19 +165,33 @@ async def send_files(client: Client, message: Message, base64_string):
     except Exception as e:
         print(f"Final Error in send_files: {e}")
 
-async def short_url(client: Client, message: Message, base64_string):
+async def secure_redirect_url(client: Client, message: Message, base64_string):
     try:
+        user_id = message.from_user.id
+        # Final destination URL back to bot with verified payload
+        final_url = f"https://t.me/{client.username}?start=yu3elk{base64_string}7"
+
+        # Token Payload
+        payload = {
+            'url': final_url,
+            'exp': int(time.time()) + 3600, # 1 hour expiry
+            'uid': user_id,
+            'ip_hash': None # We can add IP binding here if we had user IP, but in bot we don't easily get user's public IP
+        }
+
+        # Generate Long Token
+        token = secure_redirect.encrypt(payload)
+        noise = secure_redirect.generate_random_noise(12)
+
         if WEBSITE_URL:
-            # Send our verification page link directly
-            short_link = f"{WEBSITE_URL}/verify/{base64_string}"
+            secure_link = f"{WEBSITE_URL}/r/{noise}/{token}"
         else:
-            # Fallback to old flow if WEBSITE_URL is not set
-            prem_link = f"https://t.me/{client.username}?start=yu3elk{base64_string}7"
-            short_link = await get_shortlink(SHORTLINK_URL, SHORTLINK_API, prem_link)
+            # Fallback if WEBSITE_URL is missing
+            secure_link = final_url
 
         buttons = [
             [
-                InlineKeyboardButton(text="ᴅᴏᴡɴʟᴏᴀᴅ", url=short_link),
+                InlineKeyboardButton(text="📥 Gᴇᴛ Fɪʟᴇs", url=secure_link),
                 InlineKeyboardButton(text="ᴛᴜᴛᴏʀɪᴀʟ", url=TUT_VID)
             ],
             [
@@ -186,13 +201,12 @@ async def short_url(client: Client, message: Message, base64_string):
 
         await message.reply_photo(
             photo=random.choice(ANIME_BANNERS),
-            caption=SHORT_MSG.format(
-            ),
+            caption=SHORT_MSG,
             reply_markup=InlineKeyboardMarkup(buttons),
         )
 
-    except IndexError:
-        pass
+    except Exception as e:
+        print(f"Error generating secure redirect: {e}")
 
 
 @Bot.on_message(filters.command('start') & filters.private)
@@ -250,8 +264,8 @@ async def start_command(client: Client, message: Message):
                 await send_files(client, message, base64_string)
                 return
             
-            # Shortener logic
-            await short_url(client, message, base64_string)
+            # Secure Redirect logic
+            await secure_redirect_url(client, message, base64_string)
             return
             # --- SAFE BLOCK END ---
         
