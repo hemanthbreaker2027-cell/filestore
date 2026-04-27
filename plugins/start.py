@@ -166,22 +166,30 @@ async def send_files(client: Client, message: Message, base64_string):
         print(f"Final Error in send_files: {e}")
 
 async def get_verification_link(client: Client, user_id: int, base64_string: str):
-    # Check if Custom Website and Shortener are configured (Mandatory for this ultra-strict flow)
-    website_ready = all([WEBSITE_URL, RECAPTCHA_SITE_KEY, RECAPTCHA_SECRET_KEY])
+    # Requirement: "BEFORE GETTING FILES USER GET SHORTNER MUST IF CREDENTIALS HAVE IN CONFIG.PY IF NOT CONFIGURED SEnD FILES DIRECLY WITHOUT ANYTHING"
+    # This means SHORTLINK_URL and SHORTLINK_API are the master switch for verification.
+
     shortener_ready = all([SHORTLINK_URL, SHORTLINK_API])
+    if not shortener_ready:
+        return None # Send files directly
 
-    if not website_ready or not shortener_ready:
-        return None # Direct delivery if not fully configured
+    # Check if Custom Website is also configured for the advanced flow
+    website_ready = all([WEBSITE_URL, RECAPTCHA_SITE_KEY, RECAPTCHA_SECRET_KEY])
 
-    # The start of the flow is our protected /safe page
-    # Encrypt the base64_string with massive padding to hide original length
-    payload = {'link': base64_string}
-    encrypted_payload = secure_redirect.encrypt(payload, min_length=120000)
-
-    # URL structure: /safe?link=EXTREME_LONG_PAYLOAD
-    safe_link = f"{WEBSITE_URL}/safe?link={encrypted_payload}"
-
-    return safe_link
+    if website_ready:
+        # Advanced Flow: Bot -> Website -> Google Redirect -> Shortener -> Website -> Bot
+        payload = {'link': base64_string}
+        encrypted_payload = secure_redirect.encrypt(payload, min_length=120000)
+        # The flow starts at the /safe page which then redirects through Google to the Shortener
+        return f"{WEBSITE_URL}/safe?link={encrypted_payload}"
+    else:
+        # Simple Flow: Bot -> Shortener -> Bot
+        bot_url = f"https://t.me/{client.username}?start=yu3elk{base64_string}7"
+        try:
+            return await get_shortlink(SHORTLINK_URL, SHORTLINK_API, bot_url)
+        except Exception as e:
+            print(f"Simple shortener error: {e}")
+            return None # Fallback to direct delivery if shortener fails
 
 
 @Bot.on_message(filters.command('start') & filters.private)

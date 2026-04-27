@@ -84,10 +84,10 @@ async def verify_safe_handler(request):
         }) as resp:
             recaptcha_result = await resp.json()
 
-        if not recaptcha_result.get('success'):
-            return web.json_response({"success": False, "message": "reCAPTCHA failed."}, status=403)
+        if not recaptcha_result.get('success') or recaptcha_result.get('score', 0) < 0.5:
+            return web.json_response({"success": False, "message": "High-risk activity detected."}, status=403)
 
-        # 4. Generate signed redirect token (No longer 1-time use strictly, 60s expiry)
+        # 4. Generate signed redirect token (One-time use, 60s expiry)
         payload = {
             'link': link_id,
             'exp': int(time.time()) + 60,
@@ -123,9 +123,13 @@ async def final_verify_handler(request):
     if not payload:
         return web.HTTPFound("/safe")
 
-    # 2. Integrity checks (Expiry only)
+    # 2. Integrity checks (Expiry and One-time use)
     if time.time() > payload.get('exp', 0):
         return web.HTTPFound("/safe")
+
+    token_hash = hashlib.sha256(token.encode()).hexdigest()
+    if not await db.use_secure_token(token_hash):
+        return web.Response(text="This link has already been used or has expired.", status=403)
 
     # 4. Final Redirect to Bot
     bot = request.app.get('bot')
