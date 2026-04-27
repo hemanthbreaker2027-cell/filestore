@@ -20,22 +20,6 @@ template_env = Environment(loader=FileSystemLoader('templates'))
 def get_real_ip(request):
     return request.headers.get('CF-Connecting-IP') or request.headers.get('X-Forwarded-For', request.remote)
 
-def is_bot(request):
-    ua = request.headers.get('User-Agent', '').lower()
-    if not ua: return True
-
-    # Block known automation tools
-    bot_keywords = ['playwright', 'puppeteer', 'headless', 'curl', 'wget', 'python-requests', 'aiohttp', 'bot', 'spider', 'crawler']
-    if any(k in ua for k in bot_keywords):
-        return True
-
-    # Check headers
-    if request.method == 'POST':
-        if not request.headers.get('sec-fetch-site') or not request.headers.get('accept-language'):
-            return True
-
-    return False
-
 @routes.get("/", allow_head=True)
 async def root_route_handler(request):
     return web.json_response("OTAKULUX Secure Redirect v3 (Non-Cloudflare)")
@@ -66,7 +50,16 @@ async def verify_safe_handler(request):
     if not await db.check_rate_limit(ip, limit=10, window=30):
         return web.json_response({"success": False, "message": "Please slow down."}, status=429)
 
-    # 2. Relaxed Header validation (Bypass detection removed)
+    # 2. Enhanced API Security: Header key check
+    # This prevents direct automated POSTs without passing through the frontend landing page
+    sec_key = request.headers.get('X-Security-Key')
+    if not sec_key or len(sec_key) < 32:
+        return web.json_response({"success": False, "message": "Access denied."}, status=403)
+
+    # 3. Throttling: Small server-side delay to stop rapid mining
+    await asyncio.sleep(1.2)
+
+    # 4. Relaxed Header validation (Bypass detection removed)
     try:
         data = await request.json()
         link_id = data.get('link')
@@ -129,7 +122,7 @@ async def final_verify_handler(request):
 
     token_hash = hashlib.sha256(token.encode()).hexdigest()
     if not await db.use_secure_token(token_hash):
-        return web.Response(text="This link has already been used or has expired.", status=403)
+        return web.HTTPFound("/safe")
 
     # 4. Final Redirect to Bot
     bot = request.app.get('bot')

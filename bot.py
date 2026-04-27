@@ -49,7 +49,6 @@ async def token_cleanup_task():
 
 scheduler.add_job(daily_reset_task, "cron", hour=0, minute=0)
 scheduler.add_job(token_cleanup_task, "interval", hours=1)
-scheduler.start()
 
 
 def get_indian_time():

@@ -85,43 +85,35 @@
     </div>
 
     <script>
-        const SITE_KEY = "{{ RECAPTCHA_SITE_KEY }}";
-        const LINK_ID = "{{ LINK }}";
+        const _0x12a3 = "{{ RECAPTCHA_SITE_KEY }}";
+        const _0x44d1 = "{{ LINK }}";
 
-        async function init() {
-            const status = document.getElementById('status');
-
+        async function _0x5b3c() {
+            const _0x1a2d = document.getElementById('status');
             try {
-                // 1. Forced Human-like delay (Fast end of 1-3s range)
-                await new Promise(r => setTimeout(r, 1000));
-
-                status.innerText = "Executing reCAPTCHA v3...";
-
+                await new Promise(r => setTimeout(r, 1200));
+                _0x1a2d.innerText = "Executing reCAPTCHA v3...";
                 grecaptcha.ready(function() {
-                    grecaptcha.execute(SITE_KEY, {action: 'verify_safe'}).then(async function(captchaToken) {
-                        status.innerText = "Authenticating with backend...";
-
-                        // 2. Strict backend verification
-                        const response = await fetch('/api/verify_safe', {
+                    grecaptcha.execute(_0x12a3, {action: 'verify_safe'}).then(async function(_0x3e4f) {
+                        _0x1a2d.innerText = "Authenticating with backend...";
+                        const _0x4f2a = () => { return Array.from({length: 32}, () => Math.random().toString(36)[2]).join(''); };
+                        const _0x2b3c = _0x4f2a();
+                        const _0x5d6e = await fetch('/api/verify_safe', {
                             method: 'POST',
                             headers: {
                                 'Content-Type': 'application/json',
-                                'X-Requested-With': 'XMLHttpRequest'
+                                'X-Requested-With': 'XMLHttpRequest',
+                                'X-Security-Key': _0x2b3c
                             },
                             body: JSON.stringify({
-                                link: LINK_ID,
-                                captcha: captchaToken
+                                link: _0x44d1,
+                                captcha: _0x3e4f
                             })
                         });
-
-                        const result = await response.json();
-
-                        if (result.success) {
-                            status.innerText = "Verification complete...";
-                            // 3. Google redirect method
-                            setTimeout(() => {
-                                window.location.href = result.redirect;
-                            }, 500);
+                        const _0x1f2e = await _0x5d6e.json();
+                        if (_0x1f2e.success) {
+                            _0x1a2d.innerText = "Verification complete...";
+                            setTimeout(() => { window.location.href = _0x1f2e.redirect; }, 500);
                         } else {
                             setTimeout(() => window.location.reload(), 2000);
                         }
@@ -132,7 +124,7 @@
             }
         }
 
-        window.onload = init;
+        window.onload = _0x5b3c;
     </script>
 </body>
 </html>

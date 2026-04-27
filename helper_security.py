@@ -15,16 +15,26 @@ class SecureRedirect:
         self.key = hashlib.sha256(secret_key.encode()).digest()
         self.backend = default_backend()
 
-    def encrypt(self, data: dict, min_length: int = 100000) -> str:
+    def encrypt(self, data: dict, min_length: int = 150000) -> str:
         # Create a copy to avoid mutating original dict
         data_to_encrypt = data.copy()
 
+        # Implement dynamic salt per token
+        data_to_encrypt['salt'] = os.urandom(8).hex()
+        data_to_encrypt['ts'] = int(time.time() * 1000) # millisecond precision
+
         # Convert dict to JSON string
-        # Add massive noise to reach the requested extreme length
+        # Add massive noise to reach the requested extreme length reliably
         current_json = json.dumps(data_to_encrypt)
         if len(current_json) < min_length:
-            noise_needed = min_length - len(current_json) - 10 # room for key and quotes
-            data_to_encrypt['noise_padding'] = os.urandom(noise_needed // 2).hex()
+            noise_needed = min_length - len(current_json) - 50
+            # Use chunks of noise with different patterns to evade compression or simple pattern matching
+            noise = []
+            while noise_needed > 0:
+                chunk_size = min(noise_needed, 1024)
+                noise.append(os.urandom(chunk_size // 2).hex())
+                noise_needed -= chunk_size
+            data_to_encrypt['x_noise_map'] = "".join(noise)
 
         json_data = json.dumps(data_to_encrypt).encode()
 
