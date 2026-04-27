@@ -181,25 +181,27 @@ async def decode(base64_string):
     return string
 
 async def get_messages(client, message_ids):
+    if not isinstance(message_ids, list):
+        message_ids = list(message_ids)
+
     messages = []
     total_messages = 0
-    while total_messages != len(message_ids):
+    while total_messages < len(message_ids):
         temb_ids = message_ids[total_messages:total_messages+200]
         try:
             msgs = await client.get_messages(
                 chat_id=client.db_channel.id,
                 message_ids=temb_ids
             )
+            if msgs:
+                messages.extend(msgs if isinstance(msgs, list) else [msgs])
         except FloodWait as e:
             await asyncio.sleep(e.x)
-            msgs = await client.get_messages(
-                chat_id=client.db_channel.id,
-                message_ids=temb_ids
-            )
-        except:
-            pass
+            continue # Retry same batch
+        except Exception as e:
+            print(f"Error fetching messages: {e}")
+            break
         total_messages += len(temb_ids)
-        messages.extend(msgs)
     return messages
 
 async def get_message_id(client, message):

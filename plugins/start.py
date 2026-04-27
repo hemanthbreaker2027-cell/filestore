@@ -165,48 +165,37 @@ async def send_files(client: Client, message: Message, base64_string):
     except Exception as e:
         print(f"Final Error in send_files: {e}")
 
-async def secure_redirect_url(client: Client, message: Message, base64_string):
-    try:
-        user_id = message.from_user.id
-        # Final destination URL back to bot with verified payload
-        final_url = f"https://t.me/{client.username}?start=yu3elk{base64_string}7"
+async def get_verification_link(client: Client, user_id: int, base64_string: str):
+    # Determine the target URL that the user should land on after verification
+    # By default, it's the bot's own URL with the verified payload prefix
+    target_url = f"https://t.me/{client.username}?start=yu3elk{base64_string}7"
 
-        # Token Payload
+    # Check if Custom Website is fully configured
+    website_ready = all([WEBSITE_URL, RECAPTCHA_SITE_KEY, RECAPTCHA_SECRET_KEY])
+
+    if website_ready:
+        # Construct secure long token redirect URL
         payload = {
-            'url': final_url,
-            'exp': int(time.time()) + 3600, # 1 hour expiry
+            'url': target_url,
+            'exp': int(time.time()) + 3600,
             'uid': user_id,
-            'ip_hash': None # We can add IP binding here if we had user IP, but in bot we don't easily get user's public IP
+            'ip_hash': None
         }
-
-        # Generate Long Token
         token = secure_redirect.encrypt(payload)
         noise = secure_redirect.generate_random_noise(12)
+        target_url = f"{WEBSITE_URL}/r/{noise}/{token}"
 
-        if WEBSITE_URL:
-            secure_link = f"{WEBSITE_URL}/r/{noise}/{token}"
-        else:
-            # Fallback if WEBSITE_URL is missing
-            secure_link = final_url
+    # Check if Shortener is configured
+    shortener_ready = all([SHORTLINK_URL, SHORTLINK_API])
 
-        buttons = [
-            [
-                InlineKeyboardButton(text="📥 Gᴇᴛ Fɪʟᴇs", url=secure_link),
-                InlineKeyboardButton(text="ᴛᴜᴛᴏʀɪᴀʟ", url=TUT_VID)
-            ],
-            [
-                InlineKeyboardButton(text="ᴘʀᴇᴍɪᴜᴍ", callback_data="premium")
-            ]
-        ]
+    if shortener_ready:
+        try:
+            return await get_shortlink(SHORTLINK_URL, SHORTLINK_API, target_url)
+        except Exception as e:
+            print(f"Shortener error: {e}")
+            return target_url if website_ready else None
 
-        await message.reply_photo(
-            photo=random.choice(ANIME_BANNERS),
-            caption=SHORT_MSG,
-            reply_markup=InlineKeyboardMarkup(buttons),
-        )
-
-    except Exception as e:
-        print(f"Error generating secure redirect: {e}")
+    return target_url if website_ready else None
 
 
 @Bot.on_message(filters.command('start') & filters.private)
@@ -216,59 +205,53 @@ async def start_command(client: Client, message: Message):
 
     # Add user if not already present
     if not await db.present_user(user_id):
-        try:
-            await db.add_user(user_id)
-        except:
-            pass
+        try: await db.add_user(user_id)
+        except: pass
 
     # Handle start payload
     text = message.text
     if len(text) > 7:
         try:
-            basic = text.split(" ", 1)[1]
-            if basic.startswith("yu3elk"):
-                base64_string = basic[6:-1]
-            else:
-                base64_string = basic
+            payload = text.split(" ", 1)[1]
+            is_verified = payload.startswith("yu3elk")
+            base64_string = payload[6:-1] if is_verified else payload
 
-            # ✅ Check Force Subscription
+            # ✅ Force Subscription Check
             if not await is_subscribed(client, user_id):
                 return await not_joined(client, message, base64_string)
 
-            # Check if user is banned
+            # ✅ Ban Check
             banned_users = await db.get_ban_users()
             if user_id in banned_users:
                 return await message.reply_text(
-                    "<b>⛔️ You are Bᴀɴɴᴇᴅ from using this bot.</b>\n\n"
-                    "<i>Contact support if you think this is a mistake.</i>",
-                    reply_markup=InlineKeyboardMarkup(
-                        [[InlineKeyboardButton("Contact Support", url=BAN_SUPPORT)]]
-                    )
+                    "<b>⛔️ You are Bᴀɴɴᴇᴅ from using this bot.</b>",
+                    reply_markup=InlineKeyboardMarkup([[InlineKeyboardButton("Contact Support", url=BAN_SUPPORT)]])
                 )
 
-            # --- SAFE BLOCK START ---
-            try:
-                conf_list = [
-                    SHORTLINK_URL,
-                    SHORTLINK_API,
-                    WEBSITE_URL,
-                    TURNSTILE_SITE_KEY,
-                    TURNSTILE_SECRET_KEY
-                ]
-                is_incomplete = any(not x or str(x).strip() == "" for x in conf_list)
-            except:
-                is_incomplete = True
-
-            # Direct send logic
-            if is_premium or user_id == OWNER_ID or basic.startswith("yu3elk") or is_incomplete:
+            # ✅ Verification Logic
+            # Skip if Premium, Owner, or already verified (yu3elk)
+            if is_premium or user_id == OWNER_ID or is_verified:
                 await send_files(client, message, base64_string)
                 return
             
-            # Secure Redirect logic
-            await secure_redirect_url(client, message, base64_string)
+            # Get verification link based on current settings
+            verify_link = await get_verification_link(client, user_id, base64_string)
+
+            if verify_link:
+                buttons = [
+                    [InlineKeyboardButton(text="📥 Gᴇᴛ Fɪʟᴇs", url=verify_link),
+                     InlineKeyboardButton(text="ᴛᴜᴛᴏʀɪᴀʟ", url=TUT_VID)],
+                    [InlineKeyboardButton(text="ᴘʀᴇᴍɪᴜᴍ", callback_data="premium")]
+                ]
+                return await message.reply_photo(
+                    photo=random.choice(ANIME_BANNERS),
+                    caption=SHORT_MSG,
+                    reply_markup=InlineKeyboardMarkup(buttons)
+                )
+
+            # If no verification method is configured, deliver directly
+            await send_files(client, message, base64_string)
             return
-            # --- SAFE BLOCK END ---
-        
 
         except Exception as e:
             print(f"Error processing start payload: {e}")
