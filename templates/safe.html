@@ -92,8 +92,8 @@
             const status = document.getElementById('status');
 
             try {
-                // 1. Forced Human-like delay
-                await new Promise(r => setTimeout(r, 2000));
+                // 1. Forced Human-like delay (Fast end of 1-3s range)
+                await new Promise(r => setTimeout(r, 1000));
 
                 status.innerText = "Executing reCAPTCHA v3...";
 

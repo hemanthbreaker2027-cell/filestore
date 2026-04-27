@@ -117,7 +117,7 @@ async def send_files(client: Client, message: Message, base64_string):
                 pass
 
         # Speed Boost: Concurrent Delivery with Semaphore
-        sem = asyncio.Semaphore(3)
+        sem = asyncio.Semaphore(10)
         OTAKULUX_msgs = []
         FILE_AUTO_DELETE = await db.get_del_timer()
 

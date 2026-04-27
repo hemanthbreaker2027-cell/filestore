@@ -189,9 +189,18 @@ async def delete_broadcast(client: Bot, message: Message):
             except:
                 unsuccessful += 1
 
+        # Concurrent broadcast with Semaphore to prevent extreme flooding
+        sem = asyncio.Semaphore(20)
+        async def sem_send(chat_id):
+            async with sem:
+                await send_and_del(chat_id)
+
+        tasks = []
         for chat_id in query:
             total += 1
-            await send_and_del(chat_id)
+            tasks.append(asyncio.create_task(sem_send(chat_id)))
+
+        await asyncio.gather(*tasks)
 
         status = f"""<b><u>Bʀᴏᴀᴅᴄᴀsᴛɪɴɢ ᴡɪᴛʜ Aᴜᴛᴏ-Dᴇʟᴇᴛᴇ...</u>
 
