@@ -83,9 +83,11 @@ class SecurityService:
     async def get_secure_shortlink(user_id: int, payload: str):
         from helper_func import get_shortlink
         # For the new flow, we use the /r2/ system
+        now = int(time.time())
         token_data = {
             "payload": payload,
-            "expiresAt": int(time.time()) + 600 # 10 mins
+            "issuedAt": now,
+            "expiresAt": now + 600 # 10 mins
         }
         token = SecureRedirect.encrypt(token_data)
 
