@@ -9,193 +9,193 @@
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700&display=swap');
-
+        
         body {
             font-family: 'Inter', sans-serif;
-            background: radial-gradient(circle at top left, #1a1a2e, #16213e, #0f3460);
+            background: radial-gradient(circle at top left, #0d1117, #161b22, #010409);
             min-height: 100vh;
             display: flex;
             align-items: center;
             justify-content: center;
-            color: #e2e8f0;
+            color: #c9d1d9;
+            margin: 0;
+            overflow: hidden;
         }
 
-        .glass {
-            background: rgba(255, 255, 255, 0.05);
-            backdrop-filter: blur(12px);
-            -webkit-backdrop-filter: blur(12px);
+        .glass-panel {
+            background: rgba(13, 17, 23, 0.7);
+            backdrop-filter: blur(16px);
             border: 1px solid rgba(255, 255, 255, 0.1);
-            box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.37);
+            box-shadow: 0 20px 50px rgba(0, 0, 0, 0.5);
+            width: 100%;
+            max-width: 420px;
+            padding: 2.5rem;
+            border-radius: 1.5rem;
+            text-align: center;
+        }
+
+        .timer-circle {
+            position: relative;
+            width: 120px;
+            height: 120px;
+            margin: 20px auto;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: rgba(0, 255, 204, 0.05);
+            border-radius: 50%;
+            border: 2px solid rgba(0, 255, 204, 0.2);
         }
 
         .glow-text {
-            text-shadow: 0 0 15px rgba(0, 255, 204, 0.5);
-        }
-
-        .gradient-border {
-            position: relative;
-            border-radius: 1rem;
-            background: rgba(255, 255, 255, 0.05);
-        }
-
-        .gradient-border::before {
-            content: "";
-            position: absolute;
-            inset: -2px;
-            border-radius: 1rem;
-            padding: 2px;
-            background: linear-gradient(45deg, #00ffcc, #0066ff, #00ffcc);
-            -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
-            -webkit-mask-composite: xor;
-            mask-composite: exclude;
-            pointer-events: none;
-            opacity: 0.5;
+            color: #00ffcc;
+            text-shadow: 0 0 20px rgba(0, 255, 204, 0.4);
         }
 
         .loader {
-            border: 3px solid rgba(255, 255, 255, 0.1);
-            border-top: 3px solid #00ffcc;
+            width: 48px;
+            height: 48px;
+            border: 5px solid #fff;
+            border-bottom-color: #00ffcc;
             border-radius: 50%;
-            width: 40px;
-            height: 40px;
-            animation: spin 1s linear infinite;
+            display: inline-block;
+            box-sizing: border-box;
+            animation: rotation 1s linear infinite;
         }
 
-        @keyframes spin {
+        @keyframes rotation {
             0% { transform: rotate(0deg); }
-            100% { transform: rotate(360deg); }
+            100% { transform: rotate(3600deg); }
         }
 
-        .animate-pulse-slow {
-            animation: pulse 3s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+        .btn-retry {
+            background: linear-gradient(135deg, #00ffcc 0%, #0066ff 100%);
+            color: #000;
+            font-weight: 700;
+            padding: 10px 25px;
+            border-radius: 8px;
+            transition: transform 0.2s;
         }
 
-        @keyframes pulse {
-            0%, 100% { opacity: 1; }
-            50% { opacity: .5; }
+        .btn-retry:hover {
+            transform: scale(1.05);
         }
     </style>
 </head>
-<body class="p-4">
-    <div class="glass max-w-md w-full p-8 rounded-2xl text-center space-y-8 gradient-border">
-        <div class="space-y-2">
-            <h1 class="text-3xl font-bold glow-text text-teal-400">Security Check</h1>
-            <p class="text-slate-400">Please verify you are human to access the link</p>
+<body>
+
+    <div class="glass-panel">
+        <div id="header-section" class="mb-8">
+            <h1 class="text-3xl font-bold glow-text mb-2">OTAKULUX</h1>
+            <p class="text-slate-400 text-sm">Anti-Bypass Protection Active</p>
         </div>
 
-        <div id="status-container" class="space-y-6 py-4">
-            <div id="initial-state">
-                <div class="flex flex-col items-center space-y-4">
-                    <div class="p-6 bg-teal-500/10 rounded-full animate-pulse-slow">
-                        <i class="fas fa-shield-alt text-4xl text-teal-400"></i>
-                    </div>
-                    <div id="timer-box" class="text-4xl font-bold text-teal-400">5</div>
-                    <p class="text-sm text-slate-500">Preparing secure environment...</p>
-                </div>
+        <div id="stage-timer">
+            <div class="timer-circle">
+                <span id="countdown" class="text-4xl font-bold text-white">180</span>
             </div>
-
-            <div id="loading-state" class="hidden">
-                <div class="flex flex-col items-center space-y-4">
-                    <div class="loader"></div>
-                    <p class="text-slate-300 font-semibold" id="loading-text">Verifying security...</p>
-                </div>
-            </div>
-
-            <div id="success-state" class="hidden">
-                <div class="flex flex-col items-center space-y-4">
-                    <div class="p-6 bg-green-500/10 rounded-full">
-                        <i class="fas fa-check-circle text-4xl text-green-400"></i>
-                    </div>
-                    <p class="text-green-400 font-bold text-xl">Verified Successfully!</p>
-                    <p class="text-slate-400 text-sm">Redirecting to your file...</p>
-                </div>
-            </div>
-
-            <div id="error-state" class="hidden">
-                <div class="flex flex-col items-center space-y-4">
-                    <div class="p-6 bg-red-500/10 rounded-full">
-                        <i class="fas fa-exclamation-triangle text-4xl text-red-400"></i>
-                    </div>
-                    <p class="text-red-400 font-bold" id="error-message">Verification failed</p>
-                    <button onclick="location.reload()" class="px-6 py-2 bg-teal-600 hover:bg-teal-500 rounded-lg transition-colors font-semibold">Try Again</button>
-                </div>
+            <p class="text-sm text-slate-500 mb-4">Please wait while we verify your connection security...</p>
+            <div class="w-full bg-gray-800 h-1.5 rounded-full overflow-hidden">
+                <div id="progress-bar" class="bg-teal-400 h-full transition-all duration-1000" style="width: 0%"></div>
             </div>
         </div>
 
-        <div class="pt-4 border-t border-white/10">
-            <div class="flex items-center justify-center space-x-2 text-xs text-slate-500">
-                <i class="fas fa-lock"></i>
-                <span>End-to-End Encrypted Protection</span>
+        <div id="stage-loading" class="hidden">
+            <span class="loader"></span>
+            <p class="mt-6 text-teal-400 font-semibold animate-pulse">Analyzing reCAPTCHA Tokens...</p>
+        </div>
+
+        <div id="stage-error" class="hidden">
+            <div class="bg-red-500/10 p-4 rounded-xl mb-6">
+                <i class="fas fa-shield-virus text-red-500 text-4xl mb-3"></i>
+                <h3 class="text-red-500 font-bold text-lg" id="error-title">Verification Failed</h3>
+                <p class="text-slate-400 text-xs mt-1" id="error-desc">High risk activity detected.</p>
             </div>
+            <button onclick="location.reload()" class="btn-retry">Try Again</button>
+        </div>
+
+        <div id="stage-success" class="hidden text-green-400">
+            <i class="fas fa-check-double text-5xl mb-4"></i>
+            <h2 class="text-2xl font-bold">Safe Access Granted</h2>
+            <p class="text-slate-400 text-sm">Redirecting to content...</p>
+        </div>
+
+        <div class="mt-10 pt-6 border-t border-white/5 flex items-center justify-center gap-2 text-[10px] text-slate-600 uppercase tracking-widest">
+            <i class="fas fa-fingerprint"></i>
+            <span>Session: {{ SESSION_ID }}</span>
         </div>
     </div>
 
     <script>
-        let timeLeft = 5;
-        const timerBox = document.getElementById('timer-box');
-        const initialState = document.getElementById('initial-state');
-        const loadingState = document.getElementById('loading-state');
-        const successState = document.getElementById('success-state');
-        const errorState = document.getElementById('error-state');
-        const loadingText = document.getElementById('loading-text');
+        const REQUIRED_TIME = 180;
+        let timeLeft = REQUIRED_TIME;
+        
+        const countdownEl = document.getElementById('countdown');
+        const progressBar = document.getElementById('progress-bar');
+        
+        const stageTimer = document.getElementById('stage-timer');
+        const stageLoading = document.getElementById('stage-loading');
+        const stageError = document.getElementById('stage-error');
+        const stageSuccess = document.getElementById('stage-success');
 
-        const countdown = setInterval(() => {
+        // 1. Start the Timer
+        const timerInterval = setInterval(() => {
             timeLeft--;
-            if (timeLeft >= 0) timerBox.textContent = timeLeft;
+            
+            // Update UI
+            countdownEl.textContent = timeLeft;
+            const progress = ((REQUIRED_TIME - timeLeft) / REQUIRED_TIME) * 100;
+            progressBar.style.width = `${progress}%`;
+
             if (timeLeft <= 0) {
-                clearInterval(countdown);
-                startVerification();
+                clearInterval(timerInterval);
+                triggerRecaptcha();
             }
         }, 1000);
 
-        function startVerification() {
-            initialState.classList.add('hidden');
-            loadingState.classList.remove('hidden');
+        // 2. Trigger reCAPTCHA v3 ONLY after 180s
+        function triggerRecaptcha() {
+            stageTimer.classList.add('hidden');
+            stageLoading.classList.remove('hidden');
 
             grecaptcha.ready(function() {
-                grecaptcha.execute('{{ RECAPTCHA_SITE_KEY }}', {action: 'verify'}).then(function(token) {
-                    verifyOnBackend(token);
+                grecaptcha.execute('{{ RECAPTCHA_SITE_KEY }}', {action: 'verify'}).then(token => {
+                    submitVerification(token);
                 });
             });
         }
 
-        async function verifyOnBackend(token) {
+        // 3. Send to Backend for Strict Check
+        async function submitVerification(token) {
             try {
                 const response = await fetch('/api/verify', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({
                         token: token,
-                        payload: "{{ PAYLOAD }}",
-                        session_id: "{{ SESSION_ID }}"
+                        session_id: "{{ SESSION_ID }}",
+                        payload: "{{ PAYLOAD }}"
                     })
                 });
 
                 const data = await response.json();
 
                 if (data.success) {
-                    loadingState.classList.add('hidden');
-                    successState.classList.remove('hidden');
-                    setTimeout(() => {
-                        window.location.href = data.redirect;
-                    }, 1500);
+                    stageLoading.classList.add('hidden');
+                    stageSuccess.classList.remove('hidden');
+                    window.location.href = data.redirect;
                 } else {
-                    showError(data.message || 'Security validation failed');
-                    if (data.redirect) {
-                        setTimeout(() => {
-                            window.location.href = data.redirect;
-                        }, 2000);
-                    }
+                    handleFailure(data.message);
                 }
             } catch (err) {
-                showError('Network error. Please try again.');
+                handleFailure("Network instability detected.");
             }
         }
 
-        function showError(msg) {
-            loadingState.classList.add('hidden');
-            errorState.classList.remove('hidden');
-            document.getElementById('error-message').textContent = msg;
+        function handleFailure(msg) {
+            stageLoading.classList.add('hidden');
+            stageError.classList.remove('hidden');
+            document.getElementById('error-desc').textContent = msg;
         }
     </script>
 </body>
