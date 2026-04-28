@@ -49,7 +49,30 @@ class OTAKULUX:
         self.rqst_fsub_data = self.database['request_forcesub']
         self.rqst_fsub_Channel_data = self.database['request_forcesub_channel']
         self.bypass_data = self.database['bypass_attempts']
+        self.settings_data = self.database['settings']
         
+
+
+    # SETTINGS & FEATURE FLAGS
+    async def get_settings(self):
+        settings = await self.settings_data.find_one({'_id': 'bot_settings'})
+        if not settings:
+            default_settings = {
+                '_id': 'bot_settings',
+                'shortener_system': True,
+                'file_delivery': True,
+                'core_features': True
+            }
+            await self.settings_data.insert_one(default_settings)
+            return default_settings
+        return settings
+
+    async def update_setting(self, key: str, value: bool):
+        await self.settings_data.update_one(
+            {'_id': 'bot_settings'},
+            {'$set': {key: value}},
+            upsert=True
+        )
 
 
     # USER DATA

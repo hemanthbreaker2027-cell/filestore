@@ -123,3 +123,16 @@ async def get_admins(client: Client, message: Message):
 
     reply_markup = InlineKeyboardMarkup([[InlineKeyboardButton("ᴄʟᴏsᴇ", callback_data="close")]])
     await pro.edit(f"<b>⚡ Current Admin List:</b>\n\n{admin_list}", reply_markup=reply_markup)
+
+@Bot.on_message(filters.command('stats') & filters.private & admin)
+async def stats(bot: Bot, message: Message):
+    now = datetime.now()
+    delta = now - bot.uptime
+    uptime = get_readable_time(delta.seconds)
+    await message.reply(BOT_STATS_TEXT.format(uptime=uptime), quote=True)
+
+@Bot.on_message(filters.command('users') & filters.private & admin)
+async def get_users(client: Bot, message: Message):
+    msg = await message.reply("<b>🔍 Fᴇᴛᴄʜɪɴɢ Usᴇʀ Sᴛᴀᴛɪsᴛɪᴄs...</b>", quote=True)
+    users = await db.full_userbase()
+    await msg.edit(f"<b>📊 Tᴏᴛᴀʟ Usᴇʀs:</b> <code>{len(users)}</code>")

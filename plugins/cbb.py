@@ -64,29 +64,35 @@ async def cb_handler(client: Bot, query: CallbackQuery):
 
     elif data == "premium":
         await query.message.delete()
+        caption = (
+            "━━━━━━━━━━━━━━━━━━━\n"
+            "💎 <b>OTAKULUX PREMIUM MEMBERSHIP</b> 💎\n"
+            "━━━━━━━━━━━━━━━━━━━\n"
+            "🚀 <b>Benefits:</b>\n"
+            "• Direct File Access (No Shortener)\n"
+            "• High-Speed Priority Delivery\n"
+            "• Ad-Free Experience\n"
+            "• Access to Exclusive Content\n"
+            "━━━━━━━━━━━━━━━━━━━\n"
+            "🎖️ <b>Available Plans:</b>\n"
+            f"⚡ 7 Dᴀʏs: <code>{PRICE1}</code>\n"
+            f"⚡ 1 Mᴏɴᴛʜ: <code>{PRICE2}</code>\n"
+            f"⚡ 3 Mᴏɴᴛʜs: <code>{PRICE3}</code>\n"
+            f"⚡ 6 Mᴏɴᴛʜs: <code>{PRICE4}</code>\n"
+            f"⚡ 1 Yᴇᴀʀ: <code>{PRICE5}</code>\n"
+            "━━━━━━━━━━━━━━━━━━━\n"
+            "💳 <b>UPI ID:</b> <code>{UPI_ID}</code>\n"
+            "━━━━━━━━━━━━━━━━━━━\n"
+            "⚠️ <i>Must send screenshot after payment for instant activation.</i>"
+        )
         await client.send_photo(
             chat_id=query.message.chat.id,
             photo=random.choice(ANIME_BANNERS),
-            caption=(
-                f"👋 {query.from_user.username}\n\n"
-                f"🎖️ Available Plans :\n\n"
-                f"● {PRICE1}  For 0 Days Prime Membership\n\n"
-                f"● {PRICE2}  For 1 Month Prime Membership\n\n"
-                f"● {PRICE3}  For 3 Months Prime Membership\n\n"
-                f"● {PRICE4}  For 6 Months Prime Membership\n\n"
-                f"● {PRICE5}  For 1 Year Prime Membership\n\n\n"
-                f"💵 ASK UPI ID TO ADMIN AND PAY THERE -  <code>{UPI_ID}</code>\n\n\n"
-                f"♻️ After Payment You Will Get Instant Membership \n\n\n"
-                f"‼️ Must Send Screenshot after payment & If anyone want custom time membrship then ask admin"
-            ),
+            caption=caption,
             reply_markup=InlineKeyboardMarkup(
                 [
-                    [
-                        InlineKeyboardButton(
-                            "ADMIN 24/7", url=(SCREENSHOT_URL)
-                        )
-                    ],
-                    [InlineKeyboardButton("🔒 Close", callback_data="close")],
+                    [InlineKeyboardButton("💬 Cᴏɴᴛᴀᴄᴛ Aᴅᴍɪɴ", url=SCREENSHOT_URL)],
+                    [InlineKeyboardButton("🔒 Cʟᴏsᴇ", callback_data="close")]
                 ]
             )
         )

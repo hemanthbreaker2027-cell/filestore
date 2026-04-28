@@ -36,10 +36,14 @@ TUT_VID = f"{TUT_VID}"
 
 async def send_files(client: Client, message: Message, base64_string):
     user_id = message.from_user.id
+    settings = await db.get_settings()
+
+    if not settings.get('file_delivery', True):
+        return await message.reply_text("<b>⚠️ File delivery is currently disabled by the administrator.</b>")
 
     temp_msg = await message.reply_photo(
         photo=random.choice(ANIME_BANNERS),
-        caption="━━━━━━━━━━━━━━━━━━━\n🔍 Checking Subscription...\n━━━━━━━━━━━━━━━━━━━"
+        caption="━━━━━━━━━━━━━━━━━━━\n<b>🔍 Pʀᴏᴄᴇssɪɴɢ Yᴏᴜʀ Rᴇǫᴜᴇsᴛ...</b>\n━━━━━━━━━━━━━━━━━━━"
     )
     await asyncio.sleep(1)
 
@@ -226,7 +230,10 @@ async def start_command(client: Client, message: Message):
                 is_incomplete = True # If variables don't even exist, skip to send_files
 
             # Direct send logic
-            if is_premium or user_id == OWNER_ID or basic.startswith("yu3elk") or is_incomplete:
+            settings = await db.get_settings()
+            shortener_enabled = settings.get('shortener_system', True)
+
+            if is_premium or user_id == OWNER_ID or basic.startswith("yu3elk") or not shortener_enabled or is_incomplete:
                 await send_files(client, message, base64_string)
                 return
             
@@ -240,46 +247,39 @@ async def start_command(client: Client, message: Message):
             print(f"Error processing start payload: {e}")
             return
     else:
+        settings = await db.get_settings()
+        if not settings.get('core_features', True) and user_id != OWNER_ID:
+            return await message.reply_text("<b>⚠️ Bot is under maintenance. Please try again later.</b>")
+
         # Premium Start UI Redesign
         buttons = [
-            [InlineKeyboardButton("📢 Main Channel", url="https://t.me/OTAKULUX")],
-            [InlineKeyboardButton("🌀 Ongoing Anime", url="https://t.me/OTAKULUX/50")],
-            [InlineKeyboardButton("⚪ Anime Index", url="https://t.me/OTAKULUX/51")],
+            [InlineKeyboardButton("📢 Mᴀɪɴ Cʜᴀɴɴᴇʟ", url="https://t.me/OTAKULUX")],
+            [InlineKeyboardButton("🌀 Oɴɢᴏɪɴɢ Aɴɪᴍᴇ", url="https://t.me/OTAKULUX/50")],
+            [InlineKeyboardButton("⚪ Aɴɪᴍᴇ Iɴᴅᴇx", url="https://t.me/OTAKULUX/51")],
             [
-                InlineKeyboardButton("⚠️ About", callback_data="about"),
-                InlineKeyboardButton("💰 Promo", callback_data="premium")
+                InlineKeyboardButton("⚙️ Aʙᴏᴜᴛ", callback_data="about"),
+                InlineKeyboardButton("💎 Pʀᴇᴍɪᴜᴍ", callback_data="premium")
             ]
         ]
 
         reply_markup = InlineKeyboardMarkup(buttons)
 
-        # Typing Simulation Lines
-        line1 = "━━━━━━━━━━━━━━━━━━━\n"
-        line2 = f"Hey, {message.from_user.first_name} ✌🏻 ✨\n"
-        line3 = "I hope you're feeling the power of <b>Shadow Monarch</b> 😈\n\n"
-        line4 = "⚡ I'm The Ultimate File Sharing Bot... 🎉\n"
-        line5 = "━━━━━━━━━━━━━━━━━━━"
-
-        # Send initial message with first few lines
-        msg = await message.reply_photo(
-            photo=random.choice(ANIME_BANNERS),
-            caption=line1 + line2,
-            message_effect_id=5104841245755180586 # 🔥
+        # Premium Welcome Message
+        caption = (
+            "━━━━━━━━━━━━━━━━━━━\n"
+            f"⚡ <b>Hᴇʏ, {message.from_user.first_name}!</b>\n\n"
+            "Wᴇʟᴄᴏᴍᴇ ᴛᴏ ᴛʜᴇ ᴍᴏsᴛ ᴘᴏᴡᴇʀғᴜʟ ꜰɪʟᴇ sᴛᴏʀᴇ ᴇɴɢɪɴᴇ. "
+            "I ᴄᴀɴ sᴛᴏʀᴇ ᴀɴᴅ sʜᴀʀᴇ ꜰɪʟᴇs sᴇᴄᴜʀᴇʟʏ ᴡɪᴛʜ ᴜʟᴛʀᴀ-ꜰᴀsᴛ sᴘᴇᴇᴅ. 😈\n\n"
+            "<i>Uɴʟᴏᴄᴋ ᴛʜᴇ ꜰᴜʟʟ ᴘᴏᴛᴇɴᴛɪᴀʟ ʙʏ ᴊᴏɪɴɪɴɢ ᴏᴜʀ ᴄʜᴀɴɴᴇʟs ʙᴇʟᴏᴡ.</i>\n"
+            "━━━━━━━━━━━━━━━━━━━"
         )
 
-        try:
-            await asyncio.sleep(0.5)
-            await msg.edit_caption(line1 + line2 + line3)
-
-            await asyncio.sleep(0.5)
-            await msg.edit_caption(
-                caption=line1 + line2 + line3 + line4 + line5,
-                reply_markup=reply_markup
-            )
-        except MessageNotModified:
-            pass
-        except Exception as e:
-            print(f"Error in typing simulation: {e}")
+        await message.reply_photo(
+            photo=random.choice(ANIME_BANNERS),
+            caption=caption,
+            reply_markup=reply_markup,
+            message_effect_id=5104841245755180586 # 🔥
+        )
         return
 
 

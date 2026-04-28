@@ -1,0 +1,202 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Secure Verification | OTAKULUX</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://www.google.com/recaptcha/api.js?render={{ RECAPTCHA_SITE_KEY }}"></script>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700&display=swap');
+
+        body {
+            font-family: 'Inter', sans-serif;
+            background: radial-gradient(circle at top left, #1a1a2e, #16213e, #0f3460);
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: #e2e8f0;
+        }
+
+        .glass {
+            background: rgba(255, 255, 255, 0.05);
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.37);
+        }
+
+        .glow-text {
+            text-shadow: 0 0 15px rgba(0, 255, 204, 0.5);
+        }
+
+        .gradient-border {
+            position: relative;
+            border-radius: 1rem;
+            background: rgba(255, 255, 255, 0.05);
+        }
+
+        .gradient-border::before {
+            content: "";
+            position: absolute;
+            inset: -2px;
+            border-radius: 1rem;
+            padding: 2px;
+            background: linear-gradient(45deg, #00ffcc, #0066ff, #00ffcc);
+            -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+            -webkit-mask-composite: xor;
+            mask-composite: exclude;
+            pointer-events: none;
+            opacity: 0.5;
+        }
+
+        .loader {
+            border: 3px solid rgba(255, 255, 255, 0.1);
+            border-top: 3px solid #00ffcc;
+            border-radius: 50%;
+            width: 40px;
+            height: 40px;
+            animation: spin 1s linear infinite;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        .animate-pulse-slow {
+            animation: pulse 3s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+        }
+
+        @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: .5; }
+        }
+    </style>
+</head>
+<body class="p-4">
+    <div class="glass max-w-md w-full p-8 rounded-2xl text-center space-y-8 gradient-border">
+        <div class="space-y-2">
+            <h1 class="text-3xl font-bold glow-text text-teal-400">Security Check</h1>
+            <p class="text-slate-400">Please verify you are human to access the link</p>
+        </div>
+
+        <div id="status-container" class="space-y-6 py-4">
+            <div id="initial-state">
+                <div class="flex flex-col items-center space-y-4">
+                    <div class="p-6 bg-teal-500/10 rounded-full animate-pulse-slow">
+                        <i class="fas fa-shield-alt text-4xl text-teal-400"></i>
+                    </div>
+                    <div id="timer-box" class="text-4xl font-bold text-teal-400">5</div>
+                    <p class="text-sm text-slate-500">Preparing secure environment...</p>
+                </div>
+            </div>
+
+            <div id="loading-state" class="hidden">
+                <div class="flex flex-col items-center space-y-4">
+                    <div class="loader"></div>
+                    <p class="text-slate-300 font-semibold" id="loading-text">Verifying security...</p>
+                </div>
+            </div>
+
+            <div id="success-state" class="hidden">
+                <div class="flex flex-col items-center space-y-4">
+                    <div class="p-6 bg-green-500/10 rounded-full">
+                        <i class="fas fa-check-circle text-4xl text-green-400"></i>
+                    </div>
+                    <p class="text-green-400 font-bold text-xl">Verified Successfully!</p>
+                    <p class="text-slate-400 text-sm">Redirecting to your file...</p>
+                </div>
+            </div>
+
+            <div id="error-state" class="hidden">
+                <div class="flex flex-col items-center space-y-4">
+                    <div class="p-6 bg-red-500/10 rounded-full">
+                        <i class="fas fa-exclamation-triangle text-4xl text-red-400"></i>
+                    </div>
+                    <p class="text-red-400 font-bold" id="error-message">Verification failed</p>
+                    <button onclick="location.reload()" class="px-6 py-2 bg-teal-600 hover:bg-teal-500 rounded-lg transition-colors font-semibold">Try Again</button>
+                </div>
+            </div>
+        </div>
+
+        <div class="pt-4 border-t border-white/10">
+            <div class="flex items-center justify-center space-x-2 text-xs text-slate-500">
+                <i class="fas fa-lock"></i>
+                <span>End-to-End Encrypted Protection</span>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let timeLeft = 5;
+        const timerBox = document.getElementById('timer-box');
+        const initialState = document.getElementById('initial-state');
+        const loadingState = document.getElementById('loading-state');
+        const successState = document.getElementById('success-state');
+        const errorState = document.getElementById('error-state');
+        const loadingText = document.getElementById('loading-text');
+
+        const countdown = setInterval(() => {
+            timeLeft--;
+            if (timeLeft >= 0) timerBox.textContent = timeLeft;
+            if (timeLeft <= 0) {
+                clearInterval(countdown);
+                startVerification();
+            }
+        }, 1000);
+
+        function startVerification() {
+            initialState.classList.add('hidden');
+            loadingState.classList.remove('hidden');
+
+            grecaptcha.ready(function() {
+                grecaptcha.execute('{{ RECAPTCHA_SITE_KEY }}', {action: 'verify'}).then(function(token) {
+                    verifyOnBackend(token);
+                });
+            });
+        }
+
+        async function verifyOnBackend(token) {
+            try {
+                const response = await fetch('/api/verify', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        token: token,
+                        payload: "{{ PAYLOAD }}",
+                        session_id: "{{ SESSION_ID }}"
+                    })
+                });
+
+                const data = await response.json();
+
+                if (data.success) {
+                    loadingState.classList.add('hidden');
+                    successState.classList.remove('hidden');
+                    setTimeout(() => {
+                        window.location.href = data.redirect;
+                    }, 1500);
+                } else {
+                    showError(data.message || 'Security validation failed');
+                    if (data.redirect) {
+                        setTimeout(() => {
+                            window.location.href = data.redirect;
+                        }, 2000);
+                    }
+                }
+            } catch (err) {
+                showError('Network error. Please try again.');
+            }
+        }
+
+        function showError(msg) {
+            loadingState.classList.add('hidden');
+            errorState.classList.remove('hidden');
+            document.getElementById('error-message').textContent = msg;
+        }
+    </script>
+</body>
+</html>

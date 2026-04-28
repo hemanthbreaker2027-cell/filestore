@@ -19,19 +19,19 @@
 
 ### 🚀 **OVERVIEW**
 
-**OTAKULUX PRO** is a high-performance Telegram File Store Bot designed with a premium anime aesthetic. It allows users to store files in a private channel and access them via secure, unique links. Built for speed, stability, and a top-tier user experience.
+**OTAKULUX ULTIMATE** is a modern, production-ready Telegram File Store ecosystem. Re-engineered for security, scalability, and an unmatched user experience. Built with a modular architecture and a premium SaaS-style interface.
 
 ---
 
-### ✨ **KEY FEATURES**
+### ✨ **ADVANCED FEATURES**
 
-- 🎭 **Premium Zoro UI:** Neon-themed interface with simulated typing animations and random anime banners.
-- ⚡ **Ultra-Fast Delivery:** Files are delivered in milliseconds with strictly preserved sequential order.
-- 🔐 **Advanced Force Sub:** Multi-channel subscription check with a dynamic status checklist (✅/❌).
-- 🛠️ **Powerful Admin Tools:** Complete control over channels, users, and bot settings directly from Telegram.
-- 💎 **Premium System:** Built-in membership management for monetizing or restricting access.
-- 🗑️ **Auto-Delete:** configurable timers to automatically delete sent files for privacy and storage management.
-- 📊 **Real-time Analytics:** Track user growth, broadcast success, and bot performance instantly.
+- 🛡️ **reCAPTCHA v3 Protection:** Advanced human verification with score-based analysis (replaces Turnstile).
+- 🎛️ **Owner Feature Panel:** Dynamic control over Shorteners, File Delivery, and Core Features via `/panel`.
+- 💎 **SaaS Dashboard UI:** A premium, responsive glassmorphism web interface for verification.
+- 🔐 **Secure Token System:** JWT-based session management for tamper-proof redirects.
+- ⚡ **Turbo Delivery:** Optimized sequential file transmission with background auto-deletion.
+- 🎭 **Zoro Premium Theme:** Modern Telegram UI with neon accents and high-end typography.
+- 🚧 **Maintenance Mode:** Ability to toggle core features on/off instantly without downtime.
 
 ---
 
@@ -40,13 +40,13 @@
 | Command | Description |
 | :--- | :--- |
 | `/start` | Activate the bot or retrieve files via link |
-| `/batch` | Create a permanent link for multiple files |
-| `/genlink` | Generate a single file sharing link |
+| `/panel` | [Owner] Modern feature flag & settings dashboard |
+| `/batch` | [Admin] Create a permanent link for multiple files |
+| `/genlink` | [Admin] Generate a single file sharing link |
 | `/users` | [Admin] View total user statistics |
 | `/broadcast` | [Admin] Send a message to all users |
 | `/addchnl` | [Admin] Add a new Force Sub channel |
 | `/delchnl` | [Admin] Remove a Force Sub channel |
-| `/listchnl` | [Admin] View all active Force Sub channels |
 | `/addpremium` | [Admin] Grant premium access to a user |
 | `/myplan` | Check your current subscription status |
 | `/stats` | View bot uptime and server health |
@@ -79,12 +79,14 @@ python3 bot.py
 
 ### ⚙️ **ENVIRONMENT VARIABLES**
 
-- `API_ID` / `API_HASH`: Get from [my.telegram.org](https://my.telegram.org)
-- `TG_BOT_TOKEN`: Get from [@BotFather](https://t.me/BotFather)
-- `OWNER_ID`: Your Telegram User ID
-- `CHANNEL_ID`: The ID of your private database channel
-- `DATABASE_URL`: Your MongoDB connection string
-- `FORCE_SUB_CHANNELS`: List of channel IDs for mandatory join
+- `API_ID` / `API_HASH`: Your Telegram API credentials.
+- `TG_BOT_TOKEN`: Your Telegram Bot token.
+- `OWNER_ID`: Telegram ID of the bot owner.
+- `CHANNEL_ID`: ID of the private channel for file storage.
+- `DATABASE_URL`: MongoDB connection string.
+- `RECAPTCHA_SITE_KEY`: Your Google reCAPTCHA v3 site key.
+- `RECAPTCHA_SECRET_KEY`: Your Google reCAPTCHA v3 secret key.
+- `WEBSITE_URL`: Your public domain (e.g., `https://bot.com`).
 
 ---
 

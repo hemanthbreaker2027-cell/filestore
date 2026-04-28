@@ -1,213 +1,171 @@
 
 from aiohttp import web
 import aiohttp
-import jwt
 import time
-import hashlib
 import uuid
-import asyncio
-from config import TURNSTILE_SITE_KEY, TURNSTILE_SECRET_KEY, JWT_SECRET, WEBSITE_URL, SHORTLINK_URL, SHORTLINK_API
-from plugins.turnstile_html import TURNSTILE_HTML, BANNED_HTML, BOT_DETECTED_HTML
-from helper_func import get_shortlink
+import os
+from config import JWT_SECRET, WEBSITE_URL, SHORTLINK_URL, SHORTLINK_API
 from database.database import db
+from services.security import SecurityService
 
 routes = web.RouteTableDef()
 
-# Configuration
-TIMER_THRESHOLD = 100 # 100 seconds
-BAN_STRIKE_1 = 3   # 1 hour ban
-BAN_STRIKE_2 = 5   # 24 hour ban
-BAN_STRIKE_3 = 10  # Permanent ban
+# reCAPTCHA Site Key from Env
+RECAPTCHA_SITE_KEY = os.environ.get("RECAPTCHA_SITE_KEY", "6LeIxAcTAAAAAJcZVRqyHh71UMIEGNQ_MXjiZKhI") # Test key
 
-def get_real_ip(request):
-    return request.headers.get('CF-Connecting-IP') or request.headers.get('X-Forwarded-For', request.remote)
+# Template Cache
+template_cache = {}
 
-def get_identifier(request):
-    ip = get_real_ip(request)
-    ua = request.headers.get('User-Agent', '')
-    return hashlib.sha256(f"{ip}{ua}".encode()).hexdigest()
+async def get_template(name):
+    if name not in template_cache:
+        try:
+            with open(f"templates/{name}.html", "r") as f:
+                template_cache[name] = f.read()
+        except FileNotFoundError:
+            return None
+    return template_cache[name]
 
-async def check_ban(identifier):
+def json_response(success=True, message="", data=None, status=200):
+    return web.json_response({
+        "success": success,
+        "message": message,
+        "data": data or {}
+    }, status=status)
+
+async def check_ban_status(request):
+    identifier = SecurityService.get_identifier(request)
     record = await db.get_bypass_record(identifier)
     if record and record.get('ban_status'):
         if time.time() < record.get('ban_expiry'):
-            return record
+            return True, record
         else:
             await db.reset_bypass_attempts(identifier)
-    return None
+    return False, None
 
 @routes.get("/", allow_head=True)
-async def root_route_handler(request):
-    return web.json_response("OTAKULUX FileStore Secure v2")
+async def root_handler(request):
+    return web.Response(text="OTAKULUX Secure Engine v3.0 - Online", content_type="text/plain")
 
 @routes.get("/verify/{payload}")
-async def turnstile_page(request):
-    identifier = get_identifier(request)
-    ban_record = await check_ban(identifier)
-    if ban_record:
+async def verify_page(request):
+    is_banned, record = await check_ban_status(request)
+    if is_banned:
         return web.HTTPFound("/banned")
 
     payload = request.match_info['payload']
     session_id = str(uuid.uuid4())
 
-    # Create initial session JWT with server-side start_time
-    init_token = jwt.encode({
-        'session_id': session_id,
-        'start_time': time.time(),
-        'ip': get_real_ip(request),
-        'ua': request.headers.get('User-Agent', ''),
-        'payload': payload
-    }, JWT_SECRET, algorithm='HS256')
+    html = await get_template("verify")
+    if not html: return web.Response(text="Template Error", status=500)
 
-    html = TURNSTILE_HTML.replace("{{ SITE_KEY }}", TURNSTILE_SITE_KEY) \
-                        .replace("{{ PAYLOAD }}", payload) \
-                        .replace("{{ SESSION_ID }}", session_id)
+    html = html.replace("{{ RECAPTCHA_SITE_KEY }}", RECAPTCHA_SITE_KEY)
+    html = html.replace("{{ PAYLOAD }}", payload)
+    html = html.replace("{{ SESSION_ID }}", session_id)
 
-    response = web.Response(text=html, content_type='text/html')
-    # Set a short-lived cookie for verification context
-    response.set_cookie('v_session', init_token, httponly=True, secure=True, samesite='Lax', max_age=600)
-    return response
+    return web.Response(text=html, content_type="text/html")
 
-@routes.post("/verify_token")
-async def verify_turnstile(request):
-    identifier = get_identifier(request)
-    ban_record = await check_ban(identifier)
-    if ban_record:
-        return web.json_response({"success": False, "message": "You are banned.", "banned": True}, status=403)
+@routes.post("/api/verify")
+async def api_verify(request):
+    is_banned, _ = await check_ban_status(request)
+    if is_banned:
+        return json_response(False, "Access Denied", status=403)
 
-    ip = get_real_ip(request)
     try:
         data = await request.json()
         token = data.get('token')
         payload = data.get('payload')
         session_id = data.get('session_id')
-        v_session = request.cookies.get('v_session')
+        ip = request.headers.get('CF-Connecting-IP') or request.headers.get('X-Forwarded-For', request.remote)
+        identifier = SecurityService.get_identifier(request)
 
-        if not v_session:
-            return web.json_response({"success": False, "message": "Session expired. Refreshing..."}, status=400)
+        if not all([token, payload, session_id]):
+            return json_response(False, "Missing required parameters", status=400)
 
-        try:
-            decoded_v = jwt.decode(v_session, JWT_SECRET, algorithms=['HS256'])
-        except:
-            return web.json_response({"success": False, "message": "Invalid session. Refreshing..."}, status=400)
+        # 1. Verify reCAPTCHA
+        client_session = request.app['client_session']
+        success, score = await SecurityService.verify_recaptcha(token, ip, client_session)
 
-        # Validate session integrity
-        if decoded_v.get('session_id') != session_id or \
-           decoded_v.get('ip') != ip or \
-           decoded_v.get('payload') != payload:
-            return web.json_response({"success": False, "message": "Security mismatch. Refreshing..."}, status=403)
-
-        # ⏳ unbypassable Backend Timer Enforcement
-        elapsed = time.time() - decoded_v.get('start_time')
-        if elapsed < TIMER_THRESHOLD:
-            # 🔁 BYPASS DETECTED -> LOOP SYSTEM
+        if not success:
             await db.increment_bypass_attempt(identifier)
             record = await db.get_bypass_record(identifier)
             attempts = record.get('attempts_count', 0)
 
             # Progressive Banning
-            if attempts >= BAN_STRIKE_3:
+            if attempts >= 10:
                 await db.ban_user_bypass(identifier, -1) # Permanent
-                return web.json_response({"success": False, "message": "Bypass detected. Permanent block issued.", "banned": True}, status=403)
-            elif attempts == BAN_STRIKE_2:
-                await db.ban_user_bypass(identifier, 24)
-                return web.json_response({"success": False, "message": "Bypass detected. 24h block issued.", "banned": True}, status=403)
-            elif attempts == BAN_STRIKE_1:
-                await db.ban_user_bypass(identifier, 1)
-                return web.json_response({"success": False, "message": "Bypass detected. 1h block issued.", "banned": True}, status=403)
+            elif attempts >= 5:
+                await db.ban_user_bypass(identifier, 24) # 24h
+            elif attempts >= 3:
+                await db.ban_user_bypass(identifier, 1)  # 1h
 
-            # If not banned, generate new shortlink loop
-            new_verify_link = f"{WEBSITE_URL}/verify/{payload}"
-            new_short_link = await get_shortlink(SHORTLINK_URL, SHORTLINK_API, new_verify_link)
+            return json_response(False, f"Security check failed (Score: {score}). Please try again.", status=403)
 
-            return web.json_response({
-                "success": False,
-                "loop": True,
-                "message": "Bypass detected. Security timer was not completed. Solve again using the new link.",
-                "new_link": new_short_link
-            }, status=403)
+        # 2. Success -> Reset attempts and allow redirect
+        await db.reset_bypass_attempts(identifier)
 
-        # Verify token with Cloudflare
-        client_session = request.app['client_session']
-        async with client_session.post('https://challenges.cloudflare.com/turnstile/v0/siteverify', data={
-            'secret': TURNSTILE_SECRET_KEY,
-            'response': token,
-            'remoteip': ip
-        }) as resp:
-            result = await resp.json()
+        # 3. Generate Session Cookie
+        final_token = SecurityService.generate_session_token(payload, session_id, ip)
 
-        if result.get('success'):
-            # Success -> Reset attempts and allow redirect
-            await db.reset_bypass_attempts(identifier)
+        # 4. Get Final Destination (Shortened)
+        redirect_url = await SecurityService.get_secure_shortlink(payload)
 
-            # Optional: small security delay
-            await asyncio.sleep(1.5)
-
-            final_token = jwt.encode({
-                'payload': payload,
-                'iat': int(time.time()),
-                'exp': int(time.time()) + 3600
-            }, JWT_SECRET, algorithm='HS256')
-
-            final_dest = f"{WEBSITE_URL}/f/{payload}"
-            short_url_result = await get_shortlink(SHORTLINK_URL, SHORTLINK_API, final_dest)
-
-            response = web.json_response({"success": True, "redirect": short_url_result})
-            response.set_cookie('session', final_token, httponly=True, secure=True, samesite='Lax')
-            response.del_cookie('v_session')
-            return response
-        else:
-            return web.json_response({"success": False, "message": "Turnstile verification failed. Please try again."}, status=403)
+        response = json_response(True, "Verified successfully", {"redirect": redirect_url})
+        response.set_cookie('auth_session', final_token, httponly=True, secure=True, samesite='Lax', max_age=3600)
+        return response
 
     except Exception as e:
-        print(f"Error in verify: {e}")
-        return web.json_response({"success": False, "message": "Internal security error."}, status=500)
+        print(f"Web API Error: {e}")
+        return json_response(False, "Internal Server Error", status=500)
 
 @routes.get("/banned")
-async def banned_page(request):
-    identifier = get_identifier(request)
-    ban_record = await check_ban(identifier)
-    if not ban_record:
+async def banned_route(request):
+    is_banned, record = await check_ban_status(request)
+    if not is_banned:
         return web.HTTPFound("/")
 
-    expiry = ban_record.get('ban_expiry')
-    if expiry >= 9999999999:
-        msg = "You are permanently blocked from using this system due to repeated bypass attempts."
-        time_str = None
-    else:
-        msg = "You are temporarily blocked due to repeated bypass attempts."
+    expiry = record.get('ban_expiry')
+    time_left = ""
+    is_permanent = True
+
+    if expiry < 9999999999:
+        is_permanent = False
         remaining = int(expiry - time.time())
-        hours, remainder = divmod(remaining, 3600)
-        minutes, seconds = divmod(remainder, 60)
-        time_str = f"{hours}h {minutes}m {seconds}s"
+        h, rem = divmod(remaining, 3600)
+        m, s = divmod(rem, 60)
+        time_left = f"{h}h {m}m {s}s"
 
-    html = BANNED_HTML.replace("{{ MESSAGE }}", msg)
-    if time_str:
-        html = html.replace("{{ TIME_LEFT }}", time_str).replace("{{ TIME_BOX_CLASS }}", "")
+    html = await get_template("banned")
+    if not html: return web.Response(text="Template Error", status=500)
+
+    html = html.replace("{{ MESSAGE }}", "Multiple bypass attempts detected. Your access has been restricted.")
+
+    if is_permanent:
+        # Hide the time box
+        import re
+        html = re.sub(r"<!-- TIME_BOX_START -->.*?<!-- TIME_BOX_END -->", "", html, flags=re.DOTALL)
     else:
-        html = html.replace("{{ TIME_LEFT }}", "").replace("{{ TIME_BOX_CLASS }}", "hidden")
+        # Keep it and replace value
+        html = html.replace("{{ TIME_LEFT }}", time_left)
+        # Clean markers
+        html = html.replace("<!-- TIME_BOX_START -->", "").replace("<!-- TIME_BOX_END -->", "")
 
-    return web.Response(text=html, content_type='text/html')
-
-@routes.get("/bot-detected")
-async def bot_detected(request):
-    return web.Response(text=BOT_DETECTED_HTML, content_type='text/html')
+    return web.Response(text=html, content_type="text/html")
 
 @routes.get("/f/{payload}")
-async def final_redirect(request):
+async def final_handler(request):
     payload = request.match_info['payload']
-    session_cookie = request.cookies.get('session')
+    cookie = request.cookies.get('auth_session')
 
-    if not session_cookie:
+    if not cookie:
         return web.HTTPFound(f"/verify/{payload}")
 
-    try:
-        decoded = jwt.decode(session_cookie, JWT_SECRET, algorithms=['HS256'])
-        if decoded.get('payload') != payload:
-            return web.HTTPFound(f"/verify/{payload}")
-
-        bot = request.app.get('bot')
-        username = bot.username if bot else "OTAKULUX"
-        return web.HTTPFound(f"https://t.me/{username}?start=yu3elk{payload}7")
-    except:
+    decoded = SecurityService.verify_session_token(cookie)
+    if not decoded or decoded.get('payload') != payload:
         return web.HTTPFound(f"/verify/{payload}")
+
+    bot = request.app['bot']
+    return web.HTTPFound(f"https://t.me/{bot.username}?start=yu3elk{payload}7")
+
+@routes.get("/health")
+async def health_check(request):
+    return web.Response(text="OK", status=200)
