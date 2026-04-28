@@ -56,11 +56,15 @@ class SecurityService:
     async def get_secure_shortlink(user_id: int, payload: str):
         from helper_func import get_shortlink
         # For the new flow, we use the /r2/ system
-        token = SecureRedirect.encrypt({
-            "destination": f"https://t.me/placeholder?start=yu3elk{payload}7", # Will be fixed in route
+        token_data = {
             "payload": payload,
             "expiresAt": int(time.time()) + 600 # 10 mins
-        })
+        }
+        token = SecureRedirect.encrypt(token_data)
+
+        # Store hash for one-time use and expiry check
+        token_hash = hashlib.sha256(token.encode()).hexdigest()
+        await db.store_secure_token(token_hash, token_data["expiresAt"])
 
         target_url = f"{WEBSITE_URL}/r2/{user_id}/{token}"
 

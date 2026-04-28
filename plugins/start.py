@@ -29,6 +29,7 @@ from config import *
 from helper_func import *
 from database.database import *
 from database.db_premium import *
+from services.security import SecurityService
 
 
 BAN_SUPPORT = f"{BAN_SUPPORT}"
@@ -151,13 +152,18 @@ async def send_files(client: Client, message: Message, base64_string):
 async def short_url(client: Client, message: Message, base64_string):
     user_id = message.from_user.id
     try:
+        short_link = None
         if WEBSITE_URL:
-            # New flow: Use SecurityService to get a secure (possibly shortened) link to /r2/
+            # New flow: Use SecurityService to get a secure link to /r2/
             short_link = await SecurityService.get_secure_shortlink(user_id, base64_string)
-        else:
+        elif SHORTLINK_URL and SHORTLINK_API:
             # Fallback to old flow if WEBSITE_URL is not set
             prem_link = f"https://t.me/{client.username}?start=yu3elk{base64_string}7"
             short_link = await get_shortlink(SHORTLINK_URL, SHORTLINK_API, prem_link)
+
+        if not short_link:
+            # Fallback to direct send if shortening failed
+            return await send_files(client, message, base64_string)
 
         buttons = [
             [
@@ -171,13 +177,13 @@ async def short_url(client: Client, message: Message, base64_string):
 
         await message.reply_photo(
             photo=random.choice(ANIME_BANNERS),
-            caption=SHORT_MSG.format(
-            ),
+            caption=SHORT_MSG,
             reply_markup=InlineKeyboardMarkup(buttons),
         )
 
-    except IndexError:
-        pass
+    except Exception as e:
+        print(f"Error in short_url: {e}")
+        await send_files(client, message, base64_string)
 
 
 @Bot.on_message(filters.command('start') & filters.private)
@@ -214,22 +220,34 @@ async def start_command(client: Client, message: Message):
     if len(text) > 7:
         try:
             basic = text.split(" ", 1)[1]
-            if basic.startswith("yu3elk"):
+            is_verified = basic.startswith("yu3elk")
+
+            if is_verified:
                 base64_string = basic[6:-1]
             else:
                 base64_string = basic
 
-            # Direct send logic
+            # Decision logic for shortener
             shortener_enabled = settings.get('shortener_system', True)
+            is_admin = await db.admin_exist(user_id) or user_id == OWNER_ID
 
-            if is_premium or user_id == OWNER_ID or basic.startswith("yu3elk") or not shortener_enabled:
+            # Can we actually shorten?
+            can_shorten = bool(WEBSITE_URL) or (bool(SHORTLINK_URL) and bool(SHORTLINK_API))
+
+            # Shortener bypass conditions
+            bypass = (
+                is_premium or
+                is_admin or
+                is_verified or
+                not shortener_enabled or
+                not can_shorten
+            )
+
+            if bypass:
                 await send_files(client, message, base64_string)
-                return
-            
-            # Shortener logic
-            await short_url(client, message, base64_string)
+            else:
+                await short_url(client, message, base64_string)
             return
-        
 
         except Exception as e:
             print(f"Error processing start payload: {e}")
@@ -471,3 +489,9 @@ async def total_verify_count_cmd(client, message: Message):
 async def bcmd(bot: Bot, message: Message):        
     reply_markup = InlineKeyboardMarkup([[InlineKeyboardButton("• ᴄʟᴏsᴇ •", callback_data = "close")]])
     await message.reply(text=CMD_TXT, reply_markup = reply_markup, quote= True)
+
+@Bot.on_message(filters.command('test') & filters.private & filters.user(OWNER_ID))
+async def test_shortener(client: Client, message: Message):
+    # Test payload for demonstration
+    sample_payload = "W3siaWQiOiAxLCAibmFtZSI6ICJUZXN0In1d"
+    await short_url(client, message, sample_payload)
