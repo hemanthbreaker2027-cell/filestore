@@ -50,11 +50,12 @@ START_PIC = random.choice(ANIME_BANNERS)
 FORCE_PIC = random.choice(ANIME_BANNERS)
 
 #--------------------------------------------
-SHORTLINK_URL = os.environ.get("SHORTLINK_URL", "")
-SHORTLINK_API = os.environ.get("SHORTLINK_API", "")
-TURNSTILE_SITE_KEY = os.environ.get("TURNSTILE_SITE_KEY", "")
-TURNSTILE_SECRET_KEY = os.environ.get("TURNSTILE_SECRET_KEY", "")
-WEBSITE_URL = os.environ.get("WEBSITE_URL", "") # e.g. https://yourdomain.com
+SHORTLINK_URL = os.environ.get("SHORTLINK_URL", "arolinks.com")
+SHORTLINK_API = os.environ.get("SHORTLINK_API", "e49643875c2fa34dd6087254e58283d65ffc7748")
+RECAPTCHA_SITE_KEY = os.environ.get("RECAPTCHA_SITE_KEY", "6LfvWswsAAAAADgpyWripb1IZSbBjlniKAmdBjSv")
+RECAPTCHA_SECRET_KEY = os.environ.get("RECAPTCHA_SECRET_KEY", "6LfvWswsAAAAAEwc1yAjAVX0IXPsxIe1FHNtwVco")
+SECURE_SECRET_KEY = os.environ.get("SECURE_SECRET_KEY", "HJjdgddjdodkdbdbdmdksksiwkwoahsbdndododjdndndmdkdjdbdmdosjsbsbwkwkwjsbdbdndkdkdkdjdbdbdndndndndna amalapapaksbsbsn")
+WEBSITE_URL = os.environ.get("WEBSITE_URL", "filestore-4-5xip.onrender.com") # e.g. https://yourdomain.com
 JWT_SECRET = os.environ.get("JWT_SECRET", "otakulux_secret_key")
 TUT_VID = os.environ.get("TUT_VID","https://t.me/OTAKULUX/3")
 SHORT_MSG = "<b>⌯ Here is Your Download Link, Must Watch Tutorial Before Clicking On Download...</b>"
