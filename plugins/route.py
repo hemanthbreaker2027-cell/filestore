@@ -79,7 +79,11 @@ async def r2_verify(request):
         data = await request.json()
         recaptcha_token = data.get('recaptchaToken')
         link_token = data.get('linkToken')
-        ip = request.headers.get('X-Forwarded-For', request.remote)
+
+        # Get the real user IP from X-Forwarded-For
+        forwarded_for = request.headers.get('X-Forwarded-For', request.remote)
+        ip = forwarded_for.split(',')[0].strip()
+
         identifier = SecurityService.get_identifier(request)
 
         if not all([recaptcha_token, link_token]):
@@ -90,6 +94,9 @@ async def r2_verify(request):
         success, score = await SecurityService.verify_recaptcha(recaptcha_token, ip, client_session)
 
         if not success:
+            if score == -1:
+                return json_response(False, "Bot configuration error (Invalid reCAPTCHA Secret). Please contact admin.", status=500)
+
             await db.increment_bypass_attempt(identifier)
             return json_response(False, f"Security check failed (Score: {score}). Please try again.", status=403)
 

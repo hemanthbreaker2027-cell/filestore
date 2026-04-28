@@ -13,21 +13,46 @@ from database.database import db
 
 # Configuration for reCAPTCHA
 RECAPTCHA_SECRET = os.environ.get("RECAPTCHA_SECRET_KEY", "6LeIxAcTAAAAAGG-vFI1TnRWxMZNFuojJ4WifJWe")
-MIN_SCORE = 0.5
+MIN_SCORE = 0.1 # Lowered threshold to prevent blocking valid users
 
 class SecurityService:
     @staticmethod
     async def verify_recaptcha(token: str, ip: str, session: aiohttp.ClientSession):
-        async with session.post('https://www.google.com/recaptcha/api/siteverify', data={
-            'secret': RECAPTCHA_SECRET,
-            'response': token,
-            'remoteip': ip
-        }) as resp:
-            result = await resp.json()
+        try:
+            # We omit remoteip here as it often causes issues in proxy environments like Render/Heroku
+            async with session.post('https://www.google.com/recaptcha/api/siteverify', data={
+                'secret': RECAPTCHA_SECRET,
+                'response': token
+            }) as resp:
+                result = await resp.json()
 
-        if result.get('success') and result.get('score', 0) >= MIN_SCORE:
-            return True, result.get('score')
-        return False, result.get('score', 0)
+            # Log the full result for debugging
+            print(f"[RECAPTCHA DEBUG] Result: {result}")
+
+            if result.get('success'):
+                score = result.get('score', 0.5)
+
+                # If using Google's public test keys, always allow to prevent blocking
+                if RECAPTCHA_SECRET == "6LeIxAcTAAAAAGG-vFI1TnRWxMZNFuojJ4WifJWe":
+                    return True, score
+
+                if score >= MIN_SCORE:
+                    return True, score
+                return False, score
+
+            # If success is false, check for error codes
+            error_codes = result.get('error-codes', [])
+            print(f"[RECAPTCHA ERROR] Success false. Codes: {error_codes}")
+
+            # Special case for test keys or common dev errors
+            if "invalid-input-secret" in error_codes:
+                return False, -1 # Indicates config error
+
+            return False, 0
+
+        except Exception as e:
+            print(f"[RECAPTCHA EXCEPTION] {e}")
+            return False, 0
 
     @staticmethod
     def generate_session_token(payload: str, session_id: str, ip: str):
@@ -49,6 +74,8 @@ class SecurityService:
     @staticmethod
     def get_identifier(request):
         ip = request.headers.get('CF-Connecting-IP') or request.headers.get('X-Forwarded-For', request.remote)
+        if ip and ',' in ip:
+            ip = ip.split(',')[0].strip()
         ua = request.headers.get('User-Agent', '')
         return hashlib.sha256(f"{ip}{ua}".encode()).hexdigest()
 
