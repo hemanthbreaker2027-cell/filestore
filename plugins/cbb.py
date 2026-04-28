@@ -14,7 +14,7 @@ from pyrogram.types import Message, InlineKeyboardMarkup, InlineKeyboardButton, 
 from database.database import *
 from helper_func import *
 
-@Bot.on_callback_query()
+@Bot.on_callback_query(filters.regex(r"^(help|about|start|premium|close|fsub_back|ck|rfs_)"))
 async def cb_handler(client: Bot, query: CallbackQuery):
     data = query.data
 

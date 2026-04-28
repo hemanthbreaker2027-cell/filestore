@@ -4,14 +4,15 @@ import aiohttp
 import time
 import uuid
 import os
+import hashlib
 from config import JWT_SECRET, WEBSITE_URL, SHORTLINK_URL, SHORTLINK_API
 from database.database import db
-from services.security import SecurityService
+from services.security import SecurityService, SecureRedirect
 
 routes = web.RouteTableDef()
 
 # reCAPTCHA Site Key from Env
-RECAPTCHA_SITE_KEY = os.environ.get("RECAPTCHA_SITE_KEY", "6LeIxAcTAAAAAJcZVRqyHh71UMIEGNQ_MXjiZKhI") # Test key
+RECAPTCHA_SITE_KEY = os.environ.get("RECAPTCHA_SITE_KEY", "6LeIxAcTAAAAAJcZVRqyHh71UMIEGNQ_MXjiZKhI")
 
 # Template Cache
 template_cache = {}
@@ -44,28 +45,26 @@ async def check_ban_status(request):
 
 @routes.get("/", allow_head=True)
 async def root_handler(request):
-    return web.Response(text="OTAKULUX Secure Engine v3.0 - Online", content_type="text/plain")
+    return web.Response(text="OTAKULUX Secure Engine v4.0 - Online", content_type="text/plain")
 
-@routes.get("/verify/{payload}")
-async def verify_page(request):
+@routes.get("/safe/{payload}")
+async def safe_landing_page(request):
     is_banned, record = await check_ban_status(request)
     if is_banned:
         return web.HTTPFound("/banned")
 
     payload = request.match_info['payload']
-    session_id = str(uuid.uuid4())
 
-    html = await get_template("verify")
+    html = await get_template("safe")
     if not html: return web.Response(text="Template Error", status=500)
 
     html = html.replace("{{ RECAPTCHA_SITE_KEY }}", RECAPTCHA_SITE_KEY)
     html = html.replace("{{ PAYLOAD }}", payload)
-    html = html.replace("{{ SESSION_ID }}", session_id)
 
     return web.Response(text=html, content_type="text/html")
 
-@routes.post("/api/verify")
-async def api_verify(request):
+@routes.post("/api/verify_safe")
+async def api_verify_safe(request):
     is_banned, _ = await check_ban_status(request)
     if is_banned:
         return json_response(False, "Access Denied", status=403)
@@ -74,48 +73,62 @@ async def api_verify(request):
         data = await request.json()
         token = data.get('token')
         payload = data.get('payload')
-        session_id = data.get('session_id')
-        ip = request.headers.get('CF-Connecting-IP') or request.headers.get('X-Forwarded-For', request.remote)
+        ip = request.headers.get('X-Forwarded-For', request.remote)
         identifier = SecurityService.get_identifier(request)
 
-        if not all([token, payload, session_id]):
+        if not all([token, payload]):
             return json_response(False, "Missing required parameters", status=400)
 
-        # 1. Verify reCAPTCHA
+        # 1. Verify reCAPTCHA v3
         client_session = request.app['client_session']
         success, score = await SecurityService.verify_recaptcha(token, ip, client_session)
 
         if not success:
             await db.increment_bypass_attempt(identifier)
-            record = await db.get_bypass_record(identifier)
-            attempts = record.get('attempts_count', 0)
-
-            # Progressive Banning
-            if attempts >= 10:
-                await db.ban_user_bypass(identifier, -1) # Permanent
-            elif attempts >= 5:
-                await db.ban_user_bypass(identifier, 24) # 24h
-            elif attempts >= 3:
-                await db.ban_user_bypass(identifier, 1)  # 1h
-
             return json_response(False, f"Security check failed (Score: {score}). Please try again.", status=403)
 
-        # 2. Success -> Reset attempts and allow redirect
-        await db.reset_bypass_attempts(identifier)
+        # 2. Generate Secure One-Time Token
+        uid = str(uuid.uuid4())
+        secure_token = SecureRedirect.encrypt({"payload": payload, "uid": uid})
 
-        # 3. Generate Session Cookie
-        final_token = SecurityService.generate_session_token(payload, session_id, ip)
+        # Hash the token for DB storage (one-time use)
+        token_hash = hashlib.sha256(secure_token.encode()).hexdigest()
+        await db.store_secure_token(token_hash, int(time.time()) + 300) # 5 min expiry
 
-        # 4. Get Final Destination (Shortened)
-        redirect_url = await SecurityService.get_secure_shortlink(payload)
+        # 3. Final Destination URL (Google Redirect Method for obfuscation)
+        google_redirect = f"https://www.google.com/url?q={WEBSITE_URL}/r2/{uid}/{secure_token}"
 
-        response = json_response(True, "Verified successfully", {"redirect": redirect_url})
-        response.set_cookie('auth_session', final_token, httponly=True, secure=True, samesite='Lax', max_age=3600)
-        return response
+        return json_response(True, "Verified successfully", {"redirect": google_redirect})
 
     except Exception as e:
         print(f"Web API Error: {e}")
         return json_response(False, "Internal Server Error", status=500)
+
+@routes.get("/r2/{uid}/{token}")
+async def secure_redirect_handler(request):
+    uid = request.match_info['uid']
+    token = request.match_info['token']
+
+    # 1. Check if token was already used
+    token_hash = hashlib.sha256(token.encode()).hexdigest()
+    if not await db.validate_and_use_token(token_hash):
+        return web.Response(text="Link Expired or Already Used", status=403)
+
+    # 2. Decrypt Token
+    data = SecureRedirect.decrypt(token)
+    if not data or data.get('uid') != uid:
+        return web.Response(text="Invalid Security Token", status=403)
+
+    payload = data.get('payload')
+
+    # 3. Final Redirect to Bot
+    bot = request.app['bot']
+    return web.HTTPFound(f"https://t.me/{bot.username}?start=yu3elk{payload}7")
+
+@routes.get("/verify/{payload}")
+async def legacy_verify_page(request):
+    # Redirect legacy links to new safe page
+    return web.HTTPFound(f"/safe/{request.match_info['payload']}")
 
 @routes.get("/banned")
 async def banned_route(request):
@@ -140,31 +153,13 @@ async def banned_route(request):
     html = html.replace("{{ MESSAGE }}", "Multiple bypass attempts detected. Your access has been restricted.")
 
     if is_permanent:
-        # Hide the time box
         import re
         html = re.sub(r"<!-- TIME_BOX_START -->.*?<!-- TIME_BOX_END -->", "", html, flags=re.DOTALL)
     else:
-        # Keep it and replace value
         html = html.replace("{{ TIME_LEFT }}", time_left)
-        # Clean markers
         html = html.replace("<!-- TIME_BOX_START -->", "").replace("<!-- TIME_BOX_END -->", "")
 
     return web.Response(text=html, content_type="text/html")
-
-@routes.get("/f/{payload}")
-async def final_handler(request):
-    payload = request.match_info['payload']
-    cookie = request.cookies.get('auth_session')
-
-    if not cookie:
-        return web.HTTPFound(f"/verify/{payload}")
-
-    decoded = SecurityService.verify_session_token(cookie)
-    if not decoded or decoded.get('payload') != payload:
-        return web.HTTPFound(f"/verify/{payload}")
-
-    bot = request.app['bot']
-    return web.HTTPFound(f"https://t.me/{bot.username}?start=yu3elk{payload}7")
 
 @routes.get("/health")
 async def health_check(request):

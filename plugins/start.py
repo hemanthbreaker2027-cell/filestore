@@ -151,8 +151,8 @@ async def send_files(client: Client, message: Message, base64_string):
 async def short_url(client: Client, message: Message, base64_string):
     try:
         if WEBSITE_URL:
-            # Send our verification page link directly
-            short_link = f"{WEBSITE_URL}/verify/{base64_string}"
+            # New flow: Use SecurityService to get a secure (possibly shortened) link to /safe/{payload}
+            short_link = await SecurityService.get_secure_shortlink(base64_string)
         else:
             # Fallback to old flow if WEBSITE_URL is not set
             prem_link = f"https://t.me/{client.username}?start=yu3elk{base64_string}7"

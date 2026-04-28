@@ -50,6 +50,7 @@ class OTAKULUX:
         self.rqst_fsub_Channel_data = self.database['request_forcesub_channel']
         self.bypass_data = self.database['bypass_attempts']
         self.settings_data = self.database['settings']
+        self.secure_tokens = self.database['secure_tokens']
         
 
 
@@ -316,6 +317,33 @@ class OTAKULUX:
 
     async def reset_bypass_attempts(self, identifier: str):
         await self.bypass_data.delete_one({'_id': identifier})
+
+    # SECURE TOKEN MANAGEMENT
+    async def store_secure_token(self, token_hash: str, expiry: int):
+        await self.secure_tokens.insert_one({
+            '_id': token_hash,
+            'expiry': expiry,
+            'used': False
+        })
+
+    async def validate_and_use_token(self, token_hash: str):
+        result = await self.secure_tokens.find_one({'_id': token_hash})
+        if not result:
+            return False
+
+        if result['used'] or time.time() > result['expiry']:
+            return False
+
+        await self.secure_tokens.update_one({'_id': token_hash}, {'$set': {'used': True}})
+        return True
+
+    async def cleanup_tokens(self):
+        await self.secure_tokens.delete_many({
+            '$or': [
+                {'expiry': {'$lt': time.time()}},
+                {'used': True}
+            ]
+        })
 
 
 db = OTAKULUX(DB_URI, DB_NAME)

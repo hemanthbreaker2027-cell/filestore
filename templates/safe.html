@@ -1,0 +1,178 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Security Check | OTAKULUX</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://www.google.com/recaptcha/api.js?render={{ RECAPTCHA_SITE_KEY }}"></script>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700&display=swap');
+
+        body {
+            font-family: 'Plus Jakarta Sans', sans-serif;
+            background: #0b0e14;
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: #ffffff;
+            overflow: hidden;
+        }
+
+        .bg-mesh {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: -1;
+            background:
+                radial-gradient(circle at 0% 0%, rgba(20, 184, 166, 0.15) 0%, transparent 50%),
+                radial-gradient(circle at 100% 100%, rgba(59, 130, 246, 0.15) 0%, transparent 50%);
+        }
+
+        .glass-card {
+            background: rgba(17, 24, 39, 0.7);
+            backdrop-filter: blur(20px);
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
+        }
+
+        .shimmer {
+            background: linear-gradient(90deg, transparent, rgba(255,255,255,0.05), transparent);
+            background-size: 200% 100%;
+            animation: shimmer 2s infinite;
+        }
+
+        @keyframes shimmer {
+            0% { background-position: -200% 0; }
+            100% { background-position: 200% 0; }
+        }
+
+        .btn-gradient {
+            background: linear-gradient(135deg, #14b8a6 0%, #0d9488 100%);
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 15px rgba(20, 184, 166, 0.3);
+        }
+
+        .btn-gradient:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 25px rgba(20, 184, 166, 0.5);
+        }
+
+        .loader-ring {
+            display: inline-block;
+            width: 48px;
+            height: 48px;
+            border: 3px solid rgba(20, 184, 166, 0.1);
+            border-radius: 50%;
+            border-top-color: #14b8a6;
+            animation: spin 1s ease-in-out infinite;
+        }
+
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+    </style>
+</head>
+<body>
+    <div class="bg-mesh"></div>
+
+    <div class="max-w-md w-full mx-4">
+        <div class="glass-card rounded-[2.5rem] p-10 text-center relative overflow-hidden">
+            <div class="absolute top-0 left-0 w-full h-1 shimmer"></div>
+
+            <div class="mb-8">
+                <div class="w-20 h-20 bg-teal-500/10 rounded-3xl flex items-center justify-center mx-auto mb-6 border border-teal-500/20">
+                    <i class="fas fa-shield-halved text-4xl text-teal-400"></i>
+                </div>
+                <h1 class="text-4xl font-bold tracking-tight mb-3 bg-clip-text text-transparent bg-gradient-to-r from-teal-300 to-blue-400">Security Check</h1>
+                <p class="text-slate-400 text-lg">Verification required to proceed safely</p>
+            </div>
+
+            <div id="content-area" class="min-h-[200px] flex flex-col justify-center">
+                <div id="initial-ui" class="space-y-8">
+                    <div class="bg-slate-800/40 rounded-2xl p-6 border border-white/5">
+                        <div class="text-5xl font-extrabold text-teal-400 mb-2" id="countdown">3</div>
+                        <p class="text-sm uppercase tracking-widest text-slate-500 font-semibold">Initializing Security</p>
+                    </div>
+                </div>
+
+                <div id="loading-ui" class="hidden space-y-6">
+                    <div class="loader-ring"></div>
+                    <p class="text-slate-300 font-medium animate-pulse">Authenticating with server...</p>
+                </div>
+
+                <div id="error-ui" class="hidden space-y-6">
+                    <div class="w-16 h-16 bg-red-500/10 rounded-full flex items-center justify-center mx-auto">
+                        <i class="fas fa-circle-exclamation text-3xl text-red-400"></i>
+                    </div>
+                    <p class="text-red-400 font-medium" id="error-text">Verification failed</p>
+                    <button onclick="location.reload()" class="btn-gradient w-full py-4 rounded-2xl font-bold text-lg">Try Again</button>
+                </div>
+            </div>
+
+            <div class="mt-12 pt-8 border-t border-white/5 flex items-center justify-center gap-3 text-slate-500 text-sm">
+                <i class="fas fa-lock"></i>
+                <span class="font-medium">Protected by OTAKULUX SecureShield</span>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let timeLeft = 3;
+        const countdownEl = document.getElementById('countdown');
+
+        const timer = setInterval(() => {
+            timeLeft--;
+            if(timeLeft > 0) countdownEl.textContent = timeLeft;
+            if(timeLeft <= 0) {
+                clearInterval(timer);
+                initVerification();
+            }
+        }, 1000);
+
+        function initVerification() {
+            document.getElementById('initial-ui').classList.add('hidden');
+            document.getElementById('loading-ui').classList.remove('hidden');
+
+            grecaptcha.ready(() => {
+                grecaptcha.execute('{{ RECAPTCHA_SITE_KEY }}', {action: 'safe_verify'}).then(token => {
+                    performBackendCheck(token);
+                });
+            });
+        }
+
+        async function performBackendCheck(token) {
+            try {
+                const response = await fetch('/api/verify_safe', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        token: token,
+                        payload: "{{ PAYLOAD }}"
+                    })
+                });
+
+                const data = await response.json();
+
+                if (data.success) {
+                    window.location.href = data.data.redirect;
+                } else {
+                    showError(data.message);
+                }
+            } catch (err) {
+                showError('Connection error. Please check your internet.');
+            }
+        }
+
+        function showError(msg) {
+            document.getElementById('loading-ui').classList.add('hidden');
+            document.getElementById('error-ui').classList.remove('hidden');
+            document.getElementById('error-text').textContent = msg;
+        }
+    </script>
+</body>
+</html>
