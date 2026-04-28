@@ -1,6 +1,5 @@
 
 import aiohttp
-import jwt
 import time
 import hashlib
 import os
@@ -54,22 +53,6 @@ class SecurityService:
             print(f"[RECAPTCHA EXCEPTION] {e}")
             return False, 0
 
-    @staticmethod
-    def generate_session_token(payload: str, session_id: str, ip: str):
-        return jwt.encode({
-            'payload': payload,
-            'session_id': session_id,
-            'ip': ip,
-            'iat': int(time.time()),
-            'exp': int(time.time()) + 600 # 10 mins
-        }, JWT_SECRET, algorithm='HS256')
-
-    @staticmethod
-    def verify_session_token(token: str):
-        try:
-            return jwt.decode(token, JWT_SECRET, algorithms=['HS256'])
-        except:
-            return None
 
     @staticmethod
     def get_identifier(request):

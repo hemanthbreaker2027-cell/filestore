@@ -1,10 +1,9 @@
 
 from aiohttp import web
-import aiohttp
 import time
 import os
 import hashlib
-from config import JWT_SECRET, WEBSITE_URL, SHORTLINK_URL, SHORTLINK_API
+from config import WEBSITE_URL, SHORTLINK_URL, SHORTLINK_API
 from database.database import db
 from services.security import SecurityService, SecureRedirect
 
@@ -109,8 +108,9 @@ async def r2_verify(request):
         issued_at = token_data.get('issuedAt', 0)
         time_elapsed = int(time.time()) - issued_at
         if time_elapsed < 180:
-            wait_remaining = 180 - time_elapsed
-            return json_response(False, f"Verification too fast! Please wait {wait_remaining} more seconds to complete the check.", status=403)
+            # Bypass Detected!
+            await db.ban_user_bypass(identifier, duration_hours=24)
+            return json_response(False, "Bypass Detected! Your access has been restricted for 24 hours due to automated activity.", status=403)
 
         # 3. Check if token was already used
         token_hash = hashlib.sha256(link_token.encode()).hexdigest()
