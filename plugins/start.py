@@ -36,9 +36,12 @@ TUT_VID = f"{TUT_VID}"
 
 async def send_files(client: Client, message: Message, base64_string):
     user_id = message.from_user.id
+
+    # We fetch settings here because send_files is called from multiple places
+    # (start command, callback query) and might not always have settings passed.
     settings = await db.get_settings()
 
-    if not settings.get('file_delivery', True):
+    if not settings.get('file_delivery', True) and user_id != OWNER_ID:
         return await message.reply_text("<b>⚠️ File delivery is currently disabled by the administrator.</b>")
 
     temp_msg = await message.reply_photo(
@@ -179,8 +182,8 @@ async def short_url(client: Client, message: Message, base64_string):
 @Bot.on_message(filters.command('start') & filters.private)
 async def start_command(client: Client, message: Message):
     user_id = message.from_user.id
-    id = message.from_user.id
-    is_premium = await is_premium_user(id)
+    settings = await db.get_settings()
+    is_premium = await is_premium_user(user_id)
 
     # Add user if not already present
     if not await db.present_user(user_id):
@@ -215,39 +218,22 @@ async def start_command(client: Client, message: Message):
             else:
                 base64_string = basic
 
-                                    # --- SAFE BLOCK START ---
-            try:
-                # Check if variables exist and are filled
-                conf_list = [
-                    globals().get('SHORTLINK_URL'),
-                    globals().get('SHORTLINK_API'),
-                    globals().get('WEBSITE_URL'),
-                    globals().get('TURNSTILE_SITE'),
-                    globals().get('TURNSTILE_SECRET')
-                ]
-                is_incomplete = any(not x or str(x).strip() == "" for x in conf_list)
-            except:
-                is_incomplete = True # If variables don't even exist, skip to send_files
-
             # Direct send logic
-            settings = await db.get_settings()
             shortener_enabled = settings.get('shortener_system', True)
 
-            if is_premium or user_id == OWNER_ID or basic.startswith("yu3elk") or not shortener_enabled or is_incomplete:
+            if is_premium or user_id == OWNER_ID or basic.startswith("yu3elk") or not shortener_enabled:
                 await send_files(client, message, base64_string)
                 return
             
             # Shortener logic
             await short_url(client, message, base64_string)
             return
-            # --- SAFE BLOCK END ---
         
 
         except Exception as e:
             print(f"Error processing start payload: {e}")
             return
     else:
-        settings = await db.get_settings()
         if not settings.get('core_features', True) and user_id != OWNER_ID:
             return await message.reply_text("<b>⚠️ Bot is under maintenance. Please try again later.</b>")
 
