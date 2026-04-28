@@ -40,28 +40,6 @@
             box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
         }
 
-        .shimmer {
-            background: linear-gradient(90deg, transparent, rgba(255,255,255,0.05), transparent);
-            background-size: 200% 100%;
-            animation: shimmer 2s infinite;
-        }
-
-        @keyframes shimmer {
-            0% { background-position: -200% 0; }
-            100% { background-position: 200% 0; }
-        }
-
-        .btn-gradient {
-            background: linear-gradient(135deg, #14b8a6 0%, #0d9488 100%);
-            transition: all 0.3s ease;
-            box-shadow: 0 4px 15px rgba(20, 184, 166, 0.3);
-        }
-
-        .btn-gradient:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 8px 25px rgba(20, 184, 166, 0.5);
-        }
-
         .loader-ring {
             display: inline-block;
             width: 48px;
@@ -75,15 +53,18 @@
         @keyframes spin {
             to { transform: rotate(360deg); }
         }
+
+        .btn-gradient {
+            background: linear-gradient(135deg, #14b8a6 0%, #0d9488 100%);
+            transition: all 0.3s ease;
+        }
     </style>
 </head>
 <body>
     <div class="bg-mesh"></div>
 
     <div class="max-w-md w-full mx-4">
-        <div class="glass-card rounded-[2.5rem] p-10 text-center relative overflow-hidden">
-            <div class="absolute top-0 left-0 w-full h-1 shimmer"></div>
-
+        <div class="glass-card rounded-[2.5rem] p-10 text-center">
             <div class="mb-8">
                 <div class="w-20 h-20 bg-teal-500/10 rounded-3xl flex items-center justify-center mx-auto mb-6 border border-teal-500/20">
                     <i class="fas fa-shield-halved text-4xl text-teal-400"></i>
@@ -92,15 +73,8 @@
                 <p class="text-slate-400 text-lg">Verification required to proceed safely</p>
             </div>
 
-            <div id="content-area" class="min-h-[200px] flex flex-col justify-center">
-                <div id="initial-ui" class="space-y-8">
-                    <div class="bg-slate-800/40 rounded-2xl p-6 border border-white/5">
-                        <div class="text-5xl font-extrabold text-teal-400 mb-2" id="countdown">3</div>
-                        <p class="text-sm uppercase tracking-widest text-slate-500 font-semibold">Initializing Security</p>
-                    </div>
-                </div>
-
-                <div id="loading-ui" class="hidden space-y-6">
+            <div id="content-area" class="min-h-[150px] flex flex-col justify-center">
+                <div id="loading-ui" class="space-y-6">
                     <div class="loader-ring"></div>
                     <p class="text-slate-300 font-medium animate-pulse">Authenticating with server...</p>
                 </div>
@@ -122,37 +96,22 @@
     </div>
 
     <script>
-        let timeLeft = 3;
-        const countdownEl = document.getElementById('countdown');
-
-        const timer = setInterval(() => {
-            timeLeft--;
-            if(timeLeft > 0) countdownEl.textContent = timeLeft;
-            if(timeLeft <= 0) {
-                clearInterval(timer);
-                initVerification();
-            }
-        }, 1000);
-
-        function initVerification() {
-            document.getElementById('initial-ui').classList.add('hidden');
-            document.getElementById('loading-ui').classList.remove('hidden');
-
+        window.onload = function() {
             grecaptcha.ready(() => {
-                grecaptcha.execute('{{ RECAPTCHA_SITE_KEY }}', {action: 'safe_verify'}).then(token => {
-                    performBackendCheck(token);
+                grecaptcha.execute('{{ RECAPTCHA_SITE_KEY }}', {action: 'redirect'}).then(recaptchaToken => {
+                    performVerification(recaptchaToken);
                 });
             });
-        }
+        };
 
-        async function performBackendCheck(token) {
+        async function performVerification(recaptchaToken) {
             try {
-                const response = await fetch('/api/verify_safe', {
+                const response = await fetch('/r2/verify', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({
-                        token: token,
-                        payload: "{{ PAYLOAD }}"
+                        recaptchaToken: recaptchaToken,
+                        linkToken: "{{ TOKEN }}"
                     })
                 });
 

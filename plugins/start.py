@@ -149,10 +149,11 @@ async def send_files(client: Client, message: Message, base64_string):
         print(f"Final Error in send_files: {e}")
 
 async def short_url(client: Client, message: Message, base64_string):
+    user_id = message.from_user.id
     try:
         if WEBSITE_URL:
-            # New flow: Use SecurityService to get a secure (possibly shortened) link to /safe/{payload}
-            short_link = await SecurityService.get_secure_shortlink(base64_string)
+            # New flow: Use SecurityService to get a secure (possibly shortened) link to /r2/
+            short_link = await SecurityService.get_secure_shortlink(user_id, base64_string)
         else:
             # Fallback to old flow if WEBSITE_URL is not set
             prem_link = f"https://t.me/{client.username}?start=yu3elk{base64_string}7"

@@ -345,5 +345,10 @@ class OTAKULUX:
             ]
         })
 
+    # RESTART TASKS
+    async def clear_all_bans(self):
+        await self.banned_user_data.delete_many({})
+        await self.bypass_data.delete_many({})
+
 
 db = OTAKULUX(DB_URI, DB_NAME)

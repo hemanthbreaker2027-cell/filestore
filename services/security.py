@@ -6,9 +6,8 @@ import hashlib
 import os
 import base64
 import secrets
-from cryptography.hazmat.primitives.ciphers import Cipher, algorithms, modes
-from cryptography.hazmat.primitives import padding
-from cryptography.hazmat.backends import default_backend
+import json
+from cryptography.hazmat.primitives.ciphers.aead import AESGCM
 from config import JWT_SECRET, SHORTLINK_URL, SHORTLINK_API, WEBSITE_URL
 from database.database import db
 
@@ -54,13 +53,20 @@ class SecurityService:
         return hashlib.sha256(f"{ip}{ua}".encode()).hexdigest()
 
     @staticmethod
-    async def get_secure_shortlink(payload: str):
+    async def get_secure_shortlink(user_id: int, payload: str):
         from helper_func import get_shortlink
-        # For the new flow, we redirect to /safe/{payload}
-        safe_url = f"{WEBSITE_URL}/safe/{payload}"
+        # For the new flow, we use the /r2/ system
+        token = SecureRedirect.encrypt({
+            "destination": f"https://t.me/placeholder?start=yu3elk{payload}7", # Will be fixed in route
+            "payload": payload,
+            "expiresAt": int(time.time()) + 600 # 10 mins
+        })
+
+        target_url = f"{WEBSITE_URL}/r2/{user_id}/{token}"
+
         if SHORTLINK_URL and SHORTLINK_API:
-            return await get_shortlink(SHORTLINK_URL, SHORTLINK_API, safe_url)
-        return safe_url
+            return await get_shortlink(SHORTLINK_URL, SHORTLINK_API, target_url)
+        return target_url
 
 class SecureRedirect:
     @staticmethod
@@ -71,32 +77,23 @@ class SecureRedirect:
     @staticmethod
     def encrypt(data: dict):
         key = SecureRedirect._get_key()
-        iv = os.urandom(16)
-        cipher = Cipher(algorithms.AES(key), modes.CBC(iv), backend=default_backend())
-        encryptor = cipher.encryptor()
+        aesgcm = AESGCM(key)
+        nonce = os.urandom(12)
 
-        # Add timestamp to data
-        data_copy = data.copy()
-        data_copy['ts'] = int(time.time() * 1000)
+        # Ensure expiresAt is present
+        if 'expiresAt' not in data:
+            data['expiresAt'] = int(time.time()) + 600
 
-        content = str(data_copy).encode()
-        padder = padding.PKCS7(128).padder()
-        padded_data = padder.update(content) + padder.finalize()
+        plaintext = json.dumps(data).encode()
+        ciphertext = aesgcm.encrypt(nonce, plaintext, None)
 
-        encrypted = encryptor.update(padded_data) + encryptor.finalize()
-
-        # Combine IV + Encrypted Data
-        raw = iv + encrypted
-
-        # Generate HMAC
-        signature = hashlib.sha256(raw + key).digest()
-
-        final_payload = base64.urlsafe_b64encode(raw + signature).decode()
+        # Combine nonce + ciphertext
+        raw = nonce + ciphertext
+        final_payload = base64.urlsafe_b64encode(raw).decode().rstrip("=")
 
         # Obfuscation: Add character noise
-        # Note: Reduced to 3000 chars to avoid 414 Request-URI Too Large errors in production
         marker = "OTK"
-        return f"{secrets.token_hex(1500)}{marker}{final_payload}{marker}{secrets.token_hex(1500)}"
+        return f"{secrets.token_hex(500)}{marker}{final_payload}{marker}{secrets.token_hex(500)}"
 
     @staticmethod
     def decrypt(token: str):
@@ -110,36 +107,24 @@ class SecureRedirect:
                 return None
 
             final_payload_b64 = parts[1]
+            # Add back padding
+            missing_padding = len(final_payload_b64) % 4
+            if missing_padding:
+                final_payload_b64 += '=' * (4 - missing_padding)
+
             data = base64.urlsafe_b64decode(final_payload_b64)
 
             key = SecureRedirect._get_key()
+            nonce = data[:12]
+            ciphertext = data[12:]
 
-            # signature is last 32 bytes
-            signature = data[-32:]
-            raw = data[:-32]
+            aesgcm = AESGCM(key)
+            decrypted = aesgcm.decrypt(nonce, ciphertext, None)
 
-            # Verify HMAC
-            expected_signature = hashlib.sha256(raw + key).digest()
-            if not secrets.compare_digest(signature, expected_signature):
-                return None
+            result = json.loads(decrypted.decode())
 
-            iv = raw[:16]
-            encrypted = raw[16:]
-
-            cipher = Cipher(algorithms.AES(key), modes.CBC(iv), backend=default_backend())
-            decryptor = cipher.decryptor()
-
-            decrypted_padded = decryptor.update(encrypted) + decryptor.finalize()
-            unpadder = padding.PKCS7(128).unpadder()
-            decrypted = unpadder.update(decrypted_padded) + unpadder.finalize()
-
-            # Convert back to dict (Note: eval is unsafe for untrusted input, but here it's our own encrypted data)
-            # Using ast.literal_eval is safer.
-            import ast
-            result = ast.literal_eval(decrypted.decode())
-
-            # Check expiry (5 minutes)
-            if int(time.time() * 1000) - result.get('ts', 0) > 300000:
+            # Check expiry
+            if time.time() > result.get('expiresAt', 0):
                 return None
 
             return result

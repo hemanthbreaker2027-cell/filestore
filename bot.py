@@ -79,6 +79,12 @@ class Bot(Client):
     async def start(self):
         await super().start()
         scheduler.start()
+        # Automatically unblock all users on restart
+        try:
+            await db.clear_all_bans()
+            self.LOGGER(__name__).info("All users have been unblocked successfully on startup.")
+        except Exception as e:
+            self.LOGGER(__name__).error(f"Failed to unblock users: {e}")
         usr_bot_me = await self.get_me()
         self.uptime = get_indian_time()
 

@@ -2,7 +2,6 @@
 from aiohttp import web
 import aiohttp
 import time
-import uuid
 import os
 import hashlib
 from config import JWT_SECRET, WEBSITE_URL, SHORTLINK_URL, SHORTLINK_API
@@ -45,90 +44,78 @@ async def check_ban_status(request):
 
 @routes.get("/", allow_head=True)
 async def root_handler(request):
-    return web.Response(text="OTAKULUX Secure Engine v4.0 - Online", content_type="text/plain")
+    return web.Response(text="OTAKULUX Secure Engine v4.1 - Online", content_type="text/plain")
 
-@routes.get("/safe/{payload}")
-async def safe_landing_page(request):
+@routes.get("/r2/{userId}/{token}")
+async def r2_landing_page(request):
     is_banned, record = await check_ban_status(request)
     if is_banned:
         return web.HTTPFound("/banned")
 
-    payload = request.match_info['payload']
+    user_id = request.match_info['userId']
+    token = request.match_info['token']
 
-    html = await get_template("safe")
+    # Pre-validate token
+    data = SecureRedirect.decrypt(token)
+    if not data:
+        return web.Response(text="Invalid or Expired Security Token", status=403)
+
+    html = await get_template("safe") # We reuse safe.html but it will be updated for /r2/
     if not html: return web.Response(text="Template Error", status=500)
 
     html = html.replace("{{ RECAPTCHA_SITE_KEY }}", RECAPTCHA_SITE_KEY)
-    html = html.replace("{{ PAYLOAD }}", payload)
+    html = html.replace("{{ USER_ID }}", user_id)
+    html = html.replace("{{ TOKEN }}", token)
 
     return web.Response(text=html, content_type="text/html")
 
-@routes.post("/api/verify_safe")
-async def api_verify_safe(request):
+@routes.post("/r2/verify")
+async def r2_verify(request):
     is_banned, _ = await check_ban_status(request)
     if is_banned:
         return json_response(False, "Access Denied", status=403)
 
     try:
         data = await request.json()
-        token = data.get('token')
-        payload = data.get('payload')
+        recaptcha_token = data.get('recaptchaToken')
+        link_token = data.get('linkToken')
         ip = request.headers.get('X-Forwarded-For', request.remote)
         identifier = SecurityService.get_identifier(request)
 
-        if not all([token, payload]):
+        if not all([recaptcha_token, link_token]):
             return json_response(False, "Missing required parameters", status=400)
 
         # 1. Verify reCAPTCHA v3
         client_session = request.app['client_session']
-        success, score = await SecurityService.verify_recaptcha(token, ip, client_session)
+        success, score = await SecurityService.verify_recaptcha(recaptcha_token, ip, client_session)
 
         if not success:
             await db.increment_bypass_attempt(identifier)
             return json_response(False, f"Security check failed (Score: {score}). Please try again.", status=403)
 
-        # 2. Generate Secure One-Time Token
-        uid = str(uuid.uuid4())
-        secure_token = SecureRedirect.encrypt({"payload": payload, "uid": uid})
+        # 2. Decrypt and validate link token again
+        token_data = SecureRedirect.decrypt(link_token)
+        if not token_data:
+            return json_response(False, "Invalid or Expired Link", status=403)
 
-        # Hash the token for DB storage (one-time use)
-        token_hash = hashlib.sha256(secure_token.encode()).hexdigest()
-        await db.store_secure_token(token_hash, int(time.time()) + 300) # 5 min expiry
+        # 3. Check if token was already used
+        token_hash = hashlib.sha256(link_token.encode()).hexdigest()
+        if not await db.validate_and_use_token(token_hash):
+            return json_response(False, "Link Already Used", status=403)
 
-        # 3. Final Destination URL (Google Redirect Method for obfuscation)
-        google_redirect = f"https://www.google.com/url?q={WEBSITE_URL}/r2/{uid}/{secure_token}"
+        # 4. Success -> Reset attempts
+        await db.reset_bypass_attempts(identifier)
 
-        return json_response(True, "Verified successfully", {"redirect": google_redirect})
+        # 5. Return final destination (Direct link to bot)
+        payload = token_data.get('payload')
+        bot = request.app['bot']
+        final_redirect = f"https://t.me/{bot.username}?start=yu3elk{payload}7"
+
+        return json_response(True, "Verified successfully", {"redirect": final_redirect})
 
     except Exception as e:
         print(f"Web API Error: {e}")
         return json_response(False, "Internal Server Error", status=500)
-
-@routes.get("/r2/{uid}/{token}")
-async def secure_redirect_handler(request):
-    uid = request.match_info['uid']
-    token = request.match_info['token']
-
-    # 1. Check if token was already used
-    token_hash = hashlib.sha256(token.encode()).hexdigest()
-    if not await db.validate_and_use_token(token_hash):
-        return web.Response(text="Link Expired or Already Used", status=403)
-
-    # 2. Decrypt Token
-    data = SecureRedirect.decrypt(token)
-    if not data or data.get('uid') != uid:
-        return web.Response(text="Invalid Security Token", status=403)
-
-    payload = data.get('payload')
-
-    # 3. Final Redirect to Bot
-    bot = request.app['bot']
-    return web.HTTPFound(f"https://t.me/{bot.username}?start=yu3elk{payload}7")
-
-@routes.get("/verify/{payload}")
-async def legacy_verify_page(request):
-    # Redirect legacy links to new safe page
-    return web.HTTPFound(f"/safe/{request.match_info['payload']}")
 
 @routes.get("/banned")
 async def banned_route(request):
