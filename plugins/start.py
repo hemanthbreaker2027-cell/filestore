@@ -120,6 +120,7 @@ async def send_files(client: Client, message: Message, base64_string):
         sem = asyncio.Semaphore(10)
         OTAKULUX_msgs = []
         FILE_AUTO_DELETE = await db.get_del_timer()
+        dl_status, dl_domain = await db.get_downlink_config()
 
         async def deliver_file(msg, index):
             nonlocal OTAKULUX_msgs
@@ -132,6 +133,21 @@ async def send_files(client: Client, message: Message, base64_string):
 
                     # UI Upgrade: Premium Buttons
                     reply_markup = None if DISABLE_CHANNEL_BUTTON else msg.reply_markup
+
+                    # Add Download/Watch Button if enabled
+                    if dl_status and dl_domain:
+                        # Generate unique payload for this file
+                        file_payload = await encode(f"get-{msg.id * abs(client.db_channel.id)}")
+                        watch_url = f"{dl_domain}/watch/{file_payload}"
+                        dl_button = InlineKeyboardButton("📥 Wᴀᴛᴄʜ / Dᴏᴡɴʟᴏᴀᴅ", url=watch_url)
+
+                        if reply_markup:
+                            # Add to existing buttons
+                            rows = reply_markup.inline_keyboard.copy()
+                            rows.append([dl_button])
+                            reply_markup = InlineKeyboardMarkup(rows)
+                        else:
+                            reply_markup = InlineKeyboardMarkup([[dl_button]])
 
                     # Delivery
                     snt_msg = await msg.copy(
@@ -502,3 +518,56 @@ async def total_verify_count_cmd(client, message: Message):
 async def bcmd(bot: Bot, message: Message):        
     reply_markup = InlineKeyboardMarkup([[InlineKeyboardButton("• ᴄʟᴏsᴇ •", callback_data = "close")]])
     await message.reply(text=CMD_TXT, reply_markup = reply_markup, quote= True)
+
+
+@Bot.on_message(filters.command(['add_dowlink', 'add_downlink']) & filters.private & admin)
+async def add_downlink_cmd(client: Client, message: Message):
+    status, domain = await db.get_downlink_config()
+    status_text = "🟢 ON" if status else "🔴 OFF"
+
+    buttons = [
+        [
+            InlineKeyboardButton("ᴛᴜʀɴ ᴏɴ", callback_data="dl_toggle_on"),
+            InlineKeyboardButton("ᴛᴜʀɴ ᴏғғ", callback_data="dl_toggle_off")
+        ],
+        [InlineKeyboardButton("• ᴄʟᴏsᴇ •", callback_data="close")]
+    ]
+
+    await message.reply_text(
+        f"<b>📥 Dᴏᴡɴʟᴏᴀᴅ Lɪɴᴋ Sᴇᴛᴛɪɴɢs</b>\n\n"
+        f"Cᴜʀʀᴇɴᴛ Sᴛᴀᴛᴜs: <b>{status_text}</b>\n"
+        f"Cᴜʀʀᴇɴᴛ Dᴏᴍᴀɪɴ: <code>{domain or 'Nᴏᴛ Sᴇᴛ'}</code>\n\n"
+        f"Wʜᴇɴ ON, ᴛʜᴇ ʙᴏᴛ ᴡɪʟʟ ᴀᴛᴛᴀᴄʜ Dᴏᴡɴʟᴏᴀᴅ/Wᴀᴛᴄʜ ʟɪɴᴋs ᴛᴏ ᴇᴠᴇʀʏ ᴅᴇʟɪᴠᴇʀᴇᴅ ғɪʟᴇ.",
+        reply_markup=InlineKeyboardMarkup(buttons)
+    )
+
+@Bot.on_callback_query(filters.regex(r"^dl_toggle_"))
+async def dl_toggle_callback(client: Client, query: CallbackQuery):
+    user_id = query.from_user.id
+    if not await db.admin_exist(user_id) and user_id != OWNER_ID:
+        return await query.answer("Access Denied!", show_alert=True)
+
+    action = query.data.split("_")[2]
+
+    if action == "off":
+        await db.set_downlink_config(status=False)
+        await query.answer("Download links disabled!", show_alert=True)
+        # Update UI
+        status, domain = await db.get_downlink_config()
+        await query.message.edit_text(
+            f"<b>📥 Dᴏᴡɴʟᴏᴀᴅ Lɪɴᴋ Sᴇᴛᴛɪɴɢs</b>\n\n"
+            f"Cᴜʀʀᴇɴᴛ Sᴛᴀᴛᴜs: <b>🔴 OFF</b>\n"
+            f"Cᴜʀʀᴇɴᴛ Dᴏᴍᴀɪɴ: <code>{domain or 'Nᴏᴛ Sᴇᴛ'}</code>",
+            reply_markup=query.message.reply_markup
+        )
+
+    elif action == "on":
+        await query.message.delete()
+        ask = await client.ask(query.message.chat.id, "<b>Sᴇɴᴅ ʏᴏᴜʀ Dᴏᴍᴀɪɴ URL (ᴇ.ɢ. <code>https://otakulux.xyz</code>):</b>")
+        domain_url = ask.text.strip().rstrip('/')
+
+        if not domain_url.startswith("http"):
+            return await ask.reply_text("❌ Iɴᴠᴀʟɪᴅ URL! Pʟᴇᴀsᴇ sᴛᴀʀᴛ ᴡɪᴛʜ http:// ᴏʀ https://")
+
+        await db.set_downlink_config(status=True, domain=domain_url)
+        await ask.reply_text(f"✅ <b>Sᴜᴄᴄᴇss!</b> Dᴏᴡɴʟᴏᴀᴅ ʟɪɴᴋs ᴇɴᴀʙʟᴇᴅ ᴡɪᴛʜ ᴅᴏᴍᴀɪɴ: <code>{domain_url}</code>")

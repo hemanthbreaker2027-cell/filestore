@@ -131,6 +131,116 @@ async def final_verify_handler(request):
 
     return web.HTTPFound(f"https://t.me/{username}?start=yu3elk{final_payload}7")
 
+@routes.get("/watch/{payload}")
+async def watch_page_handler(request):
+    payload = request.match_info.get('payload')
+    if not payload:
+        return web.Response(text="Invalid payload.", status=400)
+
+    from helper_func import decode
+    try:
+        decoded = await decode(payload)
+        # payload format is "get-{msg_id}"
+        msg_id = int(decoded.split("-")[1])
+    except Exception:
+        return web.Response(text="Invalid link.", status=400)
+
+    bot = request.app['bot']
+    db_id = abs(bot.db_channel.id)
+    real_msg_id = msg_id // db_id
+
+    try:
+        msg = await bot.get_messages(bot.db_channel.id, real_msg_id)
+        if not msg or msg.empty:
+            return web.Response(text="File not found or deleted.", status=404)
+
+        # Determine file name and size
+        file = msg.document or msg.video or msg.audio
+        file_name = getattr(file, 'file_name', 'Unnamed File')
+        file_size = getattr(file, 'file_size', 0)
+
+        def get_readable_size(size):
+            for unit in ['B', 'KB', 'MB', 'GB', 'TB']:
+                if size < 1024:
+                    return f"{size:.2f} {unit}"
+                size /= 1024
+
+        template = template_env.get_template('watch.html')
+        html = template.render(
+            file_name=file_name,
+            file_size=get_readable_size(file_size),
+            payload=payload
+        )
+        return web.Response(text=html, content_type='text/html')
+    except Exception as e:
+        print(f"Watch Error: {e}")
+        return web.Response(text="Error fetching file details.", status=500)
+
+@routes.get("/stream/{payload}")
+async def stream_handler(request):
+    payload = request.match_info.get('payload')
+    from helper_func import decode
+    try:
+        decoded = await decode(payload)
+        msg_id = int(decoded.split("-")[1])
+    except Exception:
+        return web.Response(text="Invalid link.", status=400)
+
+    bot = request.app['bot']
+    db_id = abs(bot.db_channel.id)
+    real_msg_id = msg_id // db_id
+
+    try:
+        msg = await bot.get_messages(bot.db_channel.id, real_msg_id)
+        if not msg or msg.empty:
+            return web.Response(text="File not found.", status=404)
+
+        file = msg.document or msg.video or msg.audio
+        if not file:
+            return web.Response(text="No media found.", status=404)
+
+        # Support Range Requests
+        range_header = request.headers.get('Range')
+        offset = 0
+        limit = file.file_size
+
+        if range_header:
+            # Simple Range Parser
+            try:
+                kind, range_val = range_header.split('=')
+                if kind == 'bytes':
+                    start, end = range_val.split('-')
+                    offset = int(start)
+                    if end:
+                        limit = int(end) + 1
+            except:
+                pass
+
+        # Use bot.stream_media if available, else standard delivery
+        async def file_sender():
+            async for chunk in bot.stream_media(file, offset=offset, limit=limit):
+                yield chunk
+
+        resp = web.StreamResponse(status=206 if range_header else 200)
+        resp.headers['Content-Type'] = getattr(file, 'mime_type', 'application/octet-stream')
+        resp.headers['Content-Disposition'] = f'attachment; filename="{getattr(file, "file_name", "file")}"'
+        resp.headers['Accept-Ranges'] = 'bytes'
+
+        if range_header:
+            resp.headers['Content-Range'] = f'bytes {offset}-{limit-1}/{file.file_size}'
+            resp.content_length = limit - offset
+        else:
+            resp.content_length = file.file_size
+
+        await resp.prepare(request)
+        async for chunk in file_sender():
+            await resp.write(chunk)
+        return resp
+
+    except Exception as e:
+        print(f"Stream Error: {e}")
+        return web.Response(text="Streaming error.", status=500)
+
 @routes.get("/health")
 async def health_check(request):
     return web.Response(text="OK")

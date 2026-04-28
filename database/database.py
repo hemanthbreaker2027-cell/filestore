@@ -334,6 +334,23 @@ class OTAKULUX:
         await self.rate_limits.update_one({'_id': ip}, {'$set': {'hits': hits}})
         return True
 
+    # DOWNLINK CONFIGURATION
+    async def get_downlink_config(self):
+        data = await self.settings_data.find_one({'_id': 'downlink_config'})
+        if data:
+            return data.get('status', False), data.get('domain', "")
+        return False, ""
+
+    async def set_downlink_config(self, status: bool, domain: str = None):
+        update_data = {'status': status}
+        if domain is not None:
+            update_data['domain'] = domain
+        await self.settings_data.update_one(
+            {'_id': 'downlink_config'},
+            {'$set': update_data},
+            upsert=True
+        )
+
 
 
 db = OTAKULUX(DB_URI, DB_NAME)
