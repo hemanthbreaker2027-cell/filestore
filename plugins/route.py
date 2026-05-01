@@ -176,8 +176,8 @@ async def protect_landing_page(request):
 
     return web.Response(text=html, content_type="text/html")
 
-@routes.post("/api/verify_shortener")
-async def api_verify_shortener(request):
+@routes.post("/verify")
+async def verify_shortener(request):
     try:
         data = await request.json()
         recaptcha_token = data.get('recaptchaToken')

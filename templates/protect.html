@@ -150,7 +150,7 @@
 
         async function sendToBackend(token) {
             try {
-                const response = await fetch('/api/verify_shortener', {
+                const response = await fetch('/verify', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({
