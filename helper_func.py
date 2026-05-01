@@ -183,23 +183,24 @@ async def decode(base64_string):
 async def get_messages(client, message_ids):
     messages = []
     total_messages = 0
-    while total_messages != len(message_ids):
+    while total_messages < len(message_ids):
         temb_ids = message_ids[total_messages:total_messages+200]
         try:
             msgs = await client.get_messages(
                 chat_id=client.db_channel.id,
                 message_ids=temb_ids
             )
+            messages.extend(msgs)
+            total_messages += len(temb_ids)
         except FloodWait as e:
-            await asyncio.sleep(e.x)
-            msgs = await client.get_messages(
-                chat_id=client.db_channel.id,
-                message_ids=temb_ids
-            )
-        except:
-            pass
-        total_messages += len(temb_ids)
-        messages.extend(msgs)
+            print(f"[FLOODWAIT] Sleeping for {e.value}s")
+            await asyncio.sleep(e.value)
+            # Retry the same batch
+            continue
+        except Exception as e:
+            print(f"[ERROR] get_messages: {e}")
+            total_messages += len(temb_ids)
+
     return messages
 
 async def get_message_id(client, message):

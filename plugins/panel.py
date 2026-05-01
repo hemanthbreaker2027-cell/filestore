@@ -41,13 +41,13 @@ async def owner_panel(client: Bot, message: Message):
 
     caption = (
         "━━━━━━━━━━━━━━━━━━━\n"
-        "🛠️ <b>OTAKULUX OWNER DASHBOARD</b> 🛠️\n"
+        "🛠️ <b>˹ ᴏᴛᴀᴋᴜʟᴜx ᴄᴏʀᴇ ᴄᴏɴᴛʀᴏʟ ˼</b> 🛠️\n"
         "━━━━━━━━━━━━━━━━━━━\n"
-        "Wᴇʟᴄᴏᴍᴇ, Kɪɴɢ! Mᴀɴᴀɢᴇ ʏᴏᴜʀ ʙᴏᴛ's ᴄᴏʀᴇ sᴇᴛᴛɪɴɢs ᴡɪᴛʜ ʀᴇᴀʟ-ᴛɪᴍᴇ ᴜᴘᴅᴀᴛᴇs.\n\n"
-        "📊 <b>Sʏsᴛᴇᴍ Sᴛᴀᴛᴜs:</b>\n"
-        f"• Sʜᴏʀᴛᴇɴᴇʀ: {'Aᴄᴛɪᴠᴇ ⚡' if settings.get('shortener_system', True) else 'Dɪsᴀʙʟᴇᴅ 💤'}\n"
-        f"• Dᴇʟɪᴠᴇʀʏ: {'Sᴛᴀʙʟᴇ ✅' if settings.get('file_delivery', True) else 'Pᴀᴜsᴇᴅ ⚠️'}\n"
-        f"• Cᴏʀᴇ: {'Hᴇᴀʟᴛʜʏ ✨' if settings.get('core_features', True) else 'Mᴀɪɴᴛᴇɴᴀɴᴄᴇ 🛠️'}\n"
+        "👑 ᴡᴇʟᴄᴏᴍᴇ, ᴋɪɴɢ! ᴍᴀɴᴀɢᴇ ʏᴏᴜʀ ʙᴏᴛ's ᴄᴏʀᴇ ᴀssᴇᴛs ᴡɪᴛʜ ʀᴇᴀʟ-ᴛɪᴍᴇ ᴜᴘᴅᴀᴛᴇs.\n\n"
+        "📊 <b>sʏsᴛᴇᴍ sᴛᴀᴛᴜs:</b>\n"
+        f"• sʜᴏʀᴛᴇɴᴇʀ: {'ᴀᴄᴛɪᴠᴇ ⚡' if settings.get('shortener_system', True) else 'ᴅɪsᴀʙʟᴇᴅ 💤'}\n"
+        f"• ᴅᴇʟɪᴠᴇʀʏ: {'sᴛᴀʙʟᴇ ✅' if settings.get('file_delivery', True) else 'ᴘᴀᴜsᴇᴅ ⚠️'}\n"
+        f"• ᴄᴏʀᴇ: {'ʜᴇᴀʟᴛʜʏ ✨' if settings.get('core_features', True) else 'ᴍᴀɪɴᴛᴇɴᴀɴᴄᴇ 🛠️'}\n"
         "━━━━━━━━━━━━━━━━━━━"
     )
 
@@ -60,29 +60,29 @@ async def owner_panel(client: Bot, message: Message):
 @Bot.on_callback_query(filters.regex(r"^(tg_|refresh_panel)"))
 async def panel_callback(client: Bot, query: CallbackQuery):
     if query.from_user.id != OWNER_ID:
-        return await query.answer("Access Denied, Mortal!", show_alert=True)
+        return await query.answer("˹ ᴀᴄᴄᴇss ᴅᴇɴɪᴇᴅ, ᴍᴏʀᴛᴀʟ! ˼", show_alert=True)
 
     data = query.data
     settings = await db.get_settings()
 
     if data == "refresh_panel":
-        await query.answer("Refreshing dashboard...", show_alert=False)
+        await query.answer("˹ ʀᴇꜰʀᴇsʜɪɴɢ ᴅᴀsʜʙᴏᴀʀᴅ... ˼", show_alert=False)
     else:
         key = data.replace("tg_", "")
         new_val = not settings.get(key, True)
         await db.update_setting(key, new_val)
         settings[key] = new_val
-        await query.answer(f"{key.replace('_', ' ').title()} {'Enabled' if new_val else 'Disabled'}")
+        await query.answer(f"˹ {key.replace('_', ' ').title()} {'ᴇɴᴀʙʟᴇᴅ' if new_val else 'ᴅɪsᴀʙʟᴇᴅ'} ˼")
 
     caption = (
         "━━━━━━━━━━━━━━━━━━━\n"
-        "🛠️ <b>OTAKULUX OWNER DASHBOARD</b> 🛠️\n"
+        "🛠️ <b>˹ ᴏᴛᴀᴋᴜʟᴜx ᴄᴏʀᴇ ᴄᴏɴᴛʀᴏʟ ˼</b> 🛠️\n"
         "━━━━━━━━━━━━━━━━━━━\n"
-        "Wᴇʟᴄᴏᴍᴇ, Kɪɴɢ! Mᴀɴᴀɢᴇ ʏᴏᴜʀ ʙᴏᴛ's ᴄᴏʀᴇ sᴇᴛᴛɪɴɢs ᴡɪᴛʜ ʀᴇᴀʟ-ᴛɪᴍᴇ ᴜᴘᴅᴀᴛᴇs.\n\n"
-        "📊 <b>Sʏsᴛᴇᴍ Sᴛᴀᴛᴜs:</b>\n"
-        f"• Sʜᴏʀᴛᴇɴᴇʀ: {'Aᴄᴛɪᴠᴇ ⚡' if settings.get('shortener_system', True) else 'Dɪsᴀʙʟᴇᴅ 💤'}\n"
-        f"• Dᴇʟɪᴠᴇʀʏ: {'Sᴛᴀʙʟᴇ ✅' if settings.get('file_delivery', True) else 'Pᴀᴜsᴇᴅ ⚠️'}\n"
-        f"• Cᴏʀᴇ: {'Hᴇᴀʟᴛʜʏ ✨' if settings.get('core_features', True) else 'Mᴀɪɴᴛᴇɴᴀɴᴄᴇ 🛠️'}\n"
+        "👑 ᴡᴇʟᴄᴏᴍᴇ, ᴋɪɴɢ! ᴍᴀɴᴀɢᴇ ʏᴏᴜʀ ʙᴏᴛ's ᴄᴏʀᴇ ᴀssᴇᴛs ᴡɪᴛʜ ʀᴇᴀʟ-ᴛɪᴍᴇ ᴜᴘᴅᴀᴛᴇs.\n\n"
+        "📊 <b>sʏsᴛᴇᴍ sᴛᴀᴛᴜs:</b>\n"
+        f"• sʜᴏʀᴛᴇɴᴇʀ: {'ᴀᴄᴛɪᴠᴇ ⚡' if settings.get('shortener_system', True) else 'ᴅɪsᴀʙʟᴇᴅ 💤'}\n"
+        f"• ᴅᴇʟɪᴠᴇʀʏ: {'sᴛᴀʙʟᴇ ✅' if settings.get('file_delivery', True) else 'ᴘᴀᴜsᴇᴅ ⚠️'}\n"
+        f"• ᴄᴏʀᴇ: {'ʜᴇᴀʟᴛʜʏ ✨' if settings.get('core_features', True) else 'ᴍᴀɪɴᴛᴇɴᴀɴᴄᴇ 🛠️'}\n"
         "━━━━━━━━━━━━━━━━━━━"
     )
 

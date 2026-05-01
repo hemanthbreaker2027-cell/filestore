@@ -43,11 +43,11 @@ async def send_files(client: Client, message: Message, base64_string):
     settings = await db.get_settings()
 
     if not settings.get('file_delivery', True) and user_id != OWNER_ID:
-        return await message.reply_text("<b>⚠️ File delivery is currently disabled by the administrator.</b>")
+        return await message.reply_text("<b>⚡️ <blockquote>˹ ᴀᴄᴄᴇss ᴅᴇɴɪᴇᴅ ˼\n\n🛡 ꜰɪʟᴇ ᴅᴇʟɪᴠᴇʀʏ ɪs ᴄᴜʀʀᴇɴᴛʟʏ ᴅɪsᴀʙʟᴇᴅ ʙʏ ᴛʜᴇ sᴜᴘʀᴇᴍᴇ ᴀᴅᴍɪɴɪsᴛʀᴀᴛᴏʀ. 💤</blockquote></b>")
 
     temp_msg = await message.reply_photo(
         photo=random.choice(ANIME_BANNERS),
-        caption="━━━━━━━━━━━━━━━━━━━\n<b>🔍 Pʀᴏᴄᴇssɪɴɢ Yᴏᴜʀ Rᴇǫᴜᴇsᴛ...</b>\n━━━━━━━━━━━━━━━━━━━"
+        caption="━━━━━━━━━━━━━━━━━━━\n<b>🔍 ˹ ᴘʀᴏᴄᴇssɪɴɢ ʏᴏᴜʀ ʀᴇǫᴜᴇsᴛ ˼... ⚡️</b>\n━━━━━━━━━━━━━━━━━━━"
     )
     await asyncio.sleep(1)
 
@@ -97,31 +97,27 @@ async def send_files(client: Client, message: Message, base64_string):
             caption = f"{original_caption}\n\n{CUSTOM_CAPTION}" if CUSTOM_CAPTION else original_caption
             reply_markup = msg.reply_markup if DISABLE_CHANNEL_BUTTON else None
 
-            try:
-                snt_msg = await msg.copy(
-                    chat_id=message.from_user.id,
-                    caption=caption,
-                    parse_mode=ParseMode.HTML,
-                    reply_markup=reply_markup,
-                    protect_content=PROTECT_CONTENT
-                )
-                OTAKULUX_msgs.append(snt_msg)
-            except FloodWait as e:
-                await asyncio.sleep(e.x)
-                copied_msg = await msg.copy(
-                    chat_id=message.from_user.id,
-                    caption=caption,
-                    parse_mode=ParseMode.HTML,
-                    reply_markup=reply_markup,
-                    protect_content=PROTECT_CONTENT
-                )
-                OTAKULUX_msgs.append(copied_msg)
-            except:
-                pass
+            while True:
+                try:
+                    snt_msg = await msg.copy(
+                        chat_id=message.from_user.id,
+                        caption=caption,
+                        parse_mode=ParseMode.HTML,
+                        reply_markup=reply_markup,
+                        protect_content=PROTECT_CONTENT
+                    )
+                    OTAKULUX_msgs.append(snt_msg)
+                    break
+                except FloodWait as e:
+                    print(f"[FLOODWAIT] Sleeping for {e.value}s in send_files")
+                    await asyncio.sleep(e.value)
+                except Exception as e:
+                    print(f"[ERROR] send_files copy: {e}")
+                    break
 
         if FILE_AUTO_DELETE > 0:
             notification_msg = await message.reply(
-                f"<b>⚠️ Tʜɪs Fɪʟᴇ ᴡɪʟʟ ʙᴇ Dᴇʟᴇᴛᴇᴅ ɪɴ {get_exp_time(FILE_AUTO_DELETE)}. Pʟᴇᴀsᴇ sᴀᴠᴇ ᴏʀ ғᴏʀᴡᴀʀᴅ ɪᴛ ᴛᴏ ʏᴏᴜʀ sᴀᴠᴇᴅ ᴍᴇssᴀɢᴇs ʙᴇғᴏʀᴇ ɪᴛ ɢᴇᴛs Dᴇʟᴇᴛᴇᴅ! ⚡</b>"
+                f"<b>⚡️ <blockquote>˹ ᴀᴜᴛᴏ ᴅᴇʟᴇᴛᴇ ᴀʟᴇʀᴛ ˼\n\n🛡 ᴛʜɪs ꜰɪʟᴇ ᴡɪʟʟ ʙᴇ ᴛᴇʀᴍɪɴᴀᴛᴇᴅ ɪɴ {get_exp_time(FILE_AUTO_DELETE)}.\n\n💎 ᴘʟᴇᴀsᴇ sᴀᴠᴇ ᴏʀ ꜰᴏʀᴡᴀʀᴅ ɪᴛ ᴛᴏ ʏᴏᴜʀ sᴀᴠᴇᴅ ᴍᴇssᴀɢᴇs ʙᴇꜰᴏʀᴇ ɪᴛ ɪs ɢᴏɴᴇ! 💫</blockquote></b>"
             )
 
             await asyncio.sleep(FILE_AUTO_DELETE)
@@ -136,11 +132,11 @@ async def send_files(client: Client, message: Message, base64_string):
             try:
                 reload_url = f"https://t.me/{client.username}?start={base64_string}"
                 keyboard = InlineKeyboardMarkup(
-                    [[InlineKeyboardButton("ɢᴇᴛ ғɪʟᴇ ᴀɢᴀɪɴ!", url=reload_url)]]
+                    [[InlineKeyboardButton("⚡️ ˹ ɢᴇᴛ ꜰɪʟᴇ ᴀɢᴀɪɴ ˼ ⚡️", url=reload_url)]]
                 )
 
                 await notification_msg.edit(
-                    f"<b>ʏᴏᴜʀ ᴠɪᴅᴇᴏ / ꜰɪʟᴇ ɪꜱ ꜱᴜᴄᴄᴇꜱꜱꜰᴜʟʟʏ ᴅᴇʟᴇᴛᴇᴅ !!\n\nᴄʟɪᴄᴋ ʙᴇʟᴏᴡ ʙᴜᴛᴛᴏɴ ᴛᴏ ɢᴇᴛ ʏᴏᴜʀ ᴅᴇʟᴇᴛᴇᴅ ᴠɪᴅᴇᴏ / ꜰɪʟᴇ 👇\n\n<code>{reload_url}</code></b>",
+                    f"<b>🛡 <blockquote>˹ ꜰɪʟᴇ ᴛᴇʀᴍɪɴᴀᴛᴇᴅ ˼\n\n💎 ʏᴏᴜʀ ᴠɪᴅᴇᴏ / ꜰɪʟᴇ ɪs sᴜᴄᴄᴇssꜰᴜʟʟʏ ᴅᴇʟᴇᴛᴇᴅ !!\n\n🚀 ᴄʟɪᴄᴋ ʙᴇʟᴏᴡ ʙᴜᴛᴛᴏɴ ᴛᴏ ʀᴇᴄᴏᴠᴇʀ ʏᴏᴜʀ ᴅᴇʟᴇᴛᴇᴅ ᴀssᴇᴛ 👇\n\n<code>{reload_url}</code></blockquote></b>",
                     reply_markup=keyboard
                 )
             except Exception as e:
@@ -183,11 +179,11 @@ async def short_url(client: Client, message: Message, base64_string):
 
         buttons = [
             [
-                InlineKeyboardButton(text="ᴅᴏᴡɴʟᴏᴀᴅ", url=short_link),
-                InlineKeyboardButton(text="ᴛᴜᴛᴏʀɪᴀʟ", url=TUT_VID)
+                InlineKeyboardButton(text="⚡️ ˹ ᴅᴏᴡɴʟᴏᴀᴅ ˼ ⚡️", url=short_link),
+                InlineKeyboardButton(text="🛡 ˹ ᴛᴜᴛᴏʀɪᴀʟ ˼ 🛡", url=TUT_VID)
             ],
             [
-                InlineKeyboardButton(text="ᴘʀᴇᴍɪᴜᴍ", callback_data="premium")
+                InlineKeyboardButton(text="💎 ˹ ᴘʀᴇᴍɪᴜᴍ ˼ 💎", callback_data="premium")
             ]
         ]
 
@@ -223,10 +219,9 @@ async def start_command(client: Client, message: Message):
     banned_users = await db.get_ban_users()
     if user_id in banned_users:
         return await message.reply_text(
-            "<b>⛔️ You are Bᴀɴɴᴇᴅ from using this bot.</b>\n\n"
-            "<i>Contact support if you think this is a mistake.</i>",
+            "<b>💀 <blockquote>˹ ʏᴏᴜ ᴀʀᴇ ʙᴀɴɴᴇᴅ ˼\n\n🚫 ʏᴏᴜʀ ᴀᴄᴄᴇss ʜᴀs ʙᴇᴇɴ ᴛᴇʀᴍɪɴᴀᴛᴇᴅ ғʀᴏᴍ ᴛʜɪs ᴇɴɢɪɴᴇ.\n\n🛡 ᴄᴏɴᴛᴀᴄᴛ sᴜᴘᴘᴏʀᴛ ɪꜰ ʏᴏᴜ ʙᴇʟɪᴇᴠᴇ ᴛʜɪs ɪs ᴀ ꜰᴀᴛᴀʟ ᴇʀʀᴏʀ. 💫</blockquote></b>",
             reply_markup=InlineKeyboardMarkup(
-                [[InlineKeyboardButton("Contact Support", url=BAN_SUPPORT)]]
+                [[InlineKeyboardButton("🛡 ᴄᴏɴᴛᴀᴄᴛ sᴜᴘᴘᴏʀᴛ 🛡", url=BAN_SUPPORT)]]
             )
         )
 
@@ -247,6 +242,48 @@ async def start_command(client: Client, message: Message):
             shortener_enabled = settings.get('shortener_system', True)
             is_admin = await db.admin_exist(user_id) or user_id == OWNER_ID
 
+            # 1. Decode to check content properties
+            try:
+                decoded_str = await decode(base64_string)
+                argument = decoded_str.split("-")
+                ids = []
+                if len(argument) == 3:
+                    start = int(int(argument[1]) / abs(client.db_channel.id))
+                    end = int(int(argument[2]) / abs(client.db_channel.id))
+                    ids = range(start, end + 1) if start <= end else list(range(start, end - 1, -1))
+                elif len(argument) == 2:
+                    ids = [int(int(argument[1]) / abs(client.db_channel.id))]
+
+                messages = await get_messages(client, ids)
+            except Exception as e:
+                print(f"Error fetching messages for shortener check: {e}")
+                return await send_files(client, message, base64_string)
+
+            # Determine if any message requires shortening
+            needs_shortener = False
+            for msg in messages:
+                if not msg or msg.empty: continue
+
+                # Check message type and size
+                if msg.document or msg.sticker:
+                    needs_shortener = True
+                    break
+
+                if msg.video or msg.animation:
+                    media = msg.video or msg.animation
+                    if media.file_size > 5 * 1024 * 1024: # 5MB
+                        needs_shortener = True
+                        break
+
+                if msg.text or msg.caption:
+                    txt = msg.text or msg.caption
+                    # Check for links or usernames
+                    if re.search(r'(https?://[^\s]+|@[a-zA-Z0-9_]+)', txt):
+                        needs_shortener = True
+                        break
+
+            # Photos and small files bypass by default if not caught above
+
             # Can we actually shorten?
             can_shorten = bool(WEBSITE_URL) or (bool(SHORTLINK_URL) and bool(SHORTLINK_API))
 
@@ -256,7 +293,8 @@ async def start_command(client: Client, message: Message):
                 is_admin or
                 is_verified or
                 not shortener_enabled or
-                not can_shorten
+                not can_shorten or
+                not needs_shortener
             )
 
             if bypass:
@@ -274,12 +312,12 @@ async def start_command(client: Client, message: Message):
 
         # Premium Start UI Redesign
         buttons = [
-            [InlineKeyboardButton("📢 Mᴀɪɴ Cʜᴀɴɴᴇʟ", url="https://t.me/OTAKULUX")],
-            [InlineKeyboardButton("🌀 Oɴɢᴏɪɴɢ Aɴɪᴍᴇ", url="https://t.me/OTAKULUX/50")],
-            [InlineKeyboardButton("⚪ Aɴɪᴍᴇ Iɴᴅᴇx", url="https://t.me/OTAKULUX/51")],
+            [InlineKeyboardButton("📢 ˹ ᴍᴀɪɴ ᴄʜᴀɴɴᴇʟ ˼", url="https://t.me/OTAKULUX")],
+            [InlineKeyboardButton("🌀 ˹ ᴏɴɢᴏɪɴɢ ᴀɴɪᴍᴇ ˼", url="https://t.me/OTAKULUX/50")],
+            [InlineKeyboardButton("⚪ ˹ ᴀɴɪᴍᴇ ɪɴᴅᴇx ˼", url="https://t.me/OTAKULUX/51")],
             [
-                InlineKeyboardButton("⚙️ Aʙᴏᴜᴛ", callback_data="about"),
-                InlineKeyboardButton("💎 Pʀᴇᴍɪᴜᴍ", callback_data="premium")
+                InlineKeyboardButton("⚙️ ˹ ᴀʙᴏᴜᴛ ˼", callback_data="about"),
+                InlineKeyboardButton("💎 ˹ ᴘʀᴇᴍɪᴜᴍ ˼", callback_data="premium")
             ]
         ]
 
@@ -288,10 +326,10 @@ async def start_command(client: Client, message: Message):
         # Premium Welcome Message
         caption = (
             "━━━━━━━━━━━━━━━━━━━\n"
-            f"⚡ <b>Hᴇʏ, {message.from_user.first_name}!</b>\n\n"
-            "Wᴇʟᴄᴏᴍᴇ ᴛᴏ ᴛʜᴇ ᴍᴏsᴛ ᴘᴏᴡᴇʀғᴜʟ ꜰɪʟᴇ sᴛᴏʀᴇ ᴇɴɢɪɴᴇ. "
-            "I ᴄᴀɴ sᴛᴏʀᴇ ᴀɴᴅ sʜᴀʀᴇ ꜰɪʟᴇs sᴇᴄᴜʀᴇʟʏ ᴡɪᴛʜ ᴜʟᴛʀᴀ-ꜰᴀsᴛ sᴘᴇᴇᴅ. 😈\n\n"
-            "<i>Uɴʟᴏᴄᴋ ᴛʜᴇ ꜰᴜʟʟ ᴘᴏᴛᴇɴᴛɪᴀʟ ʙʏ ᴊᴏɪɴɪɴɢ ᴏᴜʀ ᴄʜᴀɴɴᴇʟs ʙᴇʟᴏᴡ.</i>\n"
+            f"⚡️ <b>˹ ʜᴇʏ, {message.from_user.first_name} ˼</b>\n\n"
+            "💎 ᴡᴇʟᴄᴏᴍᴇ ᴛᴏ ᴛʜᴇ ᴍᴏsᴛ ᴘᴏᴡᴇʀꜰᴜʟ ꜰɪʟᴇ sᴛᴏʀᴇ ᴇɴɢɪɴᴇ.\n"
+            "ɪ ᴄᴀɴ sᴛᴏʀᴇ ᴀɴᴅ sʜᴀʀᴇ ꜰɪʟᴇs sᴇᴄᴜʀᴇʟʏ ᴡɪᴛʜ ᴜʟᴛʀᴀ-ꜰᴀsᴛ sᴘᴇᴇᴅ. 😈\n\n"
+            "<i>🛡 ᴜɴʟᴏᴄᴋ ᴛʜᴇ ꜰᴜʟʟ ᴘᴏᴛᴇɴᴛɪᴀʟ ʙʏ ᴊᴏɪɴɪɴɢ ᴏᴜʀ ᴄʜᴀɴɴᴇʟs ʙᴇʟᴏᴡ.</i>\n"
             "━━━━━━━━━━━━━━━━━━━"
         )
 
@@ -322,26 +360,26 @@ async def not_joined(client: Client, message: Message):
 
     for i, status in enumerate(status_list, 1):
         icon = "✅" if status['is_joined'] else "❌"
-        status_text += f"{i}. {icon} {status['name']} ⚡ {'Joined' if status['is_joined'] else 'Not Joined'}\n"
+        status_text += f"💎 {i}. {icon} {status['name']} ⚡️ {'ᴊᴏɪɴᴇᴅ' if status['is_joined'] else 'ɴᴏᴛ ᴊᴏɪɴᴇᴅ'}\n"
 
         if not status['is_joined']:
-            buttons.append([InlineKeyboardButton(text=f"📢 {status['name']}", url=status['link'])])
+            buttons.append([InlineKeyboardButton(text=f"📢 ˹ {status['name']} ˼", url=status['link'])])
 
     # Add Try Again button
     try_again_data = "ck"
     if hasattr(message, 'command') and len(message.command) > 1:
         try_again_data = f"ck_{message.command[1]}"
 
-    buttons.append([InlineKeyboardButton("🔄 Try Again", callback_data=try_again_data)])
+    buttons.append([InlineKeyboardButton("🔄 ˹ ᴛʀʏ ᴀɢᴀɪɴ ˼", callback_data=try_again_data)])
 
     caption = (
         "━━━━━━━━━━━━━━━━━━━\n"
-        "✨ HEY SAMA × ✨\n\n"
-        "🎉 <b>Anime Files Are Ready !!</b>\n\n"
-        "⚠️ Hey! You haven't joined all required channels.\n"
-        "Join now to unlock your files instantly! ⚡\n\n"
+        "✨ ˹ ʜᴇʏ sᴀᴍᴀ × ᴏᴛᴀᴋᴜʟᴜx ˼ ✨\n\n"
+        "🎉 <b>˹ ᴀɴɪᴍᴇ ꜰɪʟᴇs ᴀʀᴇ ʀᴇᴀᴅʏ ˼ !!</b>\n\n"
+        "⚠️ ʜᴇʏ! ʏᴏᴜ ʜᴀᴠᴇɴ'ᴛ ᴊᴏɪɴᴇᴅ ᴀʟʟ ʀᴇǫᴜɪʀᴇᴅ ᴄʜᴀɴɴᴇʟs.\n"
+        "ᴊᴏɪɴ ɴᴏᴡ ᴛᴏ ᴜɴʟᴏᴄᴋ ʏᴏᴜʀ ꜰɪʟᴇs ɪɴsᴛᴀɴᴛʟʏ! ⚡️\n\n"
         "━━━━━━━━━━━━━━━━━━━\n"
-        "📊 <b>SUBSCRIPTION STATUS:</b>\n\n"
+        "📊 <b>˹ sᴜʙsᴄʀɪᴘᴛɪᴏɴ sᴛᴀᴛᴜs ˼:</b>\n\n"
         f"{status_text}\n"
         "━━━━━━━━━━━━━━━━━━━"
     )
