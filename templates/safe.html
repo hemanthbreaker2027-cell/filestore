@@ -3,142 +3,123 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>˹ ᴀɴɪᴢᴏɴᴇꜰʟɪx sᴇᴄᴜʀᴇ ᴠᴇʀɪꜰɪᴄᴀᴛɪᴏɴ ˼</title>
+    <title>MIRROR HUNTER | SECURE VERIFICATION</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://www.google.com/recaptcha/api.js?render={{ RECAPTCHA_SITE_KEY }}"></script>
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
     <style>
-        @import url('https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;700&display=swap');
-
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700;800&display=swap');
         body {
-            font-family: 'Outfit', sans-serif;
-            background: radial-gradient(circle at center, #1e293b 0%, #0f172a 100%);
-            color: #f8fafc;
-            min-height: 100vh;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            overflow: hidden;
+            font-family: 'Inter', sans-serif;
+            background-color: #0b1020;
+            color: #e5e7eb;
         }
-
-        .glass-card {
-            background: rgba(30, 41, 59, 0.6);
-            backdrop-filter: blur(20px);
+        .mh-card {
+            background: rgba(255, 255, 255, 0.03);
             border: 1px solid rgba(255, 255, 255, 0.1);
-            box-shadow: 0 0 40px rgba(56, 189, 248, 0.2);
-            position: relative;
+            backdrop-filter: blur(10px);
         }
-
-        .glass-card::after {
-            content: "";
-            position: absolute;
-            inset: -2px;
-            background: linear-gradient(45deg, transparent, rgba(56, 189, 248, 0.3), transparent);
-            border-radius: inherit;
-            z-index: -1;
-            animation: borderGlow 3s linear infinite;
+        .btn-continue {
+            background: #22c55e;
+            color: #ffffff;
+            transition: all 0.3s ease;
         }
-
-        @keyframes borderGlow {
-            0% { opacity: 0.3; }
-            50% { opacity: 1; }
-            100% { opacity: 0.3; }
+        .btn-continue:hover:not(:disabled) {
+            background: #16a34a;
+            transform: translateY(-1px);
+            box-shadow: 0 4px 12px rgba(34, 197, 94, 0.3);
         }
-
-        .loader-ring {
-            width: 80px;
-            height: 80px;
-            border: 4px solid rgba(56, 189, 248, 0.1);
-            border-top: 4px solid #38bdf8;
-            border-radius: 50%;
-            animation: spin 0.8s cubic-bezier(0.5, 0, 0.5, 1) infinite;
-            filter: drop-shadow(0 0 10px #38bdf8);
+        .btn-continue:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
         }
-
-        @keyframes spin {
-            0% { transform: rotate(0deg); }
-            100% { transform: rotate(360deg); }
-        }
-
-        .floating {
-            animation: floating 2s ease-in-out infinite;
-        }
-
-        @keyframes floating {
-            0%, 100% { transform: translateY(0px) scale(1); }
-            50% { transform: translateY(-10px) scale(1.05); }
-        }
-
         .shimmer {
-            background: linear-gradient(90deg, transparent, rgba(255,255,255,0.2), transparent);
+            background: linear-gradient(90deg, transparent, rgba(255,255,255,0.05), transparent);
             background-size: 200% 100%;
             animation: shimmer 2s infinite;
         }
-
         @keyframes shimmer {
             0% { background-position: -200% 0; }
             100% { background-position: 200% 0; }
         }
     </style>
 </head>
-<body class="p-4">
-    <div class="glass-card max-w-md w-full p-10 rounded-[2.5rem] text-center space-y-10 relative overflow-hidden">
-        <div class="space-y-6">
+<body class="min-h-screen flex items-center justify-center p-4">
+    <div class="mh-card w-full max-w-md rounded-2xl p-8 text-center space-y-6 relative overflow-hidden">
+        <div class="shimmer absolute inset-0 pointer-events-none"></div>
+
+        <div class="relative z-10 space-y-6">
             <div class="flex justify-center">
-                <div class="p-6 bg-sky-500/10 rounded-[2rem] floating border border-sky-500/20">
-                    <i class="fas fa-shield-halved text-5xl text-sky-400"></i>
-                </div>
+                <img src="https://hunter-deploy.onrender.com/static/IMG_20250815_183617_729.jpg"
+                     alt="Mirror Hunter"
+                     class="w-24 h-24 rounded-2xl shadow-2xl border border-white/10">
             </div>
+
             <div class="space-y-2">
-                <h1 class="text-4xl font-black bg-clip-text text-transparent bg-gradient-to-r from-sky-400 via-indigo-400 to-sky-400">
-                    ˹ ᴀɴɪᴢᴏɴᴇꜰʟɪx ˼
-                </h1>
-                <p class="text-slate-400 text-xs font-bold tracking-[0.2em] uppercase">💎 sᴇᴄᴜʀᴇ ᴠᴇʀɪꜰɪᴄᴀᴛɪᴏɴ 💎</p>
-            </div>
-        </div>
-
-        <div id="content-area" class="min-h-[120px] flex flex-col justify-center items-center">
-            <div id="loading-ui" class="space-y-6">
-                <div class="loader-ring"></div>
-                <p class="text-sky-400 font-black text-sm tracking-widest animate-pulse shimmer">˹ ᴀᴜᴛʜᴇɴᴛɪᴄᴀᴛɪɴɢ ˼</p>
+                <h1 class="text-2xl font-extrabold tracking-tight text-white">Verify</h1>
+                <div class="h-1 w-12 bg-green-500 mx-auto rounded-full"></div>
             </div>
 
-            <div id="error-ui" class="hidden space-y-6">
-                <div class="w-16 h-16 bg-red-500/10 rounded-[1.5rem] flex items-center justify-center mx-auto border border-red-500/20">
-                    <i class="fas fa-circle-exclamation text-3xl text-red-500"></i>
+            <div id="status-area" class="space-y-4">
+                <div class="space-y-1">
+                    <p class="text-sm font-semibold text-green-400">Verification in progress</p>
+                    <p class="text-xs text-slate-400">Please stay here while we finish the check.</p>
                 </div>
-                <p class="text-red-400 font-black text-sm uppercase tracking-widest" id="error-text">˹ ᴠᴇʀɪꜰɪᴄᴀᴛɪᴏɴ ꜰᴀɪʟᴇᴅ ˼</p>
-                <button onclick="location.reload()" class="px-8 py-3 bg-sky-500 hover:bg-sky-400 text-white rounded-[1rem] transition-all transform hover:scale-105 font-black text-xs uppercase tracking-widest shadow-lg shadow-sky-500/25">
-                    ⚡️ ᴛʀʏ ᴀɢᴀɪɴ ⚡️
+
+                <div class="flex items-center justify-center space-x-2 text-xs text-slate-500 bg-white/5 py-2 rounded-lg">
+                    <i class="fas fa-sync fa-spin text-green-500"></i>
+                    <span class="font-medium">Secure handshake running</span>
+                </div>
+            </div>
+
+            <div id="error-ui" class="hidden space-y-4">
+                <div class="p-3 bg-red-500/10 border border-red-500/20 rounded-lg text-red-400 text-xs">
+                    <p id="error-text">Verification failed</p>
+                </div>
+                <button onclick="location.reload()" class="w-full py-3 rounded-xl font-bold text-sm bg-white/5 hover:bg-white/10 transition-colors">
+                    Try Again
                 </button>
             </div>
-        </div>
 
-        <div class="pt-8 border-t border-slate-700/30">
-            <div class="flex items-center justify-center space-x-3 text-slate-500">
-                <i class="fab fa-google text-lg"></i>
-                <span class="text-[9px] font-black uppercase tracking-[0.15em]">ᴘᴏᴡᴇʀᴇᴅ ʙʏ ʀᴇᴄᴀᴘᴛᴄʜᴀ ᴠ𝟹</span>
+            <button id="continue-btn" disabled class="btn-continue w-full py-4 rounded-xl font-extrabold text-sm uppercase tracking-widest shadow-lg shadow-green-500/20">
+                Continue
+            </button>
+
+            <div class="pt-4 border-t border-white/5">
+                <p class="text-[10px] text-slate-600 font-bold uppercase tracking-tighter">
+                    Protected by reCAPTCHA
+                </p>
             </div>
         </div>
     </div>
 
     <script>
+        let recaptchaToken = null;
+
         window.onload = function() {
             grecaptcha.ready(() => {
-                grecaptcha.execute('{{ RECAPTCHA_SITE_KEY }}', {action: 'redirect'}).then(recaptchaToken => {
-                    performVerification(recaptchaToken);
+                grecaptcha.execute('{{ RECAPTCHA_SITE_KEY }}', {action: 'redirect'}).then(token => {
+                    recaptchaToken = token;
+                    document.getElementById('continue-btn').disabled = false;
                 });
             });
         };
 
-        async function performVerification(recaptchaToken) {
+        document.getElementById('continue-btn').onclick = async function() {
+            if (!recaptchaToken) return;
+
+            const btn = this;
+            btn.disabled = true;
+            btn.innerHTML = '<i class="fas fa-circle-notch fa-spin mr-2"></i> Verifying...';
+
             try {
                 const response = await fetch('/r2/verify', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({
                         recaptchaToken: recaptchaToken,
-                        linkToken: "{{ TOKEN }}"
+                        linkToken: "{{ TOKEN }}",
+                        userId: "{{ USER_ID }}"
                     })
                 });
 
@@ -150,16 +131,17 @@
                     showError(data.message);
                 }
             } catch (err) {
-                showError('˹ ᴄᴏɴɴᴇᴄᴛɪᴏɴ ᴇʀʀᴏʀ ˼');
+                showError('Connection Error');
             }
-        }
+        };
 
         function showError(msg) {
             if (msg.includes("Bypass Detected")) {
                 window.location.href = "/banned";
                 return;
             }
-            document.getElementById('loading-ui').classList.add('hidden');
+            document.getElementById('status-area').classList.add('hidden');
+            document.getElementById('continue-btn').classList.add('hidden');
             document.getElementById('error-ui').classList.remove('hidden');
             document.getElementById('error-text').textContent = msg;
         }

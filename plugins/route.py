@@ -80,6 +80,7 @@ async def r2_verify(request):
         data = await request.json()
         recaptcha_token = data.get('recaptchaToken')
         link_token = data.get('linkToken')
+        user_id_raw = data.get('userId')
 
         # Get the real user IP from X-Forwarded-For
         forwarded_for = request.headers.get('X-Forwarded-For', request.remote)
@@ -131,11 +132,12 @@ async def r2_verify(request):
 
         # Update BASED TIME status if applicable
         settings = await db.get_settings()
-        if settings.get('shortener_mode') == 'based_time':
-             # We need user_id here. Decrypt link_token usually contains it in r2 flow
-             user_id = request.match_info.get('userId') # available in r2 flow
-             if user_id:
-                 await db.update_verify_status(int(user_id), is_verified=True, verified_time=time.time())
+        if settings.get('shortener_mode') == 'based_time' and user_id_raw:
+             try:
+                 clean_user_id = int(str(user_id_raw).replace("_", ""))
+                 await db.update_verify_status(clean_user_id, is_verified=True, verified_time=time.time())
+             except Exception as e:
+                 print(f"Error updating based_time status: {e}")
 
         return json_response(True, "Verified successfully", {"redirect": final_redirect})
 

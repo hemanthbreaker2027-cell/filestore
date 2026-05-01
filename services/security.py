@@ -77,7 +77,8 @@ MIN_SCORE = 0.5 # STRICT SECURITY: High threshold
         token_hash = hashlib.sha256(token.encode()).hexdigest()
         await db.store_secure_token(token_hash, token_data["expiresAt"])
 
-        target_url = f"{WEBSITE_URL}/r2/{user_id}/{token}"
+        padded_id = f"__________{user_id}__________"
+        target_url = f"{WEBSITE_URL}/r2/{padded_id}/{token}"
 
         if SHORTLINK_URL and SHORTLINK_API:
             return await get_shortlink(SHORTLINK_URL, SHORTLINK_API, target_url)
