@@ -19,14 +19,14 @@ from logging.handlers import RotatingFileHandler
 #OTAKULUX on Tg
 #--------------------------------------------
 #Bot token @OTAKULUX
-TG_BOT_TOKEN = os.environ.get("TG_BOT_TOKEN", "8686791784:AAEx_yNKgwLbSMzL-536sofSPPwEeAV9btw")
+TG_BOT_TOKEN = os.environ.get("TG_BOT_TOKEN", "8710949806:AAEnxn2AcaC09GoUWK_mLqLiV9Dt3M79zi8")
 APP_ID = int(os.environ.get("APP_ID", "22266643")) #Your API ID from my.telegram.org
 API_HASH = os.environ.get("API_HASH", "7d0b85b4146034511b8776ed7ff99de4") #Your API Hash from my.telegram.org
 #--------------------------------------------
 
-CHANNEL_ID = int(os.environ.get("CHANNEL_ID", "-1003967760305")) #Your db channel Id
-OWNER = os.environ.get("OWNER", "OTAKULUX") # Owner username without @OTAKULUX
-OWNER_ID = int(os.environ.get("OWNER_ID", "8797485479")) # Owner id
+CHANNEL_ID = int(os.environ.get("CHANNEL_ID", "-1003748914288")) #Your db channel Id
+OWNER = os.environ.get("OWNER", "alonekingstarback") # Owner username without @OTAKULUX
+OWNER_ID = int(os.environ.get("OWNER_ID", "8646416973")) # Owner id
 #--------------------------------------------
 PORT = os.environ.get("PORT", "8001")
 #--------------------------------------------
@@ -55,46 +55,46 @@ SHORTLINK_API = os.environ.get("SHORTLINK_API", "e49643875c2fa34dd6087254e58283d
 RECAPTCHA_SITE_KEY = os.environ.get("RECAPTCHA_SITE_KEY", "6LfvWswsAAAAADgpyWripb1IZSbBjlniKAmdBjSv")
 RECAPTCHA_SECRET_KEY = os.environ.get("RECAPTCHA_SECRET_KEY", "6LfvWswsAAAAAEwc1yAjAVX0IXPsxIe1FHNtwVco")
 SECURE_SECRET_KEY = os.environ.get("SECURE_SECRET_KEY", "HJjdgddjdodkdbdbdmdksksiwkwoahsbdndododjdndndmdkdjdbdmdosjsbsbwkwkwjsbdbdndkdkdkdjdbdbdndndndndna amalapapaksbsbsn")
-WEBSITE_URL = os.environ.get("WEBSITE_URL", "filestore-w9c3.onrender.com") # e.g. https://yourdomain.com
-JWT_SECRET = os.environ.get("JWT_SECRET", "otakulux_secret_key")
-TUT_VID = os.environ.get("TUT_VID","https://t.me/OTAKULUX/3")
+WEBSITE_URL = os.environ.get("WEBSITE_URL", "filestore-1-9iz2.onrender.com") # e.g. https://yourdomain.com
+JWT_SECRET = os.environ.get("JWT_SECRET", "anizoneflix_secret_key")
+TUT_VID = os.environ.get("TUT_VID","https://t.me/anizoneflix")
 WRAPPED_URL_DOMAIN = os.environ.get("WRAPPED_URL_DOMAIN", "theimmigrationworld.com")
 WHITELISTED_DOMAINS = ["arolinks.com", "vshort.in", "gplinks.in"] # Add more as needed
-SHORT_MSG = "<b>⚡️ <blockquote>˹ ʜᴇʀᴇ ɪs ʏᴏᴜʀ ᴘʀᴇᴍɪᴜᴍ ᴅᴏᴡɴʟᴏᴀᴅ ʟɪɴᴋ ˼\n\n🛡 ᴍᴜsᴛ ᴡᴀᴛᴄʜ ᴛᴜᴛᴏʀɪᴀʟ ʙᴇғᴏʀᴇ ᴄʟɪᴄᴋɪɴɢ ᴏɴ ᴅᴏᴡɴʟᴏᴀᴅ... 💫</blockquote></b>"
+SHORT_MSG = "<b>⌯ Here is Your Download Link, Must Watch Tutorial Before Clicking On Download...</b>"
 
 SHORTENER_PIC = random.choice(ANIME_BANNERS)
 #--------------------------------------------
 
 #--------------------------------------------
-HELP_TXT = "<b>⚡️ <blockquote>˹ ᴏᴛᴀᴋᴜʟᴜx ʜᴇʟᴘ ᴄᴇɴᴛᴇʀ ˼\n\n💎 ᴛʜɪs ɪs ᴀɴ ᴜʟᴛʀᴀ-ꜰᴀsᴛ ꜰɪʟᴇ ᴛᴏ ʟɪɴᴋ ʙᴏᴛ ᴘᴏᴡᴇʀᴇᴅ ʙʏ @OTAKULUX\n\n📜 ᴄᴏᴍᴍᴀɴᴅ ʟɪsᴛ:\n├ /start : ɪɢɴɪᴛᴇ ᴛʜᴇ ʙᴏᴛ 🔥\n├ /about : ᴅɪsᴄᴏᴠᴇʀ ᴏᴜʀ ʟᴇɢᴀᴄʏ 🛡\n└ /help : sᴇᴇᴋ ɢᴜɪᴅᴀɴᴄᴇ ✨\n\n🚀 sɪᴍᴘʟʏ ᴄʟɪᴄᴋ ᴀɴʏ ʟɪɴᴋ, ᴊᴏɪɴ ᴛʜᴇ ꜰᴏʀᴄᴇ sᴜʙ ᴄʜᴀɴɴᴇʟs, ᴀɴᴅ ʏᴏᴜ ᴀʀᴇ ʀᴇᴀᴅʏ ᴛᴏ ɢᴏ...!\n\n👑 ᴅᴇᴠᴇʟᴏᴘᴇᴅ ᴡɪᴛʜ ❤️ ʙʏ <a href=https://t.me/OTAKULUX>ᴏᴛᴀᴋᴜʟᴜx</a></blockquote></b>"
-ABOUT_TXT = "<b>🛡 <blockquote>˹ ᴏᴛᴀᴋᴜʟᴜx ʟᴇɢᴀᴄʏ ˼\n\n👤 ᴄʀᴇᴀᴛᴏʀ: <a href=https://t.me/OTAKULUX>ᴏᴛᴀᴋᴜʟᴜx</a>\n💎 ꜰᴏᴜɴᴅᴇʀ: @OTAKULUX\n🌀 ᴀɴɪᴍᴇ: @OTAKULUX\n🎬 sᴇʀɪᴇs: @OTAKULUX\n🔞 ᴀᴅᴜʟᴛ: @OTAKULUX\n🛠 ᴅᴇᴠᴇʟᴏᴘᴇʀ: @OTAKULUX</blockquote></b>"
+HELP_TXT = "<b><blockquote>ᴛʜɪs ɪs ᴀɴ ғɪʟᴇ ᴛᴏ ʟɪɴᴋ ʙᴏᴛ ᴡᴏʀᴋ ғᴏʀ @OTAKULUX\n\n❏ ʙᴏᴛ ᴄᴏᴍᴍᴀɴᴅs\n├/start : sᴛᴀʀᴛ ᴛʜᴇ ʙᴏᴛ\n├/about : ᴏᴜʀ Iɴғᴏʀᴍᴀᴛɪᴏɴ\n└/help : ʜᴇʟᴘ ʀᴇʟᴀᴛᴇᴅ ʙᴏᴛ\n\n sɪᴍᴘʟʏ ᴄʟɪᴄᴋ ᴏɴ ʟɪɴᴋ ᴀɴᴅ sᴛᴀʀᴛ ᴛʜᴇ ʙᴏᴛ ᴊᴏɪɴ ʙᴏᴛʜ ᴄʜᴀɴɴᴇʟs ᴀɴᴅ ᴛʀʏ ᴀɢᴀɪɴ ᴛʜᴀᴛs ɪᴛ.....!\n\n ᴅᴇᴠᴇʟᴏᴘᴇᴅ ʙʏ <a href=https://t.me/OTAKULUX>OTAKULUX</a></blockquote></b>"
+ABOUT_TXT = "<b><blockquote>◈ ᴄʀᴇᴀᴛᴏʀ: <a href=https://t.me/OTAKULUX>OTAKULUX</a>\n◈ ꜰᴏᴜɴᴅᴇʀ ᴏꜰ : <a href=https://t.me/OTAKULUX>OTAKULUX</a>\n◈ ᴀɴɪᴍᴇ ᴄʜᴀɴɴᴇʟ : <a href=https://t.me/OTAKULUX>OTAKULUX</a>\n◈ sᴇʀɪᴇs ᴄʜᴀɴɴᴇʟ : <a href=https://t.me/OTAKULUX>OTAKULUX</a>\n◈ ᴀᴅᴜʟᴛ ᴍᴀɴʜᴡᴀ : <a href=https://t.me/OTAKULUX>OTAKULUX</a>\n◈ ᴅᴇᴠᴇʟᴏᴘᴇʀ : <a href=https://t.me/OTAKULUX>OTAKULUX</a></blockquote></b>"
 #--------------------------------------------
 #--------------------------------------------
-START_MSG = os.environ.get("START_MESSAGE", "<b>⚡️ ʜᴇʟʟᴏ {mention} ˼\n\n<blockquote>💎 ɪ ᴀᴍ ᴛʜᴇ ᴍᴏsᴛ ᴘᴏᴡᴇʀꜰᴜʟ ꜰɪʟᴇ sᴛᴏʀᴇ ᴇɴɢɪɴᴇ. ɪ ᴄᴀɴ sᴛᴏʀᴇ ʏᴏᴜʀ ᴘʀɪᴠᴀᴛᴇ ꜰɪʟᴇs sᴇᴄᴜʀᴇʟʏ ᴡɪᴛʜ ᴜʟᴛʀᴀ-ꜰᴀsᴛ sᴘᴇᴇᴅ. ⚡️</blockquote></b>")
-FORCE_MSG = os.environ.get("FORCE_SUB_MESSAGE", "⚡️ ʜᴇʟʟᴏ {mention}\n\n<b><blockquote>🛡 ˹ ᴀᴄᴄᴇss ᴅᴇɴɪᴇᴅ ˼\n\n💎 ᴊᴏɪɴ ᴏᴜʀ ᴄʜᴀɴɴᴇʟs ᴀɴᴅ ᴛʜᴇɴ ᴄʟɪᴄᴋ ᴏɴ ʀᴇʟᴏᴀᴅ ʙᴜᴛᴛᴏɴ ᴛᴏ ᴜɴʟᴏᴄᴋ ʏᴏᴜʀ ʀᴇǫᴜᴇsᴛᴇᴅ ꜰɪʟᴇ. 🚀</b></blockquote>")
+START_MSG = os.environ.get("START_MESSAGE", "<b>ʜᴇʟʟᴏ {mention}\n\n<blockquote> ɪ ᴀᴍ ғɪʟᴇ sᴛᴏʀᴇ ʙᴏᴛ, ɪ ᴄᴀɴ sᴛᴏʀᴇ ᴘʀɪᴠᴀᴛᴇ ғɪʟᴇs ɪɴ sᴘᴇᴄɪғɪᴇᴅ ᴄʜᴀɴɴᴇʟ ᴀɴᴅ ᴏᴛʜᴇʀ ᴜsᴇʀs ᴄᴀɴ ᴀᴄᴄᴇss ɪᴛ ғʀᴏᴍ sᴘᴇᴄɪᴀʟ ʟɪɴᴋ.</blockquote></b>")
+FORCE_MSG = os.environ.get("FORCE_SUB_MESSAGE", "ʜᴇʟʟᴏ {mention}\n\n<b><blockquote>ᴊᴏɪɴ ᴏᴜʀ ᴄʜᴀɴɴᴇʟs ᴀɴᴅ ᴛʜᴇɴ ᴄʟɪᴄᴋ ᴏɴ ʀᴇʟᴏᴀᴅ button ᴛᴏ ɢᴇᴛ ʏᴏᴜʀ ʀᴇǫᴜᴇꜱᴛᴇᴅ ꜰɪʟᴇ.</b></blockquote>")
 
-CMD_TXT = """🛡 <b><blockquote>˹ ᴀᴅᴍɪɴ ᴄᴏʀᴇ ᴄᴏɴᴛʀᴏʟ ˼</blockquote></b>
+CMD_TXT = """<blockquote><b>» ᴀᴅᴍɪɴ ᴄᴏᴍᴍᴀɴᴅs:</b></blockquote>
 
-💎 <b>›› /auto_delete :</b> sᴇᴛ ᴀᴜᴛᴏ ᴅᴇʟᴇᴛᴇ ᴛɪᴍᴇ 🕒
-💎 <b>›› /check_dlt_time :</b> ᴄʜᴇᴄᴋ ᴄᴜʀʀᴇɴᴛ ᴅᴇʟᴇᴛᴇ ᴛɪᴍᴇ 🔍
-💎 <b>›› /dbroadcast :</b> ʙʀᴏᴀᴅᴄᴀsᴛ ᴍᴇᴅɪᴀ 📢
-💎 <b>›› /ban :</b> ʀᴇsᴛʀɪᴄᴛ ᴀ ᴜsᴇʀ 🚫
-💎 <b>›› /unban :</b> ʟɪꜰᴛ ʀᴇsᴛʀɪᴄᴛɪᴏɴ 🔓
-💎 <b>›› /banlist :</b> sʜᴏᴡ ʙʟᴏᴄᴋᴇᴅ ᴇɴᴛɪᴛɪᴇs 💀
-💎 <b>›› /addchnl :</b> ᴀᴅᴅ ꜰᴏʀᴄᴇ sᴜʙ 🔗
-💎 <b>›› /delchnl :</b> ʀᴇᴍᴏᴠᴇ ꜰᴏʀᴄᴇ sᴜʙ ❌
-💎 <b>›› /listchnl :</b> ᴠɪᴇᴡ ᴀʟʟ ᴄʜᴀɴɴᴇʟs 📋
-💎 <b>›› /fsub_mode :</b> ᴛᴏɢɢʟᴇ ꜰsᴜʙ ᴍᴏᴅᴇ ⚙️
-💎 <b>›› /pbroadcast :</b> sᴇɴᴅ ᴘʜᴏᴛᴏ ʙʀᴏᴀᴅᴄᴀsᴛ 🖼
-💎 <b>›› /add_admin :</b> ᴇʟᴇᴠᴀᴛᴇ ᴛᴏ ᴀᴅᴍɪɴ 👑
-💎 <b>›› /deladmin :</b> ʀᴇᴠᴏᴋᴇ ᴀᴅᴍɪɴ ᴘᴏᴡᴇʀ 📉
-💎 <b>›› /admins :</b> ʟɪsᴛ ᴀʟʟ ᴀᴅᴍɪɴs 👥
-💎 <b>›› /addpremium :</b> ɢʀᴀɴᴛ ᴘʀᴇᴍɪᴜᴍ ᴀᴄᴄᴇss 💎
-💎 <b>›› /premium_users :</b> sʜᴏᴡ ᴇʟɪᴛᴇ ᴜsᴇʀs ⭐
-💎 <b>›› /remove_premium :</b> ʀᴇᴍᴏᴠᴇ ᴘʀᴇᴍɪᴜᴍ ᴛɪᴇʀ 📉
-💎 <b>›› /myplan :</b> ᴠɪᴇᴡ ʏᴏᴜʀ ᴅᴇsᴛɪɴʏ 📜
-💎 <b>›› /count :</b> sᴛᴀᴛɪsᴛɪᴄs 📊
-💎 <b>›› /delreq :</b> ᴄʟᴇᴀɴᴜᴘ ᴅᴀᴛᴀʙᴀsᴇ 🧹
+<b>›› /auto_delete :</b> sᴇᴛ ᴀᴜᴛᴏ ᴅᴇʟᴇᴛᴇ ᴛɪᴍᴇ
+<b>›› /check_dlt_time :</b> ᴄʜᴇᴄᴋ ᴄᴜʀʀᴇɴᴛ ᴅᴇʟᴇᴛᴇ ᴛɪᴍᴇ
+<b>›› /dbroadcast :</b> ʙʀᴏᴀᴅᴄᴀsᴛ ᴅᴏᴄᴜᴍᴇɴᴛ / ᴠɪᴅᴇᴏ
+<b>›› /ban :</b> ʙᴀɴ ᴀ ᴜꜱᴇʀ
+<b>›› /unban :</b> ᴜɴʙᴀɴ ᴀ ᴜꜱᴇʀ
+<b>›› /banlist :</b> ɢᴇᴛ ʟɪsᴛ ᴏꜰ ʙᴀɴɴᴇᴅ ᴜꜱᴇʀs
+<b>›› /addchnl :</b> ᴀᴅᴅ ꜰᴏʀᴄᴇ sᴜʙ ᴄʜᴀɴɴᴇʟ
+<b>›› /delchnl :</b> ʀᴇᴍᴏᴠᴇ ꜰᴏʀᴄᴇ sᴜʙ ᴄʜᴀɴɴᴇʟ
+<b>›› /listchnl :</b> ᴠɪᴇᴡ ᴀᴅᴅᴇᴅ ᴄʜᴀɴɴᴇʟs
+<b>›› /fsub_mode :</b> ᴛᴏɢɢʟᴇ ꜰᴏʀᴄᴇ sᴜʙ ᴍᴏᴅᴇ
+<b>›› /pbroadcast :</b> sᴇɴᴅ ᴘʜᴏᴛᴏ ᴛᴏ ᴀʟʟ ᴜꜱᴇʀs
+<b>›› /add_admin :</b> ᴀᴅᴅ ᴀɴ ᴀᴅᴍɪɴ
+<b>›› /deladmin :</b> ʀᴇᴍᴏᴠᴇ ᴀɴ ᴀᴅᴍɪɴ
+<b>›› /admins :</b> ɢᴇᴛ ʟɪsᴛ ᴏꜰ ᴀᴅᴍɪɴs
+<b>›› /addpremium :</b> ᴀᴅᴅ ᴀ ᴘʀᴇᴍɪᴜᴍ ᴜꜱᴇʀ
+<b>›› /premium_users :</b> ʟɪsᴛ ᴀʟʟ ᴘʀᴇᴍɪᴜᴍ ᴜꜱᴇʀs
+<b>›› /remove_premium :</b> ʀᴇᴍᴏᴠᴇ ᴘʀᴇᴍɪᴜᴍ ꜰʀᴏᴍ ᴀ ᴜꜱᴇʀ
+<b>›› /myplan :</b> ᴄʜᴇᴄᴋ ʏᴏᴜʀ ᴘʀᴇᴍɪᴜᴍ sᴛᴀᴛᴜs
+<b>›› /count :</b> ᴄᴏᴜɴᴛ ᴠᴇʀɪғɪᴄᴀᴛɪᴏɴs
+<b>›› /delreq :</b> Rᴇᴍᴏᴠᴇᴅ ʟᴇғᴛᴏᴠᴇʀ ɴᴏɴ-ʀᴇǫᴜᴇsᴛ ᴜsᴇʀs
 """
 #--------------------------------------------
 CUSTOM_CAPTION = os.environ.get("CUSTOM_CAPTION", "<b>• ʙʏ @OTAKULUX</b>") #set your Custom Caption here, Keep None for Disable Custom Caption
