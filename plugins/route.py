@@ -162,6 +162,81 @@ async def banned_route(request):
 
     return web.Response(text=html, content_type="text/html")
 
+@routes.get("/protect")
+async def protect_landing_page(request):
+    url = request.query.get('url')
+    if not url:
+        return web.Response(text="Missing target URL", status=400)
+
+    html = await get_template("protect")
+    if not html: return web.Response(text="Template Error", status=500)
+
+    html = html.replace("{{ RECAPTCHA_SITE_KEY }}", RECAPTCHA_SITE_KEY)
+    html = html.replace("{{ ENCODED_URL }}", url)
+
+    return web.Response(text=html, content_type="text/html")
+
+@routes.post("/api/verify_shortener")
+async def api_verify_shortener(request):
+    try:
+        data = await request.json()
+        recaptcha_token = data.get('recaptchaToken')
+        encoded_url = data.get('url')
+
+        if not recaptcha_token or not encoded_url:
+            return json_response(False, "Missing parameters", status=400)
+
+        # 1. Verify reCAPTCHA
+        forwarded_for = request.headers.get('X-Forwarded-For', request.remote)
+        ip = forwarded_for.split(',')[0].strip()
+
+        client_session = request.app['client_session']
+        success, score = await SecurityService.verify_recaptcha(recaptcha_token, ip, client_session)
+
+        if not success:
+            return json_response(False, "Security check failed", status=403)
+
+        # 2. Decode the original shortlink
+        try:
+            original_shortlink = SecurityService.decode_link(encoded_url)
+        except:
+            return json_response(False, "Invalid URL parameter", status=400)
+
+        # 3. Extract the code from the shortlink
+        # Robust extraction: remove query params and trailing slashes
+        clean_url = original_shortlink.split('?')[0].rstrip('/')
+        code = clean_url.split('/')[-1]
+
+        if not code:
+            return json_response(False, "Invalid shortlink format", status=400)
+
+        # 4. Store verification session (Authenticity check)
+        identifier = SecurityService.get_identifier(request)
+        await db.store_shortener_verification(identifier, code)
+
+        # 5. Return the wrapped URL
+        wrapped_url = f"/eductionssstudiess/?eductionstudiess={code}"
+        return json_response(True, "Verified", {"redirect": wrapped_url})
+
+    except Exception as e:
+        print(f"API Error: {e}")
+        return json_response(False, "Server Error", status=500)
+
+@routes.get("/eductionssstudiess/")
+async def wrapped_url_handler(request):
+    code = request.query.get('eductionstudiess')
+    if not code:
+        return web.Response(text="Invalid Request", status=400)
+
+    # Security: Verify that this session actually passed reCAPTCHA for this code
+    identifier = SecurityService.get_identifier(request)
+    if not await db.verify_shortener_code(identifier, code):
+        return web.Response(text="Security verification failed or expired. Please go back and try again.", status=403)
+
+    # Reconstruct the original shortlink
+    final_url = f"https://{SHORTLINK_URL}/{code}"
+    return web.HTTPFound(final_url)
+
 @routes.get("/health")
 async def health_check(request):
     return web.Response(text="OK", status=200)

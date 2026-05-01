@@ -84,6 +84,22 @@ class SecurityService:
             return await get_shortlink(SHORTLINK_URL, SHORTLINK_API, target_url)
         return target_url
 
+    @staticmethod
+    def encode_link(link: str):
+        return base64.urlsafe_b64encode(link.encode()).decode().rstrip("=")
+
+    @staticmethod
+    def decode_link(encoded: str):
+        padding = '=' * (4 - len(encoded) % 4)
+        return base64.urlsafe_b64decode(encoded + padding).decode()
+
+    @staticmethod
+    def get_protection_url(short_link: str):
+        encoded = SecurityService.encode_link(short_link)
+        # Ensure WEBSITE_URL has protocol
+        base = WEBSITE_URL if WEBSITE_URL.startswith("http") else f"https://{WEBSITE_URL}"
+        return f"{base}/protect?url={encoded}"
+
 class SecureRedirect:
     @staticmethod
     def _get_key():

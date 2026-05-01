@@ -49,7 +49,7 @@ class OTAKULUX:
         self.bypass_data = self.database['bypass_attempts']
         self.settings_data = self.database['settings']
         self.secure_tokens = self.database['secure_tokens']
-        
+        self.shortener_verifications = self.database['shortener_verifications']
 
 
     # SETTINGS & FEATURE FLAGS
@@ -342,6 +342,33 @@ class OTAKULUX:
                 {'used': True}
             ]
         })
+
+    # SHORTENER VERIFICATION
+    async def store_shortener_verification(self, identifier: str, code: str):
+        await self.shortener_verifications.update_one(
+            {'_id': identifier},
+            {'$set': {
+                'code': code,
+                'verified_at': time.time(),
+                'expires_at': time.time() + 300 # 5 minutes to complete the redirect
+            }},
+            upsert=True
+        )
+
+    async def verify_shortener_code(self, identifier: str, code: str):
+        record = await self.shortener_verifications.find_one({'_id': identifier})
+        if not record:
+            return False
+
+        if record['code'] != code:
+            return False
+
+        if time.time() > record['expires_at']:
+            return False
+
+        # Success - Delete record (one-time use)
+        await self.shortener_verifications.delete_one({'_id': identifier})
+        return True
 
     # RESTART TASKS
     async def clear_all_bans(self):

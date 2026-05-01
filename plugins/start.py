@@ -153,13 +153,29 @@ async def short_url(client: Client, message: Message, base64_string):
     user_id = message.from_user.id
     try:
         short_link = None
-        if WEBSITE_URL:
-            # New flow: Use SecurityService to get a secure link to /r2/
-            short_link = await SecurityService.get_secure_shortlink(user_id, base64_string)
-        elif SHORTLINK_URL and SHORTLINK_API:
-            # Fallback to old flow if WEBSITE_URL is not set
-            prem_link = f"https://t.me/{client.username}?start=yu3elk{base64_string}7"
-            short_link = await get_shortlink(SHORTLINK_URL, SHORTLINK_API, prem_link)
+
+        # Base destination link (direct bot link)
+        destination = f"https://t.me/{client.username}?start=yu3elk{base64_string}7"
+
+        # Check if we should use the new protection flow
+        settings = await db.get_settings()
+        shortener_enabled = settings.get('shortener_system', True)
+
+        if shortener_enabled:
+            # 1. Shorten the link using the configured shortener (e.g. arolinks.com)
+            if SHORTLINK_URL and SHORTLINK_API:
+                inner_shortlink = await get_shortlink(SHORTLINK_URL, SHORTLINK_API, destination)
+            else:
+                inner_shortlink = destination
+
+            # 2. Wrap it with our own /protect URL for extra security & reCAPTCHA
+            if WEBSITE_URL:
+                short_link = SecurityService.get_protection_url(inner_shortlink)
+            else:
+                short_link = inner_shortlink
+        else:
+            # If disabled, we probably shouldn't be in short_url, but just in case:
+            return await send_files(client, message, base64_string)
 
         if not short_link:
             # Fallback to direct send if shortening failed
