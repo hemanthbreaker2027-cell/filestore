@@ -12,10 +12,8 @@ from config import JWT_SECRET, SHORTLINK_URL, SHORTLINK_API, WEBSITE_URL, WHITEL
 from database.database import db
 
 # Configuration for reCAPTCHA
-RECAPTCHA_SECRET = os.environ.get("RECAPTCHA_SECRET_KEY", "6LeIxAcTAAAAAGG-vFI1TnRWxMZNFuojJ4WifJWe")
-MIN_SCORE = 0.1 # Lowered threshold to prevent blocking valid users
-
-class SecurityService:
+RECAPTCHA_SECRET = os.environ.get("RECAPTCHA_SECRET_KEY", "")
+MIN_SCORE = 0.5 # STRICT SECURITY: High threshold
     @staticmethod
     async def verify_recaptcha(token: str, ip: str, session: aiohttp.ClientSession):
         try:
@@ -95,8 +93,9 @@ class SecurityService:
         return base64.urlsafe_b64decode(encoded + padding).decode()
 
     @staticmethod
-    def get_protection_url(short_link: str):
+    def get_protection_url(user_id: int, short_link: str):
         token_data = {
+            "user_id": user_id,
             "target": short_link,
             "issuedAt": int(time.time()),
             "expiresAt": int(time.time()) + 1800 # 30 mins

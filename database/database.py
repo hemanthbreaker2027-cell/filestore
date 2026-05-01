@@ -61,10 +61,25 @@ class AniZoneFlix:
                 '_id': 'bot_settings',
                 'shortener_system': True,
                 'file_delivery': True,
-                'core_features': True
+                'core_features': True,
+                'shortener_mode': 'one_per_time', # one_per_time or based_time
+                'shortener_time': 0 # Time in seconds for based_time mode
             }
             await self.settings_data.insert_one(default_settings)
             return default_settings
+
+        # Ensure new fields exist for existing users
+        updated = False
+        if 'shortener_mode' not in settings:
+            settings['shortener_mode'] = 'one_per_time'
+            updated = True
+        if 'shortener_time' not in settings:
+            settings['shortener_time'] = 0
+            updated = True
+
+        if updated:
+            await self.settings_data.update_one({'_id': 'bot_settings'}, {'$set': settings})
+
         return settings
 
     async def update_setting(self, key: str, value: bool):

@@ -167,7 +167,7 @@ async def short_url(client: Client, message: Message, base64_string):
 
             # 2. Wrap it with our own /protect URL for extra security & reCAPTCHA
             if WEBSITE_URL:
-                short_link = SecurityService.get_protection_url(inner_shortlink)
+                short_link = SecurityService.get_protection_url(user_id, inner_shortlink)
             else:
                 short_link = inner_shortlink
         else:
@@ -212,6 +212,9 @@ async def handle_payload(client: Client, message: Message, basic_payload: str):
 
     # Decision logic for shortener
     shortener_enabled = settings.get('shortener_system', True)
+    shortener_mode = settings.get('shortener_mode', 'one_per_time')
+    shortener_time = settings.get('shortener_time', 0)
+
     is_admin = await db.admin_exist(user_id) or user_id == OWNER_ID
 
     can_shorten = bool(WEBSITE_URL) or (bool(SHORTLINK_URL) and bool(SHORTLINK_API))
@@ -224,6 +227,17 @@ async def handle_payload(client: Client, message: Message, basic_payload: str):
         not shortener_enabled or
         not can_shorten
     )
+
+    # BASED TIME Logic
+    if not bypass and shortener_mode == 'based_time':
+        verify_status = await db.get_verify_status(user_id)
+        if verify_status.get('is_verified'):
+            verified_time = verify_status.get('verified_time', 0)
+            if (time.time() - verified_time) < shortener_time:
+                bypass = True
+            else:
+                # Time expired, reset status
+                await db.update_verify_status(user_id, is_verified=False)
 
     if bypass:
         await send_files(client, message, base64_string)

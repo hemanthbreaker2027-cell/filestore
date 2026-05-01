@@ -13,10 +13,16 @@ def get_panel_markup(settings):
     def get_badge(key):
         return "✅" if settings.get(key, True) else "❌"
 
+    mode = settings.get('shortener_mode', 'one_per_time')
+
     buttons = [
         [
             InlineKeyboardButton(f"ꜱʜᴏʀᴛᴇɴᴇʀ ꜱʏꜱᴛᴇᴍ {get_badge('shortener_system')}", callback_data="none"),
             InlineKeyboardButton(get_status("shortener_system"), callback_data="tg_shortener_system")
+        ],
+        [
+            InlineKeyboardButton("ONE PER TIME" + (" ✅" if mode == 'one_per_time' else ""), callback_data="set_mode_one"),
+            InlineKeyboardButton("BASED TIME" + (" ✅" if mode == 'based_time' else ""), callback_data="set_mode_time")
         ],
         [
             InlineKeyboardButton(f"ꜰɪʟᴇ ᴅᴇʟɪᴠᴇʀʏ {get_badge('file_delivery')}", callback_data="none"),
@@ -57,7 +63,7 @@ async def owner_panel(client: Bot, message: Message):
         reply_markup=get_panel_markup(settings)
     )
 
-@Bot.on_callback_query(filters.regex(r"^(tg_|refresh_panel)"))
+@Bot.on_callback_query(filters.regex(r"^(tg_|refresh_panel|set_mode_)"))
 async def panel_callback(client: Bot, query: CallbackQuery):
     if query.from_user.id != OWNER_ID:
         return await query.answer("˹ ᴀᴄᴄᴇss ᴅᴇɴɪᴇᴅ, ᴍᴏʀᴛᴀʟ! ˼", show_alert=True)
@@ -67,6 +73,24 @@ async def panel_callback(client: Bot, query: CallbackQuery):
 
     if data == "refresh_panel":
         await query.answer("˹ ʀᴇꜰʀᴇsʜɪɴɢ ᴅᴀsʜʙᴏᴀʀᴅ... ˼", show_alert=False)
+    elif data == "set_mode_one":
+        await db.update_setting('shortener_mode', 'one_per_time')
+        await query.answer("Mode set to: ONE PER TIME")
+        settings['shortener_mode'] = 'one_per_time'
+    elif data == "set_mode_time":
+        # Interactive flow for time
+        await query.answer()
+        msg = await client.ask(query.message.chat.id, "<b>🛡 ˹ ᴀᴄᴛɪᴠᴀᴛᴇ ʙᴀsᴇᴅ ᴛɪᴍᴇ ᴍᴏᴅᴇ ˼</b>\n\n💎 ᴘʟᴇᴀsᴇ ᴇɴᴛᴇʀ ᴛʜᴇ ᴠᴀʟɪᴅɪᴛʏ ᴛɪᴍᴇ ɪɴ sᴇᴄᴏɴᴅs (ᴇ.ɢ. 3600 ꜰᴏʀ 1 ʜᴏᴜʀ):")
+        try:
+            val = int(msg.text)
+            await db.update_setting('shortener_mode', 'based_time')
+            await db.update_setting('shortener_time', val)
+            await msg.reply(f"✅ ʙᴀsᴇᴅ ᴛɪᴍᴇ ᴍᴏᴅᴇ ᴀᴄᴛɪᴠᴀᴛᴇᴅ!\n🚀 Validity: `{val}` seconds.")
+            settings['shortener_mode'] = 'based_time'
+            settings['shortener_time'] = val
+        except:
+            await msg.reply("❌ Invalid number. Mode not changed.")
+            return
     else:
         key = data.replace("tg_", "")
         new_val = not settings.get(key, True)

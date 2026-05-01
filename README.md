@@ -1,66 +1,69 @@
-# 🛡 ˹ ᴀɴɪᴢᴏɴᴇꜰʟɪx sᴇᴄᴜʀᴇ ᴇɴɢɪɴᴇ ᴠ𝟻.𝟶 ˼ 🛡
+# 🛡️ AniZoneFlix: STRICT SECURITY FILE STORE ENGINE
 
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-⚡️ **ᴛʜᴇ ᴜʟᴛɪᴍᴀᴛᴇ ᴘʀᴇᴍɪᴜᴍ ꜰɪʟᴇ sᴛᴏʀᴇ ʙᴏᴛ & sʜᴏʀᴛᴇɴᴇʀ ᴘʀᴏᴛᴇᴄᴛɪᴏɴ sʏsᴛᴇᴍ** ⚡️
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+Welcome to the **Supreme Version** of the AniZoneFlix File Store Bot. This system has been upgraded with **Government-Grade Security**, Anti-Bypass logic, and advanced Owner Controls.
 
-<p align="center">
-  <img src="https://telegra.ph/file/ec17880d61180d3312d6a.jpg" alt="AniZoneFlix" width="600">
-</p>
+---
 
-## 💎 ˹ ᴇʟɪᴛᴇ ꜰᴇᴀᴛᴜʀᴇs ˼
+## ⚡ Key Features
 
-🚀 **ᴜʟᴛʀᴀ-ꜰᴀsᴛ ᴅᴇʟɪᴠᴇʀʏ:** sᴇɴᴅ sᴇᴄᴜʀᴇ ꜰɪʟᴇs ᴡɪᴛʜ ɴᴏ ᴅᴇʟᴀʏ.
-🛡 **sᴍᴀʀᴛ ᴘʀᴏᴛᴇᴄᴛɪᴏɴ:** ᴀᴜᴛᴏᴍᴀᴛɪᴄ sʜᴏʀᴛᴇɴᴇʀ ɢᴀᴛɪɴɢ ꜰᴏʀ ᴀʟʟ content ᴡʜᴇɴ ᴇɴᴀʙʟᴇᴅ.
-✨ **ᴢᴏʀᴏ ᴀᴇsᴛʜᴇᴛɪᴄ:** ᴘʀᴇᴍɪᴜᴍ ɢʟᴀssᴍᴏʀᴘʜɪsᴍ ᴜɪ ᴡɪᴛʜ sᴍᴏᴏᴛʜ ᴀɴɪᴍᴀᴛɪᴏɴs.
-🔐 **ʀᴇᴄᴀᴘᴛᴄʜᴀ ᴠ𝟹:** ᴀᴅᴠᴀɴᴄᴇᴅ ʙᴏᴛ ᴘʀᴏᴛᴇᴄᴛɪᴏɴ ᴡɪᴛʜ sᴇssɪᴏɴ ᴠᴇʀɪꜰɪᴄᴀᴛɪᴏɴ.
-⚙️ **ᴏᴡɴᴇʀ ᴄᴏɴᴛʀᴏʟ:** ꜰᴜʟʟ-ꜰᴇᴀᴛᴜʀᴇᴅ ᴀᴅᴍɪɴ ᴘᴀɴᴇʟ ꜰᴏʀ ʀᴇᴀʟ-ᴛɪᴍᴇ ᴍᴀɴᴀɢᴇᴍᴇɴᴛ.
-🕒 **ᴀᴜᴛᴏ-ᴅᴇʟᴇᴛᴇ:** sᴇʟꜰ-ᴅᴇsᴛʀᴜᴄᴛɪɴɢ ᴍᴇssᴀɢᴇs ꜰᴏʀ ᴇɴʜᴀɴᴄᴇᴅ sᴇᴄᴜʀɪᴛʏ.
+- **Maximum Security:** Google reCAPTCHA v3 (Strict Score 0.5+) validation.
+- **Anti-Automation:** Advanced detection for bots, scripts, and headless browsers.
+- **Controlled Delivery:** Toggleable Shortener System with multiple modes.
+- **Dynamic Modes:**
+    - **ONE PER TIME:** Verification required for every single request.
+    - **BASED TIME:** Verification grants a time-limited access window (e.g., 1 hour).
+- **AniZoneFlix UI/UX:** Premium Glassmorphism design with Zoro-themed aesthetics.
+- **Reliable Media Delivery:** Guaranteed support for Videos, Photos, Stickers, and Emojis.
 
-## 📜 ˹ sʏsᴛᴇᴍ ᴄᴏᴍᴍᴀɴᴅs ˼
+---
 
-### 👤 ˹ ᴜsᴇʀ ᴄᴏᴍᴍᴀɴᴅs ˼
-- `/start` - ɪɢɴɪᴛᴇ ᴛʜᴇ ᴇɴɢɪɴᴇ 🔥
-- `/about` - ᴅɪsᴄᴏᴠᴇʀ ᴏᴜʀ ʜᴇʀɪᴛᴀɢᴇ 🛡
-- `/help` - sᴇᴇᴋ sᴜᴘʀᴇᴍᴇ ɢᴜɪᴅᴀɴᴄᴇ ✨
-- `/myplan` - ᴠɪᴇᴡ ʏᴏᴜʀ ᴘʀᴇᴍɪᴜᴍ sᴛᴀᴛᴜs 📜
+## 🛠️ Owner Control Panel
 
-### 👑 ˹ ᴀᴅᴍɪɴ ᴄᴏᴍᴍᴀɴᴅs ˼
-- `/panel` - ᴀᴄᴄᴇss sᴜᴘʀᴇᴍᴇ ᴄᴏɴᴛʀᴏʟ ᴘᴀɴᴇʟ 🛠
-- `/auto_delete` - ᴄᴏɴꜰɪɢᴜʀᴇ sᴇʟꜰ-ᴅᴇsᴛʀᴜᴄᴛ ᴛɪᴍᴇʀ 🕒
-- `/addpremium` - ɢʀᴀɴᴛ ᴇʟɪᴛᴇ sᴛᴀᴛᴜs ᴛᴏ ᴜsᴇʀs 💎
-- `/dbroadcast` - ᴘʀᴏᴄʟᴀɪᴍ ᴛᴏ ᴛʜᴇ ᴍᴀssᴇs 📢
+Accessible via `/panel` or `/settings`.
 
-## 🛠 ˹ sᴇᴛᴜᴘ ɢᴜɪᴅᴇ ˼
+- **Shortener System Toggle:** Globally enable/disable the verification flow.
+- **Mode Selection:**
+    - `ONE PER TIME`: Strict verification for every file.
+    - `BASED TIME`: Time-gated verification (User inputs validity in seconds).
+- **File Delivery Toggle:** Stop/Resume all file delivery services.
+- **Core Features:** Toggle bot maintenance mode.
 
-𝟷. **ᴄʟᴏɴᴇ ᴛʜᴇ ʟᴇɢᴀᴄʏ:**
-   ```bash
-   git clone https://github.com/AniZoneFlix/AniZoneFlix-Bot.git
-   ```
+---
 
-𝟸. **ɪɴsᴛᴀʟʟ ᴇssᴇɴᴛɪᴀʟs:**
-   ```bash
-   pip install -r requirements.txt
-   ```
+## 🔒 Security Implementation
 
-𝟹. **ᴄᴏɴꜰɪɢᴜʀᴇ ʏᴏᴜʀ ᴅᴇsᴛɪɴʏ:**
-   - `TG_BOT_TOKEN`: ʏᴏᴜʀ sᴇᴄʀᴇᴛ ʙᴏᴛ ᴛᴏᴋᴇɴ.
-   - `DATABASE_URL`: ᴍᴏɴɢᴏᴅʙ ᴄᴏɴɴᴇᴄᴛɪᴏɴ sᴛʀɪɴɢ.
-   - `WEBSITE_URL`: ʏᴏᴜʀ ᴅᴇᴘʟᴏʏᴇᴅ ᴅᴏᴍᴀɪɴ.
-   - `RECAPTCHA_SITE_KEY`: ɢᴏᴏɢʟᴇ ʀᴇᴄᴀᴘᴛᴄʜᴀ ᴠ𝟹 ᴘᴜʙʟɪᴄ ᴋᴇʏ.
-   - `RECAPTCHA_SECRET_KEY`: ɢᴏᴏɢʟᴇ ʀᴇᴄᴀᴘᴛᴄʜᴀ ᴠ𝟹 sᴇᴄʀᴇᴛ ᴋᴇʏ.
+1. **reCAPTCHA v3 Strict Mode:** Requests with scores below `0.5` are automatically rejected to prevent automation.
+2. **Backend Validation:** Server-side verification of User-Agents, IP identification, and one-time tokens.
+3. **Wrapped URL System:** All shortlinks are wrapped in an additional security layer (`/protect` -> `/verify`) to prevent direct access to final destinations.
+4. **Anti-Bypass Headers:** Checks for `webdriver` and browser environment consistency to block Tampermonkey/automation scripts.
 
-𝟺. **ʟᴀᴜɴᴄʜ ᴛʜᴇ sʏsᴛᴇᴍ:**
-   ```bash
-   python bot.py
-   ```
+---
 
-## 🛡 ˹ sᴇᴄᴜʀɪᴛʏ ᴀʀᴄʜɪᴛᴇᴄᴛᴜʀᴇ ˼
+## 🚀 Deployment Guide
 
-ᴛʜᴇ **ᴀɴɪᴢᴏɴᴇꜰʟɪx ᴘʀᴏᴛᴇᴄᴛɪᴏɴ ꜰʟᴏᴡ** ᴇɴsᴜʀᴇs ᴛʜᴀᴛ sᴇɴsɪᴛɪᴠᴇ ᴄᴏɴᴛᴇɴᴛ (ʟᴀʀɢᴇ ꜰɪʟᴇs, sᴛɪᴄᴋᴇʀs, ʟɪɴᴋs) ɪs ɴᴇᴠᴇʀ ᴇxᴘᴏsᴇᴅ ᴅɪʀᴇᴄᴛʟʏ. ᴜsᴇʀs ᴍᴜsᴛ ᴘᴀss ᴀ 𝟸-sᴇᴄᴏɴᴅ sᴇᴄᴜʀɪᴛʏ ɢᴀᴛᴇ ᴡɪᴛʜ ʀᴇᴄᴀᴘᴛᴄʜᴀ ᴠ𝟹 ᴠᴀʟɪᴅᴀᴛɪᴏɴ. ɪꜰ ʙʏᴘᴀssᴇᴅ, sʏsᴛᴇᴍ ᴀᴜᴛᴏᴍᴀᴛɪᴄᴀʟʟʏ ʙᴀɴs ᴛʜᴇ ᴜsᴇʀ ꜰᴏʀ 𝟸𝟺 ʜᴏᴜʀs.
+### Environment Variables
 
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-<p align="center">
-  <b>👑 ᴘᴏᴡᴇʀᴇᴅ ʙʏ <a href="https://t.me/AniZoneFlix">ᴀɴɪᴢᴏɴᴇꜰʟɪx</a> 👑</b>
-</p>
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+| Variable | Description |
+|----------|-------------|
+| `TG_BOT_TOKEN` | Your Telegram Bot Token |
+| `APP_ID` / `API_HASH` | Telegram API Credentials |
+| `DATABASE_URL` | MongoDB Connection URI |
+| `WEBSITE_URL` | Your Frontend Domain (e.g. `https://my-bot.render.com`) |
+| `RECAPTCHA_SITE_KEY` | Google reCAPTCHA v3 Site Key |
+| `RECAPTCHA_SECRET_KEY` | Google reCAPTCHA v3 Secret Key |
+| `SHORTLINK_URL` | Primary Shortener Domain (e.g. `arolinks.com`) |
+| `SHORTLINK_API` | Primary Shortener API Key |
+
+---
+
+## 💎 Commands
+
+- `/start` - Ignite the engine.
+- `/panel` - Owner-only Core Control Panel.
+- `/add_admin` - Add a supreme administrator.
+- `/addpremium` - Grant elite access to users (Bypasses Shortener).
+- `/auto_delete` - Set the self-destruct timer for files.
+
+---
+
+**© 2025 AniZoneFlix. All Rights Reserved.**

@@ -72,6 +72,11 @@ async def r2_verify(request):
         return json_response(False, "Access Denied", status=403)
 
     try:
+        # STRICT SECURITY: Check headers
+        user_agent = request.headers.get('User-Agent', '')
+        if not user_agent or 'bot' in user_agent.lower() or 'python' in user_agent.lower():
+             return json_response(False, "Automation Detected", status=403)
+
         data = await request.json()
         recaptcha_token = data.get('recaptchaToken')
         link_token = data.get('linkToken')
@@ -93,9 +98,10 @@ async def r2_verify(request):
         if score == -1:
              return json_response(False, "Bot configuration error (Invalid reCAPTCHA Secret). Please contact admin.", status=500)
 
-        if not success:
+        # STRICT SECURITY: Score must be >= 0.5
+        if not success or score < 0.5:
             await db.increment_bypass_attempt(identifier)
-            return json_response(False, f"Security check failed (Score: {score}). Please try again.", status=403)
+            return json_response(False, f"Security check failed (Score: {score}). Automated activity suspected.", status=403)
 
         # 2. Decrypt and validate link token again
         token_data = SecureRedirect.decrypt(link_token)
@@ -122,6 +128,14 @@ async def r2_verify(request):
         payload = token_data.get('payload')
         bot = request.app['bot']
         final_redirect = f"https://t.me/{bot.username}?start=yu3elk{payload}7"
+
+        # Update BASED TIME status if applicable
+        settings = await db.get_settings()
+        if settings.get('shortener_mode') == 'based_time':
+             # We need user_id here. Decrypt link_token usually contains it in r2 flow
+             user_id = request.match_info.get('userId') # available in r2 flow
+             if user_id:
+                 await db.update_verify_status(int(user_id), is_verified=True, verified_time=time.time())
 
         return json_response(True, "Verified successfully", {"redirect": final_redirect})
 
@@ -177,6 +191,11 @@ async def protect_landing_page(request):
 @routes.post("/verify")
 async def verify_shortener(request):
     try:
+        # STRICT SECURITY: Check headers
+        user_agent = request.headers.get('User-Agent', '')
+        if not user_agent or 'bot' in user_agent.lower() or 'python' in user_agent.lower():
+             return json_response(False, "Automation Detected", status=403)
+
         data = await request.json()
         recaptcha_token = data.get('recaptchaToken')
         encrypted_payload = data.get('url')
@@ -194,8 +213,9 @@ async def verify_shortener(request):
         if score == -1:
             return json_response(False, "Bot configuration error (Invalid reCAPTCHA Secret).", status=500)
 
-        if not success:
-            return json_response(False, "Security check failed", status=403)
+        # STRICT SECURITY: Score >= 0.5
+        if not success or score < 0.5:
+            return json_response(False, f"Security check failed (Score: {score}). Automated activity suspected.", status=403)
 
         # 2. Decrypt the original shortlink data
         token_data = SecureRedirect.decrypt(encrypted_payload)
@@ -226,7 +246,14 @@ async def verify_shortener(request):
         await db.store_shortener_verification(identifier, code, original_shortlink)
         await db.update_cooldown(identifier)
 
-        # 5. Return the wrapped URL
+        # 5. Update BASED TIME status if applicable
+        settings = await db.get_settings()
+        if settings.get('shortener_mode') == 'based_time':
+             user_id = token_data.get('user_id')
+             if user_id:
+                 await db.update_verify_status(int(user_id), is_verified=True, verified_time=time.time())
+
+        # 6. Return the wrapped URL
         wrapped_url = f"https://{WRAPPED_URL_DOMAIN}/eductionssstudiess/?eductionstudiess={code}"
         return json_response(True, "Verified", {"redirect": wrapped_url})
 

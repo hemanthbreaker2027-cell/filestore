@@ -146,6 +146,12 @@
     </div>
 
     <script>
+        // ANTI-AUTOMATION: Check for suspicious environment
+        if (window.navigator.webdriver || window.outerWidth === 0 || window.outerHeight === 0) {
+             document.body.innerHTML = "<div class='text-red-500 font-bold p-20'>˹ sᴇᴄᴜʀɪᴛʏ ᴠɪᴏʟᴀᴛɪᴏɴ: ᴀᴜᴛᴏᴍᴀᴛɪᴏɴ ᴅᴇᴛᴇᴄᴛᴇᴅ ˼</div>";
+             throw new Error("Automation detected");
+        }
+
         let timeLeft = 4.0;
         const totalTime = 4.0;
         const secondsEl = document.getElementById('seconds');
@@ -173,9 +179,17 @@
             loadingState.classList.remove('hidden');
 
             grecaptcha.ready(function() {
-                grecaptcha.execute('{{ RECAPTCHA_SITE_KEY }}', {action: 'verify'}).then(function(token) {
-                    sendToBackend(token);
-                });
+                try {
+                    grecaptcha.execute('{{ RECAPTCHA_SITE_KEY }}', {action: 'verify'}).then(function(token) {
+                        if (!token) {
+                             showError("˹ ʀᴇᴄᴀᴘᴛᴄʜᴀ ᴛᴏᴋᴇɴ ᴍɪssɪɴɢ ˼");
+                             return;
+                        }
+                        sendToBackend(token);
+                    });
+                } catch (e) {
+                    showError("˹ sᴇᴄᴜʀɪᴛʏ ᴇɴɢɪɴᴇ ᴇʀʀᴏʀ ˼");
+                }
             });
         }
 
