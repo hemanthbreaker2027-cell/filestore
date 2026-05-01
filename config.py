@@ -19,7 +19,7 @@ from logging.handlers import RotatingFileHandler
 #OTAKULUX on Tg
 #--------------------------------------------
 #Bot token @OTAKULUX
-TG_BOT_TOKEN = os.environ.get("TG_BOT_TOKEN", "8796776042:AAF-oHiP1v4S_ElNFQg17WW5nh4i1ktoZCY")
+TG_BOT_TOKEN = os.environ.get("TG_BOT_TOKEN", "8710949806:AAEnxn2AcaC09GoUWK_mLqLiV9Dt3M79zi8")
 APP_ID = int(os.environ.get("APP_ID", "22266643")) #Your API ID from my.telegram.org
 API_HASH = os.environ.get("API_HASH", "7d0b85b4146034511b8776ed7ff99de4") #Your API Hash from my.telegram.org
 #--------------------------------------------
