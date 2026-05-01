@@ -199,11 +199,41 @@ async def short_url(client: Client, message: Message, base64_string):
         await send_files(client, message, base64_string)
 
 
+async def handle_payload(client: Client, message: Message, basic_payload: str):
+    user_id = message.from_user.id
+    settings = await db.get_settings()
+    is_premium = await is_premium_user(user_id)
+
+    is_verified = basic_payload.startswith("yu3elk")
+    if is_verified:
+        base64_string = basic_payload[6:-1]
+    else:
+        base64_string = basic_payload
+
+    # Decision logic for shortener
+    shortener_enabled = settings.get('shortener_system', True)
+    is_admin = await db.admin_exist(user_id) or user_id == OWNER_ID
+
+    can_shorten = bool(WEBSITE_URL) or (bool(SHORTLINK_URL) and bool(SHORTLINK_API))
+
+    # Initial Shortener bypass conditions
+    bypass = (
+        is_premium or
+        is_admin or
+        is_verified or
+        not shortener_enabled or
+        not can_shorten
+    )
+
+    if bypass:
+        await send_files(client, message, base64_string)
+    else:
+        await short_url(client, message, base64_string)
+
 @Bot.on_message(filters.command('start') & filters.private)
 async def start_command(client: Client, message: Message):
     user_id = message.from_user.id
     settings = await db.get_settings()
-    is_premium = await is_premium_user(user_id)
 
     # Add user if not already present
     if not await db.present_user(user_id):
@@ -232,77 +262,7 @@ async def start_command(client: Client, message: Message):
     if len(text) > 7:
         try:
             basic = text.split(" ", 1)[1]
-            is_verified = basic.startswith("yu3elk")
-
-            if is_verified:
-                base64_string = basic[6:-1]
-            else:
-                base64_string = basic
-
-            # Decision logic for shortener
-            shortener_enabled = settings.get('shortener_system', True)
-            is_admin = await db.admin_exist(user_id) or user_id == OWNER_ID
-
-            can_shorten = bool(WEBSITE_URL) or (bool(SHORTLINK_URL) and bool(SHORTLINK_API))
-
-            # Initial Shortener bypass conditions
-            bypass = (
-                is_premium or
-                is_admin or
-                is_verified or
-                not shortener_enabled or
-                not can_shorten
-            )
-
-            # Content-based bypass logic
-            msgs = None
-            msg_ids = []
-            if not bypass:
-                try:
-                    decoded_str = await decode(base64_string)
-                    args = decoded_str.split("-")
-                    msg_ids = []
-                    if len(args) == 3:
-                        start = int(int(args[1]) / abs(client.db_channel.id))
-                        end = int(int(args[2]) / abs(client.db_channel.id))
-                        msg_ids = range(start, end + 1) if start <= end else list(range(start, end - 1, -1))
-                    elif len(args) == 2:
-                        msg_ids = [int(int(args[1]) / abs(client.db_channel.id))]
-
-                    if msg_ids:
-                        # We only check the first few to keep it fast, or all if it's a small batch
-                        check_ids = msg_ids[:5]
-                        msgs = await get_messages(client, check_ids)
-
-                        content_bypass = True
-                        for m in msgs:
-                            if not m or m.empty: continue
-
-                            # Photos, Stickers, Animations, etc usually bypass unless they are large documents
-                            if m.photo or m.sticker or m.animation: continue
-
-                            file_size = 0
-                            if m.document: file_size = m.document.file_size
-                            elif m.video: file_size = m.video.file_size
-                            elif m.audio: file_size = m.audio.file_size
-
-                            # Bypass if file is under 5MB (5242880 bytes)
-                            # If it's a large file, we force shortening
-                            if file_size > 5242880:
-                                content_bypass = False
-                                break
-
-                        if content_bypass:
-                            bypass = True
-                            # If it's a batch and we only checked first 5, we should be careful.
-                            # But usually batches are consistent.
-                except Exception as e:
-                    print(f"Bypass check error: {e}")
-
-            if bypass:
-                await send_files(client, message, base64_string, messages=msgs if msgs and len(msgs) == len(msg_ids) else None)
-            else:
-                await short_url(client, message, base64_string)
+            await handle_payload(client, message, basic)
             return
 
         except Exception as e:

@@ -165,7 +165,7 @@ async def cb_handler(client: Bot, query: CallbackQuery):
     elif data.startswith("ck"):
         user_id = query.from_user.id
         if await is_subscribed(client, user_id):
-            await query.answer("All channels joined! Delivering files...", show_alert=False)
+            await query.answer("All channels joined! Processing...", show_alert=False)
             await query.message.delete()
 
             parts = data.split("_", 1)
@@ -174,8 +174,8 @@ async def cb_handler(client: Bot, query: CallbackQuery):
 
             if len(parts) > 1:
                 payload = parts[1]
-                from plugins.start import send_files
-                await send_files(client, query.message, payload)
+                from plugins.start import handle_payload
+                await handle_payload(client, query.message, payload)
             else:
                 from plugins.start import start_command
                 query.message.text = "/start"

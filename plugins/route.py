@@ -89,10 +89,11 @@ async def r2_verify(request):
         client_session = request.app['client_session']
         success, score = await SecurityService.verify_recaptcha(recaptcha_token, ip, client_session)
 
-        if not success:
-            if score == -1:
-                return json_response(False, "Bot configuration error (Invalid reCAPTCHA Secret). Please contact admin.", status=500)
+        # Check for specific configuration error score
+        if score == -1:
+             return json_response(False, "Bot configuration error (Invalid reCAPTCHA Secret). Please contact admin.", status=500)
 
+        if not success:
             await db.increment_bypass_attempt(identifier)
             return json_response(False, f"Security check failed (Score: {score}). Please try again.", status=403)
 
@@ -189,6 +190,9 @@ async def verify_shortener(request):
 
         client_session = request.app['client_session']
         success, score = await SecurityService.verify_recaptcha(recaptcha_token, ip, client_session)
+
+        if score == -1:
+            return json_response(False, "Bot configuration error (Invalid reCAPTCHA Secret).", status=500)
 
         if not success:
             return json_response(False, "Security check failed", status=403)
