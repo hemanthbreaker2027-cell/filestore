@@ -179,9 +179,9 @@ async def verify_shortener(request):
     try:
         data = await request.json()
         recaptcha_token = data.get('recaptchaToken')
-        encoded_url = data.get('url')
+        encrypted_payload = data.get('url')
 
-        if not recaptcha_token or not encoded_url:
+        if not recaptcha_token or not encrypted_payload:
             return json_response(False, "Missing parameters", status=400)
 
         # 1. Verify reCAPTCHA
@@ -197,11 +197,12 @@ async def verify_shortener(request):
         if not success:
             return json_response(False, "Security check failed", status=403)
 
-        # 2. Decode the original shortlink
-        try:
-            original_shortlink = SecurityService.decode_link(encoded_url)
-        except:
-            return json_response(False, "Invalid URL parameter", status=400)
+        # 2. Decrypt the original shortlink data
+        token_data = SecureRedirect.decrypt(encrypted_payload)
+        if not token_data:
+            return json_response(False, "Invalid or Expired Security Token", status=403)
+
+        original_shortlink = token_data.get('target')
 
         # Domain whitelist check
         if not SecurityService.is_domain_whitelisted(original_shortlink):

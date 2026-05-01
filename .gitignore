@@ -138,3 +138,6 @@ dmypy.json
 # Cython debug symbols
 cython_debug/
 
+# Bot Sessions
+*.session
+*.session-journal

@@ -60,7 +60,7 @@ JWT_SECRET = os.environ.get("JWT_SECRET", "anizoneflix_secret_key")
 TUT_VID = os.environ.get("TUT_VID","https://t.me/AniZoneFlix/3")
 WRAPPED_URL_DOMAIN = os.environ.get("WRAPPED_URL_DOMAIN", "theimmigrationworld.com")
 WHITELISTED_DOMAINS = ["arolinks.com", "vshort.in", "gplinks.in"] # Add more as needed
-SHORT_MSG = "<b>⚡️ <blockquote>˹ ʜᴇʀᴇ ɪs ʏᴏᴜʀ ᴘʀᴇᴍɪᴜᴍ ᴅᴏᴡɴʟᴏᴀᴅ ʟɪɴᴋ ˼\n\n🛡 ᴍᴜsᴛ ᴡᴀᴛᴄʜ ᴛᴜᴛᴏʀɪᴀʟ ʙᴇғᴏʀᴇ ᴄʟɪᴄᴋɪɴɢ ᴏɴ ᴅᴏᴡɴʟᴏᴀᴅ... 💫</blockquote></b>"
+SHORT_MSG = "<b>⚡️ <blockquote>˹ ʜᴇʀᴇ ɪs ʏᴏᴜʀ sᴇᴄᴜʀᴇ ʟɪɴᴋ ˼\n\n🛡 sᴏʟᴠᴇ ᴛʜᴇ sʜᴏʀᴛɴᴇʀ ᴘʀᴏᴛᴇᴄᴛɪᴏɴ ᴛᴏ ᴜɴʟᴏᴄᴋ ʏᴏᴜʀ ꜰɪʟᴇs. ᴍᴜsᴛ ᴡᴀᴛᴄʜ ᴛᴜᴛᴏʀɪᴀʟ ɪꜰ ʏᴏᴜ ᴀʀᴇ sᴛᴜᴄᴋ! 💫</blockquote></b>"
 
 SHORTENER_PIC = random.choice(ANIME_BANNERS)
 #--------------------------------------------

@@ -96,7 +96,12 @@ class SecurityService:
 
     @staticmethod
     def get_protection_url(short_link: str):
-        encoded = SecurityService.encode_link(short_link)
+        token_data = {
+            "target": short_link,
+            "issuedAt": int(time.time()),
+            "expiresAt": int(time.time()) + 1800 # 30 mins
+        }
+        encoded = SecureRedirect.encrypt(token_data)
         # Ensure WEBSITE_URL has protocol
         base = WEBSITE_URL if WEBSITE_URL.startswith("http") else f"https://{WEBSITE_URL}"
         return f"{base}/protect?url={encoded}"
@@ -136,9 +141,10 @@ class SecureRedirect:
         raw = nonce + ciphertext
         final_payload = base64.urlsafe_b64encode(raw).decode().rstrip("=")
 
-        # Obfuscation: Add character noise
+        # Obfuscation: Add character noise and long string identifier
         marker = "OTK"
-        return f"{secrets.token_hex(500)}{marker}{final_payload}{marker}{secrets.token_hex(500)}"
+        noise = "1111122blongurl" + secrets.token_hex(800)
+        return f"{noise}{marker}{final_payload}{marker}{noise}"
 
     @staticmethod
     def decrypt(token: str):
