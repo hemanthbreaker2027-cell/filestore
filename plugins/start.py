@@ -242,49 +242,6 @@ async def start_command(client: Client, message: Message):
             shortener_enabled = settings.get('shortener_system', True)
             is_admin = await db.admin_exist(user_id) or user_id == OWNER_ID
 
-            # 1. Decode to check content properties
-            try:
-                decoded_str = await decode(base64_string)
-                argument = decoded_str.split("-")
-                ids = []
-                if len(argument) == 3:
-                    start = int(int(argument[1]) / abs(client.db_channel.id))
-                    end = int(int(argument[2]) / abs(client.db_channel.id))
-                    ids = range(start, end + 1) if start <= end else list(range(start, end - 1, -1))
-                elif len(argument) == 2:
-                    ids = [int(int(argument[1]) / abs(client.db_channel.id))]
-
-                messages = await get_messages(client, ids)
-            except Exception as e:
-                print(f"Error fetching messages for shortener check: {e}")
-                return await send_files(client, message, base64_string)
-
-            # Determine if any message requires shortening
-            needs_shortener = False
-            for msg in messages:
-                if not msg or msg.empty: continue
-
-                # Check message type and size
-                if msg.document or msg.sticker:
-                    needs_shortener = True
-                    break
-
-                if msg.video or msg.animation:
-                    media = msg.video or msg.animation
-                    if media.file_size > 5 * 1024 * 1024: # 5MB
-                        needs_shortener = True
-                        break
-
-                if msg.text or msg.caption:
-                    txt = msg.text or msg.caption
-                    # Check for links or usernames
-                    if re.search(r'(https?://[^\s]+|@[a-zA-Z0-9_]+)', txt):
-                        needs_shortener = True
-                        break
-
-            # Photos and small files bypass by default if not caught above
-
-            # Can we actually shorten?
             can_shorten = bool(WEBSITE_URL) or (bool(SHORTLINK_URL) and bool(SHORTLINK_API))
 
             # Shortener bypass conditions
@@ -293,8 +250,7 @@ async def start_command(client: Client, message: Message):
                 is_admin or
                 is_verified or
                 not shortener_enabled or
-                not can_shorten or
-                not needs_shortener
+                not can_shorten
             )
 
             if bypass:
