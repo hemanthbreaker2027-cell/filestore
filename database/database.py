@@ -50,6 +50,7 @@ class OTAKULUX:
         self.settings_data = self.database['settings']
         self.secure_tokens = self.database['secure_tokens']
         self.shortener_verifications = self.database['shortener_verifications']
+        self.cooldown_data = self.database['cooldowns']
 
 
     # SETTINGS & FEATURE FLAGS
@@ -369,6 +370,24 @@ class OTAKULUX:
         # Success - Delete record (one-time use)
         await self.shortener_verifications.delete_one({'_id': identifier})
         return True
+
+    # COOLDOWN MANAGEMENT
+    async def check_cooldown(self, identifier: str, cooldown_seconds: int = 5):
+        record = await self.cooldown_data.find_one({'_id': identifier})
+        if not record:
+            return True
+
+        last_time = record.get('last_time', 0)
+        if time.time() - last_time < cooldown_seconds:
+            return False
+        return True
+
+    async def update_cooldown(self, identifier: str):
+        await self.cooldown_data.update_one(
+            {'_id': identifier},
+            {'$set': {'last_time': time.time()}},
+            upsert=True
+        )
 
     # RESTART TASKS
     async def clear_all_bans(self):

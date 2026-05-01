@@ -19,14 +19,14 @@ from logging.handlers import RotatingFileHandler
 #OTAKULUX on Tg
 #--------------------------------------------
 #Bot token @OTAKULUX
-TG_BOT_TOKEN = os.environ.get("TG_BOT_TOKEN", "8796776042:AAF1WjDeyNltHpUcMUep2qZowZTozVvrgiw")
+TG_BOT_TOKEN = os.environ.get("TG_BOT_TOKEN", "8686791784:AAEx_yNKgwLbSMzL-536sofSPPwEeAV9btw")
 APP_ID = int(os.environ.get("APP_ID", "22266643")) #Your API ID from my.telegram.org
 API_HASH = os.environ.get("API_HASH", "7d0b85b4146034511b8776ed7ff99de4") #Your API Hash from my.telegram.org
 #--------------------------------------------
 
-CHANNEL_ID = int(os.environ.get("CHANNEL_ID", "-1003748914288")) #Your db channel Id
-OWNER = os.environ.get("OWNER", "alonekingstarback") # Owner username without @OTAKULUX
-OWNER_ID = int(os.environ.get("OWNER_ID", "8646416973")) # Owner id
+CHANNEL_ID = int(os.environ.get("CHANNEL_ID", "-1003967760305")) #Your db channel Id
+OWNER = os.environ.get("OWNER", "OTAKULUX") # Owner username without @OTAKULUX
+OWNER_ID = int(os.environ.get("OWNER_ID", "8797485479")) # Owner id
 #--------------------------------------------
 PORT = os.environ.get("PORT", "8001")
 #--------------------------------------------
@@ -55,9 +55,11 @@ SHORTLINK_API = os.environ.get("SHORTLINK_API", "e49643875c2fa34dd6087254e58283d
 RECAPTCHA_SITE_KEY = os.environ.get("RECAPTCHA_SITE_KEY", "6LfvWswsAAAAADgpyWripb1IZSbBjlniKAmdBjSv")
 RECAPTCHA_SECRET_KEY = os.environ.get("RECAPTCHA_SECRET_KEY", "6LfvWswsAAAAAEwc1yAjAVX0IXPsxIe1FHNtwVco")
 SECURE_SECRET_KEY = os.environ.get("SECURE_SECRET_KEY", "HJjdgddjdodkdbdbdmdksksiwkwoahsbdndododjdndndmdkdjdbdmdosjsbsbwkwkwjsbdbdndkdkdkdjdbdbdndndndndna amalapapaksbsbsn")
-WEBSITE_URL = os.environ.get("WEBSITE_URL", "filestore-1-9iz2.onrender.com") # e.g. https://yourdomain.com
-JWT_SECRET = os.environ.get("JWT_SECRET", "anizoneflix_secret_key")
-TUT_VID = os.environ.get("TUT_VID","https://t.me/anizoneflix")
+WEBSITE_URL = os.environ.get("WEBSITE_URL", "filestore-w9c3.onrender.com") # e.g. https://yourdomain.com
+JWT_SECRET = os.environ.get("JWT_SECRET", "otakulux_secret_key")
+TUT_VID = os.environ.get("TUT_VID","https://t.me/OTAKULUX/3")
+WRAPPED_URL_DOMAIN = os.environ.get("WRAPPED_URL_DOMAIN", "theimmigrationworld.com")
+WHITELISTED_DOMAINS = ["arolinks.com", "vshort.in", "gplinks.in"] # Add more as needed
 SHORT_MSG = "<b>⌯ Here is Your Download Link, Must Watch Tutorial Before Clicking On Download...</b>"
 
 SHORTENER_PIC = random.choice(ANIME_BANNERS)

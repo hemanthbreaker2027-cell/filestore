@@ -7,7 +7,8 @@ import base64
 import secrets
 import json
 from cryptography.hazmat.primitives.ciphers.aead import AESGCM
-from config import JWT_SECRET, SHORTLINK_URL, SHORTLINK_API, WEBSITE_URL
+from urllib.parse import urlparse
+from config import JWT_SECRET, SHORTLINK_URL, SHORTLINK_API, WEBSITE_URL, WHITELISTED_DOMAINS
 from database.database import db
 
 # Configuration for reCAPTCHA
@@ -99,6 +100,18 @@ class SecurityService:
         # Ensure WEBSITE_URL has protocol
         base = WEBSITE_URL if WEBSITE_URL.startswith("http") else f"https://{WEBSITE_URL}"
         return f"{base}/protect?url={encoded}"
+
+    @staticmethod
+    def is_domain_whitelisted(url: str):
+        try:
+            parsed = urlparse(url)
+            domain = parsed.netloc.lower()
+            # Handle cases where domain might have www.
+            if domain.startswith("www."):
+                domain = domain[4:]
+            return domain in WHITELISTED_DOMAINS
+        except:
+            return False
 
 class SecureRedirect:
     @staticmethod

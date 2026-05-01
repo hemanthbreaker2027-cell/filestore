@@ -3,7 +3,7 @@ from aiohttp import web
 import time
 import os
 import hashlib
-from config import WEBSITE_URL, SHORTLINK_URL, SHORTLINK_API
+from config import WEBSITE_URL, SHORTLINK_URL, SHORTLINK_API, WRAPPED_URL_DOMAIN
 from database.database import db
 from services.security import SecurityService, SecureRedirect
 
@@ -202,6 +202,10 @@ async def verify_shortener(request):
         except:
             return json_response(False, "Invalid URL parameter", status=400)
 
+        # Domain whitelist check
+        if not SecurityService.is_domain_whitelisted(original_shortlink):
+            return json_response(False, "Access Denied: Domain not whitelisted", status=403)
+
         # 3. Extract the code from the shortlink
         # Robust extraction: remove query params and trailing slashes
         clean_url = original_shortlink.split('?')[0].rstrip('/')
@@ -212,10 +216,16 @@ async def verify_shortener(request):
 
         # 4. Store verification session (Authenticity check)
         identifier = SecurityService.get_identifier(request)
+
+        # Cooldown check
+        if not await db.check_cooldown(identifier):
+            return json_response(False, "Too many requests. Please wait a moment.", status=429)
+
         await db.store_shortener_verification(identifier, code)
+        await db.update_cooldown(identifier)
 
         # 5. Return the wrapped URL
-        wrapped_url = f"/eductionssstudiess/?eductionstudiess={code}"
+        wrapped_url = f"https://{WRAPPED_URL_DOMAIN}/eductionssstudiess/?eductionstudiess={code}"
         return json_response(True, "Verified", {"redirect": wrapped_url})
 
     except Exception as e:
