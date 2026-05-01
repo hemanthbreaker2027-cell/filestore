@@ -1,9 +1,9 @@
 #
-# Copyright (C) 2025 by OTAKULUX@OTAKULUX, < https://github.com/OTAKULUX >.
+# Copyright (C) 2025 by AniZoneFlix@AniZoneFlix, < https://github.com/AniZoneFlix >.
 #
-# This file is part of < https://t.me/OTAKULUX > project,
+# This file is part of < https://t.me/AniZoneFlix > project,
 # and is released under the MIT License.
-# Please see < https://t.me/OTAKULUX/blob/master/LICENSE >
+# Please see < https://t.me/AniZoneFlix/blob/master/LICENSE >
 #
 # All rights reserved.
 
@@ -49,14 +49,14 @@ async def cb_handler(client: Bot, query: CallbackQuery):
         )
 
 
-# Don't Remove Credit @OTAKULUX, @OTAKULUX
-# Ask Doubt on telegram @OTAKULUX
+# Don't Remove Credit @AniZoneFlix, @AniZoneFlix
+# Ask Doubt on telegram @AniZoneFlix
 #
-# Copyright (C) 2025 by OTAKULUX@OTAKULUX, < https://github.com/OTAKULUX >.
+# Copyright (C) 2025 by AniZoneFlix@AniZoneFlix, < https://github.com/AniZoneFlix >.
 #
-# This file is part of < https://t.me/OTAKULUX > project,
+# This file is part of < https://t.me/AniZoneFlix > project,
 # and is released under the MIT License.
-# Please see < https://t.me/OTAKULUX/blob/master/LICENSE >
+# Please see < https://t.me/AniZoneFlix/blob/master/LICENSE >
 #
 # All rights reserved.
 #
@@ -66,7 +66,7 @@ async def cb_handler(client: Bot, query: CallbackQuery):
         await query.message.delete()
         caption = (
             "━━━━━━━━━━━━━━━━━━━\n"
-            "💎 <b>OTAKULUX PREMIUM MEMBERSHIP</b> 💎\n"
+            "💎 <b>ᴀɴɪᴢᴏɴᴇꜰʟɪx ᴘʀᴇᴍɪᴜᴍ ᴍᴇᴍʙᴇʀsʜɪᴘ</b> 💎\n"
             "━━━━━━━━━━━━━━━━━━━\n"
             "🚀 <b>Benefits:</b>\n"
             "• Direct File Access (No Shortener)\n"
@@ -188,20 +188,20 @@ async def cb_handler(client: Bot, query: CallbackQuery):
             status_text = ""
             for i, status in enumerate(status_list, 1):
                 icon = "✅" if status['is_joined'] else "❌"
-                status_text += f"{i}. {icon} {status['name']} ⚡ {'Joined' if status['is_joined'] else 'Not Joined'}\n"
+                status_text += f"{i}. {icon} {status['name']} ⚡ {'ᴊᴏɪɴᴇᴅ' if status['is_joined'] else 'ɴᴏᴛ ᴊᴏɪɴᴇᴅ'}\n"
                 if not status['is_joined']:
                     buttons.append([InlineKeyboardButton(text=f"📢 {status['name']}", url=status['link'])])
 
-            buttons.append([InlineKeyboardButton("🔄 Try Again", callback_data=data)])
+            buttons.append([InlineKeyboardButton("🔄 🔄 ˹ ᴛʀʏ ᴀɢᴀɪɴ ˼", callback_data=data)])
 
             caption = (
                 "━━━━━━━━━━━━━━━━━━━\n"
-                "✨ HEY SAMA × ✨\n\n"
-                "🎉 <b>Anime Files Are Ready !!</b>\n\n"
-                "⚠️ Hey! You haven't joined all required channels.\n"
-                "Join now to unlock your files instantly! ⚡\n\n"
+                "✨ ✨ ˹ ʜᴇʏ sᴀᴍᴀ × ᴀɴɪᴢᴏɴᴇꜰʟɪx ˼ ✨ ✨\n\n"
+                "🎉 <b>🎉 <b>˹ ᴀɴɪᴍᴇ ꜰɪʟᴇs ᴀʀᴇ ʀᴇᴀᴅʏ ˼ !!</b></b>\n\n"
+                "⚠️ ⚠️ ʜᴇʏ! ʏᴏᴜ ʜᴀᴠᴇɴ'ᴛ ᴊᴏɪɴᴇᴅ ᴀʟʟ ʀᴇǫᴜɪʀᴇᴅ ᴄʜᴀɴɴᴇʟs.\n"
+                "ᴊᴏɪɴ ɴᴏᴡ ᴛᴏ ᴜɴʟᴏᴄᴋ ʏᴏᴜʀ ꜰɪʟᴇs ɪɴsᴛᴀɴᴛʟʏ! ⚡️\n\n"
                 "━━━━━━━━━━━━━━━━━━━\n"
-                "📊 <b>SUBSCRIPTION STATUS:</b>\n\n"
+                "📊 <b>📊 <b>˹ sᴜʙsᴄʀɪᴘᴛɪᴏɴ sᴛᴀᴛᴜs ˼:</b></b>\n\n"
                 f"{status_text}\n"
                 "━━━━━━━━━━━━━━━━━━━"
             )
@@ -216,14 +216,14 @@ async def cb_handler(client: Bot, query: CallbackQuery):
                 print(f"Error editing fsub message: {e}")
 
 
-# Don't Remove Credit @OTAKULUX, @OTAKULUX
-# Ask Doubt on telegram @OTAKULUX
+# Don't Remove Credit @AniZoneFlix, @AniZoneFlix
+# Ask Doubt on telegram @AniZoneFlix
 #
-# Copyright (C) 2025 by OTAKULUX@OTAKULUX, < https://github.com/OTAKULUX >.
+# Copyright (C) 2025 by AniZoneFlix@AniZoneFlix, < https://github.com/AniZoneFlix >.
 #
-# This file is part of < https://t.me/OTAKULUX > project,
+# This file is part of < https://t.me/AniZoneFlix > project,
 # and is released under the MIT License.
-# Please see < https://t.me/OTAKULUX/blob/master/LICENSE >
+# Please see < https://t.me/AniZoneFlix/blob/master/LICENSE >
 #
 # All rights reserved.
 #

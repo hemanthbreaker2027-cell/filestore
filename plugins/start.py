@@ -1,11 +1,11 @@
-# Don't Remove Credit @OTAKULUX, @OTAKULUX
-# Ask Doubt on telegram @OTAKULUX
+# Don't Remove Credit @AniZoneFlix, @AniZoneFlix
+# Ask Doubt on telegram @AniZoneFlix
 #
-# Copyright (C) 2025 by OTAKULUX@OTAKULUX, < https://github.com/OTAKULUX >.
+# Copyright (C) 2025 by AniZoneFlix@AniZoneFlix, < https://github.com/AniZoneFlix >.
 #
-# This file is part of < https://t.me/OTAKULUX > project,
+# This file is part of < https://t.me/AniZoneFlix > project,
 # and is released under the MIT License.
-# Please see < https://t.me/OTAKULUX/blob/master/LICENSE >
+# Please see < https://t.me/AniZoneFlix/blob/master/LICENSE >
 #
 # All rights reserved.
 #
@@ -35,7 +35,7 @@ from services.security import SecurityService
 BAN_SUPPORT = f"{BAN_SUPPORT}"
 TUT_VID = f"{TUT_VID}"
 
-async def send_files(client: Client, message: Message, base64_string):
+async def send_files(client: Client, message: Message, base64_string, messages=None):
     user_id = message.from_user.id
 
     # We fetch settings here because send_files is called from multiple places
@@ -77,7 +77,8 @@ async def send_files(client: Client, message: Message, base64_string):
                 return
 
         try:
-            messages = await get_messages(client, ids)
+            if not messages:
+                messages = await get_messages(client, ids)
         except Exception as e:
             await message.reply_text("Something went wrong!")
             print(f"Error getting messages: {e}")
@@ -88,7 +89,7 @@ async def send_files(client: Client, message: Message, base64_string):
             except:
                 pass
 
-        OTAKULUX_msgs = []
+        AniZoneFlix_msgs = []
         # File auto-delete time in seconds
         FILE_AUTO_DELETE = await db.get_del_timer()
 
@@ -106,7 +107,7 @@ async def send_files(client: Client, message: Message, base64_string):
                         reply_markup=reply_markup,
                         protect_content=PROTECT_CONTENT
                     )
-                    OTAKULUX_msgs.append(snt_msg)
+                    AniZoneFlix_msgs.append(snt_msg)
                     break
                 except FloodWait as e:
                     print(f"[FLOODWAIT] Sleeping for {e.value}s in send_files")
@@ -122,7 +123,7 @@ async def send_files(client: Client, message: Message, base64_string):
 
             await asyncio.sleep(FILE_AUTO_DELETE)
 
-            for snt_msg in OTAKULUX_msgs:
+            for snt_msg in AniZoneFlix_msgs:
                 if snt_msg:
                     try:    
                         await snt_msg.delete()  
@@ -244,7 +245,7 @@ async def start_command(client: Client, message: Message):
 
             can_shorten = bool(WEBSITE_URL) or (bool(SHORTLINK_URL) and bool(SHORTLINK_API))
 
-            # Shortener bypass conditions
+            # Initial Shortener bypass conditions
             bypass = (
                 is_premium or
                 is_admin or
@@ -253,8 +254,53 @@ async def start_command(client: Client, message: Message):
                 not can_shorten
             )
 
+            # Content-based bypass logic
+            msgs = None
+            msg_ids = []
+            if not bypass:
+                try:
+                    decoded_str = await decode(base64_string)
+                    args = decoded_str.split("-")
+                    msg_ids = []
+                    if len(args) == 3:
+                        start = int(int(args[1]) / abs(client.db_channel.id))
+                        end = int(int(args[2]) / abs(client.db_channel.id))
+                        msg_ids = range(start, end + 1) if start <= end else list(range(start, end - 1, -1))
+                    elif len(args) == 2:
+                        msg_ids = [int(int(args[1]) / abs(client.db_channel.id))]
+
+                    if msg_ids:
+                        # We only check the first few to keep it fast, or all if it's a small batch
+                        check_ids = msg_ids[:5]
+                        msgs = await get_messages(client, check_ids)
+
+                        content_bypass = True
+                        for m in msgs:
+                            if not m or m.empty: continue
+
+                            # Photos, Stickers, Animations, etc usually bypass unless they are large documents
+                            if m.photo or m.sticker or m.animation: continue
+
+                            file_size = 0
+                            if m.document: file_size = m.document.file_size
+                            elif m.video: file_size = m.video.file_size
+                            elif m.audio: file_size = m.audio.file_size
+
+                            # Bypass if file is under 5MB (5242880 bytes)
+                            # If it's a large file, we force shortening
+                            if file_size > 5242880:
+                                content_bypass = False
+                                break
+
+                        if content_bypass:
+                            bypass = True
+                            # If it's a batch and we only checked first 5, we should be careful.
+                            # But usually batches are consistent.
+                except Exception as e:
+                    print(f"Bypass check error: {e}")
+
             if bypass:
-                await send_files(client, message, base64_string)
+                await send_files(client, message, base64_string, messages=msgs if msgs and len(msgs) == len(msg_ids) else None)
             else:
                 await short_url(client, message, base64_string)
             return
@@ -268,9 +314,9 @@ async def start_command(client: Client, message: Message):
 
         # Premium Start UI Redesign
         buttons = [
-            [InlineKeyboardButton("📢 ˹ ᴍᴀɪɴ ᴄʜᴀɴɴᴇʟ ˼", url="https://t.me/OTAKULUX")],
-            [InlineKeyboardButton("🌀 ˹ ᴏɴɢᴏɪɴɢ ᴀɴɪᴍᴇ ˼", url="https://t.me/OTAKULUX/50")],
-            [InlineKeyboardButton("⚪ ˹ ᴀɴɪᴍᴇ ɪɴᴅᴇx ˼", url="https://t.me/OTAKULUX/51")],
+            [InlineKeyboardButton("📢 ˹ ᴍᴀɪɴ ᴄʜᴀɴɴᴇʟ ˼", url="https://t.me/AniZoneFlix")],
+            [InlineKeyboardButton("🌀 ˹ ᴏɴɢᴏɪɴɢ ᴀɴɪᴍᴇ ˼", url="https://t.me/AniZoneFlix/50")],
+            [InlineKeyboardButton("⚪ ˹ ᴀɴɪᴍᴇ ɪɴᴅᴇx ˼", url="https://t.me/AniZoneFlix/51")],
             [
                 InlineKeyboardButton("⚙️ ˹ ᴀʙᴏᴜᴛ ˼", callback_data="about"),
                 InlineKeyboardButton("💎 ˹ ᴘʀᴇᴍɪᴜᴍ ˼", callback_data="premium")
@@ -300,8 +346,8 @@ async def start_command(client: Client, message: Message):
 
 
 #=====================================================================================##
-# Don't Remove Credit @OTAKULUX, @OTAKULUX
-# Ask Doubt on telegram @OTAKULUX
+# Don't Remove Credit @AniZoneFlix, @AniZoneFlix
+# Ask Doubt on telegram @AniZoneFlix
 
 
 
@@ -330,7 +376,7 @@ async def not_joined(client: Client, message: Message):
 
     caption = (
         "━━━━━━━━━━━━━━━━━━━\n"
-        "✨ ˹ ʜᴇʏ sᴀᴍᴀ × ᴏᴛᴀᴋᴜʟᴜx ˼ ✨\n\n"
+        "✨ ˹ ʜᴇʏ sᴀᴍᴀ × ᴀɴɪᴢᴏɴᴇꜰʟɪx ˼ ✨\n\n"
         "🎉 <b>˹ ᴀɴɪᴍᴇ ꜰɪʟᴇs ᴀʀᴇ ʀᴇᴀᴅʏ ˼ !!</b>\n\n"
         "⚠️ ʜᴇʏ! ʏᴏᴜ ʜᴀᴠᴇɴ'ᴛ ᴊᴏɪɴᴇᴅ ᴀʟʟ ʀᴇǫᴜɪʀᴇᴅ ᴄʜᴀɴɴᴇʟs.\n"
         "ᴊᴏɪɴ ɴᴏᴡ ᴛᴏ ᴜɴʟᴏᴄᴋ ʏᴏᴜʀ ꜰɪʟᴇs ɪɴsᴛᴀɴᴛʟʏ! ⚡️\n\n"
@@ -469,7 +515,7 @@ async def list_premium_users_command(client, message):
             # Add user details to the list
             premium_user_list.append(
                 f"UserID: <code>{user_id}</code>\n"
-                f"User: @OTAKULUX{username}\n"
+                f"User: @AniZoneFlix{username}\n"
                 f"Name: {mention}\n"
                 f"Expiry: {expiry_info}"
             )

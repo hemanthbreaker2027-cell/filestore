@@ -1,5 +1,5 @@
-#OTAKULUX_Botz
-#OTAKULUX on Tg
+#ᴀɴɪᴢᴏɴᴇꜰʟɪx_ʙᴏᴛᴢ
+#ᴀɴɪᴢᴏɴᴇꜰʟɪx on ᴛɢ
 
 import motor.motor_asyncio
 import time
@@ -30,7 +30,7 @@ def new_user(id):
         }
     }
 
-class OTAKULUX:
+class AniZoneFlix:
 
     def __init__(self, DB_URI, DB_NAME):
         self.dbclient = motor.motor_asyncio.AsyncIOMotorClient(DB_URI)
@@ -345,11 +345,12 @@ class OTAKULUX:
         })
 
     # SHORTENER VERIFICATION
-    async def store_shortener_verification(self, identifier: str, code: str):
+    async def store_shortener_verification(self, identifier: str, code: str, original_url: str = ""):
         await self.shortener_verifications.update_one(
             {'_id': identifier},
             {'$set': {
                 'code': code,
+                'original_url': original_url,
                 'verified_at': time.time(),
                 'expires_at': time.time() + 300 # 5 minutes to complete the redirect
             }},
@@ -359,17 +360,17 @@ class OTAKULUX:
     async def verify_shortener_code(self, identifier: str, code: str):
         record = await self.shortener_verifications.find_one({'_id': identifier})
         if not record:
-            return False
+            return None # Not found
 
-        if record['code'] != code:
-            return False
+        if record.get('code') != code:
+            return None # Mismatch
 
-        if time.time() > record['expires_at']:
-            return False
+        if time.time() > record.get('expires_at', 0):
+            return None # Expired
 
         # Success - Delete record (one-time use)
         await self.shortener_verifications.delete_one({'_id': identifier})
-        return True
+        return record.get('original_url')
 
     # COOLDOWN MANAGEMENT
     async def check_cooldown(self, identifier: str, cooldown_seconds: int = 5):
@@ -395,4 +396,4 @@ class OTAKULUX:
         await self.bypass_data.delete_many({})
 
 
-db = OTAKULUX(DB_URI, DB_NAME)
+db = AniZoneFlix(DB_URI, DB_NAME)

@@ -1,11 +1,11 @@
-# Don't Remove Credit @OTAKULUX, @OTAKULUX
-# Ask Doubt on telegram @OTAKULUX
+# Don't Remove Credit @AniZoneFlix, @AniZoneFlix
+# Ask Doubt on telegram @AniZoneFlix
 #
-# Copyright (C) 2025 by OTAKULUX@OTAKULUX, < https://github.com/OTAKULUX >.
+# Copyright (C) 2025 by AniZoneFlix@AniZoneFlix, < https://github.com/AniZoneFlix >.
 #
-# This file is part of < https://t.me/OTAKULUX > project,
+# This file is part of < https://t.me/AniZoneFlix > project,
 # and is released under the MIT License.
-# Please see < https://t.me/OTAKULUX/blob/master/LICENSE >
+# Please see < https://t.me/AniZoneFlix/blob/master/LICENSE >
 #
 # All rights reserved.
 #
@@ -23,14 +23,14 @@ from config import *
 from helper_func import *
 from database.database import *
 
-# Don't Remove Credit @OTAKULUX, @OTAKULUX
-# Ask Doubt on telegram @OTAKULUX
+# Don't Remove Credit @AniZoneFlix, @AniZoneFlix
+# Ask Doubt on telegram @AniZoneFlix
 #
-# Copyright (C) 2025 by OTAKULUX@OTAKULUX, < https://github.com/OTAKULUX >.
+# Copyright (C) 2025 by AniZoneFlix@AniZoneFlix, < https://github.com/AniZoneFlix >.
 #
-# This file is part of < https://t.me/OTAKULUX > project,
+# This file is part of < https://t.me/AniZoneFlix > project,
 # and is released under the MIT License.
-# Please see < https://t.me/OTAKULUX/blob/master/LICENSE >
+# Please see < https://t.me/AniZoneFlix/blob/master/LICENSE >
 #
 # All rights reserved.
 #
@@ -98,14 +98,14 @@ async def handle_join_request(client, chat_join_request):
             await db.req_user(chat_id, user_id)
             #print(f"Added user {user_id} to request list for {chat_id}")
 
-# Don't Remove Credit @OTAKULUX, @OTAKULUX
-# Ask Doubt on telegram @OTAKULUX
+# Don't Remove Credit @AniZoneFlix, @AniZoneFlix
+# Ask Doubt on telegram @AniZoneFlix
 #
-# Copyright (C) 2025 by OTAKULUX@OTAKULUX, < https://github.com/OTAKULUX >.
+# Copyright (C) 2025 by AniZoneFlix@AniZoneFlix, < https://github.com/AniZoneFlix >.
 #
-# This file is part of < https://t.me/OTAKULUX > project,
+# This file is part of < https://t.me/AniZoneFlix > project,
 # and is released under the MIT License.
-# Please see < https://t.me/OTAKULUX/blob/master/LICENSE >
+# Please see < https://t.me/AniZoneFlix/blob/master/LICENSE >
 #
 # All rights reserved.
 #
@@ -143,7 +143,7 @@ async def add_force_sub(client: Client, message: Message):
         try:
             link = await client.export_chat_invite_link(chat.id)
         except Exception:
-            link = f"https://t.me/{chat.username}" if chat.username else f"https://t.me/OTAKULUX/{str(chat.id)[4:]}"
+            link = f"https://t.me/{chat.username}" if chat.username else f"https://t.me/AniZoneFlix/{str(chat.id)[4:]}"
 
         await db.add_channel(chat_id)
         return await temp.edit(
@@ -158,14 +158,14 @@ async def add_force_sub(client: Client, message: Message):
         
 
 
-# Don't Remove Credit @OTAKULUX, @OTAKULUX
-# Ask Doubt on telegram @OTAKULUX
+# Don't Remove Credit @AniZoneFlix, @AniZoneFlix
+# Ask Doubt on telegram @AniZoneFlix
 #
-# Copyright (C) 2025 by OTAKULUX@OTAKULUX, < https://github.com/OTAKULUX >.
+# Copyright (C) 2025 by AniZoneFlix@AniZoneFlix, < https://github.com/AniZoneFlix >.
 #
-# This file is part of < https://t.me/OTAKULUX > project,
+# This file is part of < https://t.me/AniZoneFlix > project,
 # and is released under the MIT License.
-# Please see < https://t.me/OTAKULUX/blob/master/LICENSE >
+# Please see < https://t.me/AniZoneFlix/blob/master/LICENSE >
 #
 # All rights reserved.
 #
@@ -218,14 +218,14 @@ async def list_force_sub_channels(client: Client, message: Message):
 
     await temp.edit(result, disable_web_page_preview=True, reply_markup=InlineKeyboardMarkup([[InlineKeyboardButton("Close ✖️", callback_data="close")]]))
 
-# Don't Remove Credit @OTAKULUX, @OTAKULUX
-# Ask Doubt on telegram @OTAKULUX
+# Don't Remove Credit @AniZoneFlix, @AniZoneFlix
+# Ask Doubt on telegram @AniZoneFlix
 #
-# Copyright (C) 2025 by OTAKULUX@OTAKULUX, < https://github.com/OTAKULUX >.
+# Copyright (C) 2025 by AniZoneFlix@AniZoneFlix, < https://github.com/AniZoneFlix >.
 #
-# This file is part of < https://t.me/OTAKULUX > project,
+# This file is part of < https://t.me/AniZoneFlix > project,
 # and is released under the MIT License.
-# Please see < https://t.me/OTAKULUX/blob/master/LICENSE >
+# Please see < https://t.me/AniZoneFlix/blob/master/LICENSE >
 #
 # All rights reserved.
 #
@@ -287,14 +287,14 @@ async def delete_requested_users(client, message: Message):
         quote=True
     )
 
-# Don't Remove Credit @OTAKULUX, @OTAKULUX
-# Ask Doubt on telegram @OTAKULUX
+# Don't Remove Credit @AniZoneFlix, @AniZoneFlix
+# Ask Doubt on telegram @AniZoneFlix
 #
-# Copyright (C) 2025 by OTAKULUX@OTAKULUX, < https://github.com/OTAKULUX >.
+# Copyright (C) 2025 by AniZoneFlix@AniZoneFlix, < https://github.com/AniZoneFlix >.
 #
-# This file is part of < https://t.me/OTAKULUX > project,
+# This file is part of < https://t.me/AniZoneFlix > project,
 # and is released under the MIT License.
-# Please see < https://t.me/OTAKULUX/blob/master/LICENSE >
+# Please see < https://t.me/AniZoneFlix/blob/master/LICENSE >
 #
 # All rights reserved.
 #

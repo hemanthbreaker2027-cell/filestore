@@ -1,5 +1,5 @@
-#(©)OTAKULUX
-#OTAKULUX on Tg #Dont remove this line
+#(©)AniZoneFlix
+#ᴀɴɪᴢᴏɴᴇꜰʟɪx on ᴛɢ #Dont remove this line
 
 import base64
 import re
@@ -15,14 +15,14 @@ from database.database import *
 
 
 
-# Don't Remove Credit @OTAKULUX, @OTAKULUX
-# Ask Doubt on telegram @OTAKULUX
+# Don't Remove Credit @AniZoneFlix, @AniZoneFlix
+# Ask Doubt on telegram @AniZoneFlix
 #
-# Copyright (C) 2025 by OTAKULUX@OTAKULUX, < https://github.com/OTAKULUX >.
+# Copyright (C) 2025 by AniZoneFlix@AniZoneFlix, < https://github.com/AniZoneFlix >.
 #
-# This file is part of < https://t.me/OTAKULUX > project,
+# This file is part of < https://t.me/AniZoneFlix > project,
 # and is released under the MIT License.
-# Please see < https://t.me/OTAKULUX/blob/master/LICENSE >
+# Please see < https://t.me/AniZoneFlix/blob/master/LICENSE >
 #
 # All rights reserved.
 #
@@ -37,14 +37,14 @@ async def check_admin(filter, client, update):
         return False
 
 
-# Don't Remove Credit @OTAKULUX, @OTAKULUX
-# Ask Doubt on telegram @OTAKULUX
+# Don't Remove Credit @AniZoneFlix, @AniZoneFlix
+# Ask Doubt on telegram @AniZoneFlix
 #
-# Copyright (C) 2025 by OTAKULUX@OTAKULUX, < https://github.com/OTAKULUX >.
+# Copyright (C) 2025 by AniZoneFlix@AniZoneFlix, < https://github.com/AniZoneFlix >.
 #
-# This file is part of < https://t.me/OTAKULUX > project,
+# This file is part of < https://t.me/AniZoneFlix > project,
 # and is released under the MIT License.
-# Please see < https://t.me/OTAKULUX/blob/master/LICENSE >
+# Please see < https://t.me/AniZoneFlix/blob/master/LICENSE >
 #
 # All rights reserved.
 #
@@ -65,7 +65,7 @@ async def is_subscribed(client, user_id):
             # Retry once if join request might be processing
             mode = await db.get_channel_mode(cid)
             if mode == "on":
-                await asyncio.sleep(2)  # give time for @OTAKULUX to process
+                await asyncio.sleep(2)  # give time for @AniZoneFlix to process
                 if await is_sub(client, user_id, cid):
                     continue
             return False
@@ -118,14 +118,14 @@ async def get_sub_status(client, user_id):
     return status_list
 
 
-# Don't Remove Credit @OTAKULUX, @OTAKULUX
-# Ask Doubt on telegram @OTAKULUX
+# Don't Remove Credit @AniZoneFlix, @AniZoneFlix
+# Ask Doubt on telegram @AniZoneFlix
 #
-# Copyright (C) 2025 by OTAKULUX@OTAKULUX, < https://github.com/OTAKULUX >.
+# Copyright (C) 2025 by AniZoneFlix@AniZoneFlix, < https://github.com/AniZoneFlix >.
 #
-# This file is part of < https://t.me/OTAKULUX > project,
+# This file is part of < https://t.me/AniZoneFlix > project,
 # and is released under the MIT License.
-# Please see < https://t.me/OTAKULUX/blob/master/LICENSE >
+# Please see < https://t.me/AniZoneFlix/blob/master/LICENSE >
 #
 # All rights reserved.
 #
@@ -154,14 +154,14 @@ async def is_sub(client, user_id, channel_id):
         print(f"[!] Error in is_sub(): {e}")
         return False
 
-# Don't Remove Credit @OTAKULUX, @OTAKULUX
-# Ask Doubt on telegram @OTAKULUX
+# Don't Remove Credit @AniZoneFlix, @AniZoneFlix
+# Ask Doubt on telegram @AniZoneFlix
 #
-# Copyright (C) 2025 by OTAKULUX@OTAKULUX, < https://github.com/OTAKULUX >.
+# Copyright (C) 2025 by AniZoneFlix@AniZoneFlix, < https://github.com/AniZoneFlix >.
 #
-# This file is part of < https://t.me/OTAKULUX > project,
+# This file is part of < https://t.me/AniZoneFlix > project,
 # and is released under the MIT License.
-# Please see < https://t.me/OTAKULUX/blob/master/LICENSE >
+# Please see < https://t.me/AniZoneFlix/blob/master/LICENSE >
 #
 # All rights reserved.
 #
@@ -259,14 +259,14 @@ def get_exp_time(seconds):
             result += f'{int(period_value)} {period_name}'
     return result
 
-# Don't Remove Credit @OTAKULUX, @OTAKULUX
-# Ask Doubt on telegram @OTAKULUX
+# Don't Remove Credit @AniZoneFlix, @AniZoneFlix
+# Ask Doubt on telegram @AniZoneFlix
 #
-# Copyright (C) 2025 by OTAKULUX@OTAKULUX, < https://github.com/OTAKULUX >.
+# Copyright (C) 2025 by AniZoneFlix@AniZoneFlix, < https://github.com/AniZoneFlix >.
 #
-# This file is part of < https://t.me/OTAKULUX > project,
+# This file is part of < https://t.me/AniZoneFlix > project,
 # and is released under the MIT License.
-# Please see < https://t.me/OTAKULUX/blob/master/LICENSE >
+# Please see < https://t.me/AniZoneFlix/blob/master/LICENSE >
 #
 # All rights reserved.
 #
@@ -281,16 +281,16 @@ async def get_shortlink(url, api, link):
 subscribed = filters.create(is_subscribed)
 admin = filters.create(check_admin)
 
-#OTAKULUX on Tg :
+#ᴀɴɪᴢᴏɴᴇꜰʟɪx on ᴛɢ :
 
-# Don't Remove Credit @OTAKULUX, @OTAKULUX
-# Ask Doubt on telegram @OTAKULUX
+# Don't Remove Credit @AniZoneFlix, @AniZoneFlix
+# Ask Doubt on telegram @AniZoneFlix
 #
-# Copyright (C) 2025 by OTAKULUX@OTAKULUX, < https://github.com/OTAKULUX >.
+# Copyright (C) 2025 by AniZoneFlix@AniZoneFlix, < https://github.com/AniZoneFlix >.
 #
-# This file is part of < https://t.me/OTAKULUX > project,
+# This file is part of < https://t.me/AniZoneFlix > project,
 # and is released under the MIT License.
-# Please see < https://t.me/OTAKULUX/blob/master/LICENSE >
+# Please see < https://t.me/AniZoneFlix/blob/master/LICENSE >
 #
 # All rights reserved.
 #

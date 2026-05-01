@@ -3,14 +3,11 @@ from aiohttp import web
 import time
 import os
 import hashlib
-from config import WEBSITE_URL, SHORTLINK_URL, SHORTLINK_API, WRAPPED_URL_DOMAIN
+from config import WEBSITE_URL, SHORTLINK_URL, SHORTLINK_API, WRAPPED_URL_DOMAIN, RECAPTCHA_SITE_KEY
 from database.database import db
 from services.security import SecurityService, SecureRedirect
 
 routes = web.RouteTableDef()
-
-# reCAPTCHA Site Key from Env
-RECAPTCHA_SITE_KEY = os.environ.get("RECAPTCHA_SITE_KEY", "6LeIxAcTAAAAAJcZVRqyHh71UMIEGNQ_MXjiZKhI")
 
 # Template Cache
 template_cache = {}
@@ -43,7 +40,7 @@ async def check_ban_status(request):
 
 @routes.get("/", allow_head=True)
 async def root_handler(request):
-    return web.Response(text="OTAKULUX Secure Engine v4.1 - Online", content_type="text/plain")
+    return web.Response(text="ᴀɴɪᴢᴏɴᴇꜰʟɪx sᴇᴄᴜʀᴇ ᴇɴɢɪɴᴇ ᴠ𝟻.𝟶 - Online", content_type="text/plain")
 
 @routes.get("/r2/{userId}/{token}")
 async def r2_landing_page(request):
@@ -221,7 +218,7 @@ async def verify_shortener(request):
         if not await db.check_cooldown(identifier):
             return json_response(False, "Too many requests. Please wait a moment.", status=429)
 
-        await db.store_shortener_verification(identifier, code)
+        await db.store_shortener_verification(identifier, code, original_shortlink)
         await db.update_cooldown(identifier)
 
         # 5. Return the wrapped URL
@@ -240,12 +237,13 @@ async def wrapped_url_handler(request):
 
     # Security: Verify that this session actually passed reCAPTCHA for this code
     identifier = SecurityService.get_identifier(request)
-    if not await db.verify_shortener_code(identifier, code):
+    original_url = await db.verify_shortener_code(identifier, code)
+
+    if not original_url:
         return web.Response(text="Security verification failed or expired. Please go back and try again.", status=403)
 
-    # Reconstruct the original shortlink
-    final_url = f"https://{SHORTLINK_URL}/{code}"
-    return web.HTTPFound(final_url)
+    # Return the original shortlink
+    return web.HTTPFound(original_url)
 
 @routes.get("/health")
 async def health_check(request):

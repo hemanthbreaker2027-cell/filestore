@@ -1,12 +1,12 @@
 
-# Don't Remove Credit @OTAKULUX, @OTAKULUX
-# Ask Doubt on telegram @OTAKULUX
+# Don't Remove Credit @AniZoneFlix, @AniZoneFlix
+# Ask Doubt on telegram @AniZoneFlix
 #
-# Copyright (C) 2025 by OTAKULUX@OTAKULUX, < https://github.com/OTAKULUX >.
+# Copyright (C) 2025 by AniZoneFlix@AniZoneFlix, < https://github.com/AniZoneFlix >.
 #
-# This file is part of < https://t.me/OTAKULUX > project,
+# This file is part of < https://t.me/AniZoneFlix > project,
 # and is released under the MIT License.
-# Please see < https://t.me/OTAKULUX/blob/master/LICENSE >
+# Please see < https://t.me/AniZoneFlix/blob/master/LICENSE >
 #
 # All rights reserved.
 #
@@ -21,7 +21,7 @@ from pyrogram.enums import ParseMode
 import sys
 import pytz
 from datetime import datetime
-#OTAKULUX on Tg
+#ᴀɴɪᴢᴏɴᴇꜰʟɪx on ᴛɢ
 from config import *
 from database.db_premium import *
 from database.database import *
@@ -59,7 +59,7 @@ def get_indian_time():
 
 
 name = """
- BY OTAKULUX BOTS
+ BY AniZoneFlix BOTS
 """
 
 class Bot(Client):
@@ -109,11 +109,11 @@ class Bot(Client):
         except Exception as e:
             self.LOGGER(__name__).warning(e)
             self.LOGGER(__name__).warning(f"Make Sure bot is Admin in DB Channel, and Double check the CHANNEL_ID Value, Current Value {CHANNEL_ID}")
-            self.LOGGER(__name__).info("\nBot Stopped. Join https://t.me/OTAKULUX for support")
+            self.LOGGER(__name__).info("\nBot Stopped. Join https://t.me/AniZoneFlix for support")
             sys.exit()
 
         self.set_parse_mode(ParseMode.HTML)
-        self.LOGGER(__name__).info(f"Bot Running..!\n\nCreated by \nhttps://t.me/OTAKULUX")
+        self.LOGGER(__name__).info(f"Bot Running..!\n\nCreated by \nhttps://t.me/AniZoneFlix")
         self.LOGGER(__name__).info(r"""
 
 
@@ -127,7 +127,7 @@ class Bot(Client):
 
         self.set_parse_mode(ParseMode.HTML)
         self.username = usr_bot_me.username
-        self.LOGGER(__name__).info(f"Bot Running..! Made by @OTAKULUX")
+        self.LOGGER(__name__).info(f"Bot Running..! Made by @AniZoneFlix")
 
         # Start Web Server
         app = web.AppRunner(await web_server(self))
@@ -135,7 +135,7 @@ class Bot(Client):
         await web.TCPSite(app, "0.0.0.0", PORT).start()
 
 
-        try: await self.send_message(OWNER_ID, text = f"<b><blockquote> Bᴏᴛ Rᴇsᴛᴀʀᴛᴇᴅ by @OTAKULUX</blockquote></b>")
+        try: await self.send_message(OWNER_ID, text = f"<b><blockquote> Bᴏᴛ Rᴇsᴛᴀʀᴛᴇᴅ by @AniZoneFlix</blockquote></b>")
         except: pass
 
     async def stop(self, *args):
@@ -146,7 +146,7 @@ class Bot(Client):
         """Run the bot."""
         loop = asyncio.get_event_loop()
         loop.run_until_complete(self.start())
-        self.LOGGER(__name__).info("Bot is now running. Thanks to @OTAKULUX")
+        self.LOGGER(__name__).info("Bot is now running. Thanks to @AniZoneFlix")
         try:
             loop.run_forever()
         except KeyboardInterrupt:
@@ -155,10 +155,10 @@ class Bot(Client):
             loop.run_until_complete(self.stop())
 
 #
-# Copyright (C) 2025 by OTAKULUX@OTAKULUX, < https://github.com/OTAKULUX >.
+# Copyright (C) 2025 by AniZoneFlix@AniZoneFlix, < https://github.com/AniZoneFlix >.
 #
-# This file is part of < https://t.me/OTAKULUX > project,
+# This file is part of < https://t.me/AniZoneFlix > project,
 # and is released under the MIT License.
-# Please see < https://t.me/OTAKULUX/blob/master/LICENSE >
+# Please see < https://t.me/AniZoneFlix/blob/master/LICENSE >
 #
 # All rights reserved.
