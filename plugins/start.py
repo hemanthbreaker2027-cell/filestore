@@ -225,46 +225,6 @@ async def handle_payload(client: Client, message: Message, basic_payload: str):
         not can_shorten
     )
 
-    # Content-based bypass logic (Photos, Stickers, and files < 5MB)
-    if not bypass:
-        try:
-            decoded_str = await decode(base64_string)
-            args = decoded_str.split("-")
-            msg_ids = []
-            if len(args) == 3:
-                start = int(int(args[1]) / abs(client.db_channel.id))
-                end = int(int(args[2]) / abs(client.db_channel.id))
-                msg_ids = range(start, end + 1) if start <= end else list(range(start, end - 1, -1))
-            elif len(args) == 2:
-                msg_ids = [int(int(args[1]) / abs(client.db_channel.id))]
-
-            if msg_ids:
-                # We check the first few to keep it fast
-                check_ids = msg_ids[:5]
-                msgs = await get_messages(client, check_ids)
-
-                content_bypass = True
-                for m in msgs:
-                    if not m or m.empty: continue
-
-                    # Photos, Stickers, Animations bypass
-                    if m.photo or m.sticker or m.animation: continue
-
-                    file_size = 0
-                    if m.document: file_size = m.document.file_size
-                    elif m.video: file_size = m.video.file_size
-                    elif m.audio: file_size = m.audio.file_size
-
-                    # Bypass if file is under 5MB (5242880 bytes)
-                    if file_size > 5242880:
-                        content_bypass = False
-                        break
-
-                if content_bypass:
-                    bypass = True
-        except Exception as e:
-            print(f"Content bypass check error: {e}")
-
     if bypass:
         await send_files(client, message, base64_string)
     else:
