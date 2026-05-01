@@ -1,11 +1,11 @@
-# Don't Remove Credit @AniZoneFlix, @AniZoneFlix
-# Ask Doubt on telegram @AniZoneFlix
+# Don't Remove Credit @OTAKULUX, @OTAKULUX
+# Ask Doubt on telegram @OTAKULUX
 #
-# Copyright (C) 2025 by AniZoneFlix@AniZoneFlix, < https://github.com/AniZoneFlix >.
+# Copyright (C) 2025 by OTAKULUX@OTAKULUX, < https://github.com/OTAKULUX >.
 #
-# This file is part of < https://t.me/AniZoneFlix > project,
+# This file is part of < https://t.me/OTAKULUX > project,
 # and is released under the MIT License.
-# Please see < https://t.me/AniZoneFlix/blob/master/LICENSE >
+# Please see < https://t.me/OTAKULUX/blob/master/LICENSE >
 #
 # All rights reserved.
 #
@@ -16,26 +16,26 @@ from os import environ,getenv
 import logging
 from logging.handlers import RotatingFileHandler
 
-#ᴀɴɪᴢᴏɴᴇꜰʟɪx on ᴛɢ
+#OTAKULUX on Tg
 #--------------------------------------------
-#Bot token @AniZoneFlix
-TG_BOT_TOKEN = os.environ.get("TG_BOT_TOKEN", "")
-APP_ID = int(os.environ.get("APP_ID", "0")) #Your API ID from my.telegram.org
-API_HASH = os.environ.get("API_HASH", "") #Your API Hash from my.telegram.org
+#Bot token @OTAKULUX
+TG_BOT_TOKEN = os.environ.get("TG_BOT_TOKEN", "8710949806:AAEnxn2AcaC09GoUWK_mLqLiV9Dt3M79zi8")
+APP_ID = int(os.environ.get("APP_ID", "22266643")) #Your API ID from my.telegram.org
+API_HASH = os.environ.get("API_HASH", "7d0b85b4146034511b8776ed7ff99de4") #Your API Hash from my.telegram.org
 #--------------------------------------------
 
-CHANNEL_ID = int(os.environ.get("CHANNEL_ID", "0")) #Your db channel Id
-OWNER = os.environ.get("OWNER", "AniZoneFlix") # Owner username without @AniZoneFlix
-OWNER_ID = int(os.environ.get("OWNER_ID", "0")) # Owner id
+CHANNEL_ID = int(os.environ.get("CHANNEL_ID", "-1003748914288")) #Your db channel Id
+OWNER = os.environ.get("OWNER", "alonekingstarback") # Owner username without @OTAKULUX
+OWNER_ID = int(os.environ.get("OWNER_ID", "8646416973")) # Owner id
 #--------------------------------------------
 PORT = os.environ.get("PORT", "8001")
 #--------------------------------------------
-DB_URI = os.environ.get("DATABASE_URL", "")
+DB_URI = os.environ.get("DATABASE_URL", "mongodb+srv://hemanthbreaker2027:9550399779htr@cluster0.haybbxg.mongodb.net/?appName=Cluster0")
 DB_NAME = os.environ.get("DATABASE_NAME", "Cluster0")
 #--------------------------------------------
 FSUB_LINK_EXPIRY = int(os.getenv("FSUB_LINK_EXPIRY", "10"))  # 0 means no expiry
-BAN_SUPPORT = os.environ.get("BAN_SUPPORT", "https://t.me/AniZoneFlix")
-TG_BOT_WORKERS = int(os.environ.get("TG_BOT_WORKERS", "50"))
+BAN_SUPPORT = os.environ.get("BAN_SUPPORT", "https://t.me/OTAKULUX")
+TG_BOT_WORKERS = int(os.environ.get("TG_BOT_WORKERS", "200"))
 #--------------------------------------------
 # Random Anime Banners (Neon / Dark Theme)
 ANIME_BANNERS = [
@@ -50,16 +50,17 @@ START_PIC = random.choice(ANIME_BANNERS)
 FORCE_PIC = random.choice(ANIME_BANNERS)
 
 #--------------------------------------------
-SHORTLINK_URL = os.environ.get("SHORTLINK_URL", "")
-SHORTLINK_API = os.environ.get("SHORTLINK_API", "")
-RECAPTCHA_SITE_KEY = os.environ.get("RECAPTCHA_SITE_KEY", "")
-RECAPTCHA_SECRET_KEY = os.environ.get("RECAPTCHA_SECRET_KEY", "")
-SECURE_SECRET_KEY = os.environ.get("SECURE_SECRET_KEY", "")
-WEBSITE_URL = os.environ.get("WEBSITE_URL", "") # e.g. https://yourdomain.com
-JWT_SECRET = os.environ.get("JWT_SECRET", "")
-TUT_VID = os.environ.get("TUT_VID","https://t.me/AniZoneFlix/3")
+SHORTLINK_URL = os.environ.get("SHORTLINK_URL", "arolinks.com")
+SHORTLINK_API = os.environ.get("SHORTLINK_API", "e49643875c2fa34dd6087254e58283d65ffc7748")
+RECAPTCHA_SITE_KEY = os.environ.get("RECAPTCHA_SITE_KEY", "6LfvWswsAAAAADgpyWripb1IZSbBjlniKAmdBjSv")
+RECAPTCHA_SECRET_KEY = os.environ.get("RECAPTCHA_SECRET_KEY", "6LfvWswsAAAAAEwc1yAjAVX0IXPsxIe1FHNtwVco")
+SECURE_SECRET_KEY = os.environ.get("SECURE_SECRET_KEY", "HJjdgddjdodkdbdbdmdksksiwkwoahsbdndododjdndndmdkdjdbdmdosjsbsbwkwkwjsbdbdndkdkdkdjdbdbdndndndndna amalapapaksbsbsn")
+WEBSITE_URL = os.environ.get("WEBSITE_URL", "filestore-1-9iz2.onrender.com") # e.g. https://yourdomain.com
+JWT_SECRET = os.environ.get("JWT_SECRET", "anizoneflix_secret_key")
+TUT_VID = os.environ.get("TUT_VID","https://t.me/anizoneflix")
 WRAPPED_URL_DOMAIN = os.environ.get("WRAPPED_URL_DOMAIN", "theimmigrationworld.com")
 WHITELISTED_DOMAINS = ["arolinks.com", "vshort.in", "gplinks.in"] # Add more as needed
+
 SHORT_MSG = "<b>⚡️ <blockquote>˹ ʜᴇʀᴇ ɪs ʏᴏᴜʀ sᴇᴄᴜʀᴇ ʟɪɴᴋ ˼\n\n🛡 sᴏʟᴠᴇ ᴛʜᴇ sʜᴏʀᴛɴᴇʀ ᴘʀᴏᴛᴇᴄᴛɪᴏɴ ᴛᴏ ᴜɴʟᴏᴄᴋ ʏᴏᴜʀ ꜰɪʟᴇs. ᴍᴜsᴛ ᴡᴀᴛᴄʜ ᴛᴜᴛᴏʀɪᴀʟ ɪꜰ ʏᴏᴜ ᴀʀᴇ sᴛᴜᴄᴋ! 💫</blockquote></b>"
 
 SHORTENER_PIC = random.choice(ANIME_BANNERS)
