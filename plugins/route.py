@@ -3,10 +3,12 @@ from aiohttp import web
 import time
 import os
 import hashlib
+import logging
 from config import WEBSITE_URL, SHORTLINK_URL, SHORTLINK_API, WRAPPED_URL_DOMAIN, RECAPTCHA_SITE_KEY
 from database.database import db
 from services.security import SecurityService, SecureRedirect
 
+logger = logging.getLogger(__name__)
 routes = web.RouteTableDef()
 
 # Template Cache
@@ -75,6 +77,7 @@ async def r2_verify(request):
         # STRICT SECURITY: Check headers
         user_agent = request.headers.get('User-Agent', '')
         if not user_agent or 'bot' in user_agent.lower() or 'python' in user_agent.lower():
+             logger.warning(f"Automation Detected in R2 flow - UA: {user_agent}")
              return json_response(False, "Automation Detected", status=403)
 
         data = await request.json()
@@ -154,7 +157,7 @@ async def r2_verify(request):
         return json_response(True, "Verified successfully", {"redirect": final_redirect})
 
     except Exception as e:
-        print(f"Web API Error: {e}")
+        logger.error(f"Web API Error (R2 flow): {e}", exc_info=True)
         return json_response(False, "Internal Server Error", status=500)
 
 @routes.get("/banned")
@@ -190,89 +193,100 @@ async def banned_route(request):
 
 @routes.get("/protect")
 async def protect_landing_page(request):
-    url = request.query.get('url')
-    if not url:
-        return web.Response(text="Missing target URL", status=400)
+    data_token = request.query.get('data')
+    if not data_token:
+        return web.Response(text="Missing security payload", status=400)
 
     html = await get_template("protect")
     if not html: return web.Response(text="Template Error", status=500)
 
     html = html.replace("{{ RECAPTCHA_SITE_KEY }}", RECAPTCHA_SITE_KEY)
-    html = html.replace("{{ ENCODED_URL }}", url)
+    html = html.replace("{{ ENCODED_URL }}", data_token)
 
     return web.Response(text=html, content_type="text/html")
 
 @routes.post("/verify")
 async def verify_shortener(request):
+    # Get the real user IP from X-Forwarded-For
+    forwarded_for = request.headers.get('X-Forwarded-For', request.remote)
+    ip = forwarded_for.split(',')[0].strip()
+    identifier = SecurityService.get_identifier(request)
+
     try:
         # STRICT SECURITY: Check headers
         user_agent = request.headers.get('User-Agent', '')
         if not user_agent or 'bot' in user_agent.lower() or 'python' in user_agent.lower():
+             logger.warning(f"[SECURITY FAIL] Automation Detected - IP: {ip} UA: {user_agent}")
              return json_response(False, "Automation Detected", status=403)
 
         data = await request.json()
         recaptcha_token = data.get('recaptchaToken')
-        encrypted_payload = data.get('url')
+        encrypted_payload = data.get('data')
 
         if not recaptcha_token or not encrypted_payload:
             return json_response(False, "Missing parameters", status=400)
 
         # 1. Verify reCAPTCHA
-        forwarded_for = request.headers.get('X-Forwarded-For', request.remote)
-        ip = forwarded_for.split(',')[0].strip()
-
         client_session = request.app['client_session']
         success, score = await SecurityService.verify_recaptcha(recaptcha_token, ip, client_session)
 
         if score == -1:
+            logger.error(f"[RECAPTCHA ERROR] Invalid Secret - IP: {ip}")
             return json_response(False, "Bot configuration error (Invalid reCAPTCHA Secret).", status=500)
 
         # STRICT SECURITY: Score >= 0.5
         if not success or score < 0.5:
+            logger.warning(f"[SECURITY FAIL] Low reCAPTCHA Score ({score}) - IP: {ip}")
             return json_response(False, f"Security check failed (Score: {score}). Automated activity suspected.", status=403)
 
         # 2. Decrypt the original shortlink data
         token_data = SecureRedirect.decrypt(encrypted_payload)
         if not token_data:
+            logger.warning(f"[SECURITY FAIL] Invalid/Expired Token - IP: {ip}")
             return json_response(False, "Invalid or Expired Security Token", status=403)
 
         original_shortlink = token_data.get('target')
+        payload = token_data.get('payload', "")
+        user_id = token_data.get('user_id')
 
         # Domain whitelist check
         if not SecurityService.is_domain_whitelisted(original_shortlink):
+            logger.warning(f"[SECURITY FAIL] Domain not whitelisted ({original_shortlink}) - IP: {ip}")
             return json_response(False, "Access Denied: Domain not whitelisted", status=403)
 
         # 3. Extract the code from the shortlink
-        # Robust extraction: remove query params and trailing slashes
         clean_url = original_shortlink.split('?')[0].rstrip('/')
         code = clean_url.split('/')[-1]
 
         if not code:
             return json_response(False, "Invalid shortlink format", status=400)
 
-        # 4. Store verification session (Authenticity check)
-        identifier = SecurityService.get_identifier(request)
-
-        # Cooldown check
+        # 4. Cooldown & Authenticity check
         if not await db.check_cooldown(identifier):
+            logger.warning(f"[RATE LIMIT] Per IP ({ip})")
             return json_response(False, "Too many requests. Please wait a moment.", status=429)
 
+        # Store verification for the wrapped URL redirect
         await db.store_shortener_verification(identifier, code, original_shortlink)
         await db.update_cooldown(identifier)
 
+        # 🛡 AUTHORIZE BOT ACCESS 🛡
+        # We also store an r2_verification so the user is pre-authorized when they hit the bot
+        if user_id and payload:
+             await db.store_r2_verification(int(user_id), payload)
+
         # 5. Update BASED TIME status if applicable
         settings = await db.get_settings()
-        if settings.get('shortener_mode') == 'based_time':
-             user_id = token_data.get('user_id')
-             if user_id:
-                 await db.update_verify_status(int(user_id), is_verified=True, verified_time=time.time())
+        if settings.get('shortener_mode') == 'based_time' and user_id:
+             await db.update_verify_status(int(user_id), is_verified=True, verified_time=time.time())
 
+        logger.info(f"[VERIFY SUCCESS] User: {user_id} - IP: {ip} - Code: {code}")
         # 6. Return the wrapped URL
         wrapped_url = f"https://{WRAPPED_URL_DOMAIN}/eductionssstudiess/?eductionstudiess={code}"
         return json_response(True, "Verified", {"redirect": wrapped_url})
 
     except Exception as e:
-        print(f"API Error: {e}")
+        logger.error(f"API Error (Shortener flow): {e}", exc_info=True)
         return json_response(False, "Server Error", status=500)
 
 @routes.get("/eductionssstudiess/")

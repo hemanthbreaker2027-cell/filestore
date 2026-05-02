@@ -156,8 +156,15 @@ async def short_url(client: Client, message: Message, base64_string):
         shortener_enabled = settings.get('shortener_system', True)
 
         if shortener_enabled:
-             # Use the Secure /r2/ Flow as requested
-             short_link = await SecurityService.get_secure_shortlink(user_id, base64_string)
+             # 1. Generate the bot redirect link
+             bot_link = f"https://t.me/{client.username}?start=yu3elk{base64_string}7"
+
+             # 2. Shorten it using external shortener
+             from helper_func import get_shortlink
+             external_shortlink = await get_shortlink(SHORTLINK_URL, SHORTLINK_API, bot_link)
+
+             # 3. Wrap it with our protection system
+             short_link = SecurityService.get_protection_url(user_id, external_shortlink, base64_string)
         else:
             # If disabled, we probably shouldn't be in short_url, but just in case:
             return await send_files(client, message, base64_string)
@@ -199,7 +206,7 @@ async def handle_payload(client: Client, message: Message, basic_payload: str):
         base64_string = basic_payload
 
     # Decision logic for shortener
-    shortener_enabled = settings.get('shortener_system', True)
+    shortener_enabled = settings.get('shortener_system', True) and SHORTNER_ENABLED
     shortener_mode = settings.get('shortener_mode', 'one_per_time')
     shortener_time = settings.get('shortener_time', 0)
 

@@ -103,10 +103,11 @@ class SecurityService:
         return base64.urlsafe_b64decode(encoded + padding).decode()
 
     @staticmethod
-    def get_protection_url(user_id: int, short_link: str):
+    def get_protection_url(user_id: int, short_link: str, payload: str = ""):
         token_data = {
             "user_id": user_id,
             "target": short_link,
+            "payload": payload,
             "issuedAt": int(time.time()),
             "expiresAt": int(time.time()) + 1800  # 30 min
         }
@@ -114,7 +115,7 @@ class SecurityService:
         encoded = SecureRedirect.encrypt(token_data)
 
         base = WEBSITE_URL if WEBSITE_URL.startswith("http") else f"https://{WEBSITE_URL}"
-        return f"{base}/protect?url={encoded}"
+        return f"{base}/protect?data={encoded}"
 
     @staticmethod
     def is_domain_whitelisted(url: str):
@@ -169,7 +170,8 @@ class SecureRedirect:
             if len(parts) < 3:
                 return None
 
-            final_payload_b64 = parts[1]
+            # Payload is everything between the first and last marker
+            final_payload_b64 = marker.join(parts[1:-1])
 
             # Fix padding
             if len(final_payload_b64) % 4:
