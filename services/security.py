@@ -11,8 +11,8 @@ from config import JWT_SECRET, SHORTLINK_URL, SHORTLINK_API, WEBSITE_URL, WHITEL
 from database.database import db
 
 # Configuration for reCAPTCHA
-RECAPTCHA_SECRET = os.environ.get("RECAPTCHA_SECRET_KEY", "")
-MIN_SCORE = 0.5  # STRICT SECURITY
+RECAPTCHA_SECRET = os.environ.get("RECAPTCHA_SECRET_KEY") or os.environ.get("RECAPTCHA_SECRET", "")
+MIN_SCORE = 0.3  # Dynamic Score for Mobile Users
 
 
 class SecurityService:
@@ -57,15 +57,15 @@ class SecurityService:
 
     @staticmethod
     def get_identifier(request):
-        ip = request.headers.get("CF-Connecting-IP") or request.headers.get(
-            "X-Forwarded-For", request.remote
-        )
+        # Robust IP detection for Render/Cloudflare
+        xf = request.headers.get("X-Forwarded-For", "")
+        cf = request.headers.get("CF-Connecting-IP", "")
 
-        if ip and "," in ip:
-            ip = ip.split(",")[0].strip()
+        # Get primary client IP (leftmost in X-Forwarded-For)
+        ip = cf or (xf.split(',')[0].strip() if xf else request.remote)
 
         ua = request.headers.get("User-Agent", "")
-        return hashlib.sha256(f"{ip}{ua}".encode()).hexdigest()
+        return hashlib.sha256(f"{ip or 'unknown'}{ua}".encode()).hexdigest()
 
     @staticmethod
     async def get_secure_shortlink(user_id: int, payload: str):
@@ -161,7 +161,7 @@ class SecureRedirect:
         try:
             marker = "OTK"
 
-            if marker not in token:
+            if not token or marker not in token:
                 return None
 
             parts = token.split(marker)
@@ -169,13 +169,21 @@ class SecureRedirect:
             if len(parts) < 3:
                 return None
 
-            final_payload_b64 = parts[1]
+            final_payload_b64 = parts[1].strip()
 
-            # Fix padding
-            if len(final_payload_b64) % 4:
-                final_payload_b64 += "=" * (4 - len(final_payload_b64) % 4)
+            # Robust Base64 Padding handling
+            missing_padding = len(final_payload_b64) % 4
+            if missing_padding:
+                final_payload_b64 += "=" * (4 - missing_padding)
 
-            data = base64.urlsafe_b64decode(final_payload_b64)
+            try:
+                data = base64.urlsafe_b64decode(final_payload_b64)
+            except Exception as b64e:
+                print(f"[B64 DECODE ERROR] {b64e}")
+                return None
+
+            if len(data) < 13: # Nonce(12) + at least 1 byte ciphertext
+                return None
 
             key = SecureRedirect._get_key()
             nonce = data[:12]
@@ -193,5 +201,6 @@ class SecureRedirect:
             return result
 
         except Exception as e:
-            print(f"[DECRYPT ERROR] {e}")
+            # Graceful error handling to prevent server crash
+            print(f"[DECRYPT CRITICAL ERROR] {e}")
             return None

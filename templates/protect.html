@@ -3,193 +3,244 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>˹ ᴀɴɪᴢᴏɴᴇꜰʟɪx ᴘʀᴇᴍɪᴜᴍ ᴠᴇʀɪꜰɪᴄᴀᴛɪᴏɴ ˼</title>
+    <title>˹ ᴀɴɪᴢᴏɴᴇꜰʟɪx sᴇᴄᴜʀᴇ ᴘʀᴏᴛᴇᴄᴛɪᴏɴ ˼</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://www.google.com/recaptcha/api.js?render={{ RECAPTCHA_SITE_KEY }}"></script>
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
     <style>
-        @import url('https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;700&display=swap');
+        @import url('https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;700;900&display=swap');
+
+        :root {
+            --primary: #38bdf8;
+            --accent: #818cf8;
+            --glass: rgba(15, 23, 42, 0.7);
+            --glass-border: rgba(255, 255, 255, 0.1);
+        }
 
         body {
             font-family: 'Outfit', sans-serif;
-            background: radial-gradient(circle at center, #1e293b 0%, #0f172a 100%);
+            background: #020617;
+            background-image:
+                radial-gradient(at 0% 0%, rgba(56, 189, 248, 0.15) 0px, transparent 50%),
+                radial-gradient(at 100% 0%, rgba(129, 140, 248, 0.15) 0px, transparent 50%);
             color: #f8fafc;
             min-height: 100vh;
             display: flex;
             align-items: center;
             justify-content: center;
+            padding: 1rem;
+        }
+
+        .glass-container {
+            background: var(--glass);
+            backdrop-filter: blur(24px);
+            -webkit-backdrop-filter: blur(24px);
+            border: 1px solid var(--glass-border);
+            box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
+            border-radius: 2.5rem;
+            width: 100%;
+            max-width: 450px;
+            position: relative;
             overflow: hidden;
         }
 
-        .glass-card {
-            background: rgba(30, 41, 59, 0.6);
-            backdrop-filter: blur(20px);
-            border: 1px solid rgba(255, 255, 255, 0.1);
-            box-shadow: 0 0 40px rgba(56, 189, 248, 0.2);
-            position: relative;
-        }
-
-        .glass-card::after {
-            content: "";
+        .anime-overlay {
             position: absolute;
-            inset: -2px;
-            background: linear-gradient(45deg, transparent, rgba(56, 189, 248, 0.3), transparent);
-            border-radius: inherit;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 120px;
+            background: linear-gradient(to bottom, rgba(56, 189, 248, 0.2), transparent);
+            z-index: 0;
+        }
+
+        .glow-effect {
+            position: absolute;
+            width: 150px;
+            height: 150px;
+            background: var(--primary);
+            filter: blur(80px);
+            opacity: 0.2;
             z-index: -1;
-            animation: borderGlow 3s linear infinite;
-        }
-
-        @keyframes borderGlow {
-            0% { opacity: 0.3; }
-            50% { opacity: 1; }
-            100% { opacity: 0.3; }
-        }
-
-        .loader-ring {
-            width: 100px;
-            height: 100px;
-            border: 4px solid rgba(56, 189, 248, 0.1);
-            border-top: 4px solid #38bdf8;
             border-radius: 50%;
-            animation: spin 0.8s cubic-bezier(0.5, 0, 0.5, 1) infinite;
-            filter: drop-shadow(0 0 10px #38bdf8);
+        }
+
+        .progress-ring-circle {
+            transition: stroke-dashoffset 0.1s linear;
+            transform: rotate(-90deg);
+            transform-origin: 50% 50%;
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, var(--primary), var(--accent));
+            box-shadow: 0 10px 20px -5px rgba(56, 189, 248, 0.4);
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        .btn-primary:hover:not(:disabled) {
+            transform: translateY(-2px) scale(1.02);
+            box-shadow: 0 15px 25px -5px rgba(56, 189, 248, 0.5);
+        }
+
+        .btn-primary:active:not(:disabled) {
+            transform: scale(0.98);
+        }
+
+        .spinner {
+            width: 24px;
+            height: 24px;
+            border: 3px solid rgba(255, 255, 255, 0.3);
+            border-top-color: white;
+            border-radius: 50%;
+            animation: spin 0.8s linear infinite;
         }
 
         @keyframes spin {
-            0% { transform: rotate(0deg); }
-            100% { transform: rotate(360deg); }
-        }
-
-        .progress-bar {
-            height: 6px;
-            background: linear-gradient(90deg, #38bdf8, #818cf8);
-            width: 0%;
-            transition: width 0.1s linear;
-            box-shadow: 0 0 15px #38bdf8;
-        }
-
-        .floating {
-            animation: floating 2s ease-in-out infinite;
-        }
-
-        @keyframes floating {
-            0%, 100% { transform: translateY(0px) scale(1); }
-            50% { transform: translateY(-15px) scale(1.05); }
+            to { transform: rotate(360deg); }
         }
 
         .shimmer {
-            background: linear-gradient(90deg, transparent, rgba(255,255,255,0.2), transparent);
+            background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.1), transparent);
             background-size: 200% 100%;
-            animation: shimmer 2s infinite;
+            animation: shimmer 2.5s infinite;
         }
 
         @keyframes shimmer {
             0% { background-position: -200% 0; }
             100% { background-position: 200% 0; }
         }
+
+        /* Mobile specific adjustments */
+        @media (max-width: 640px) {
+            .glass-container {
+                padding: 2rem 1.5rem;
+            }
+            h1 { font-size: 2rem; }
+            .btn-primary { padding: 1.25rem; font-size: 1.125rem; }
+        }
     </style>
 </head>
-<body class="p-4">
-    <div class="glass-card max-w-md w-full p-10 rounded-[2.5rem] text-center space-y-10 relative overflow-hidden">
-        <!-- Progress bar at top -->
-        <div class="absolute top-0 left-0 w-full h-1.5 bg-slate-900/50">
-            <div id="progress" class="progress-bar"></div>
-        </div>
+<body>
+    <div class="glow-effect" style="top: 10%; left: 10%;"></div>
+    <div class="glow-effect" style="bottom: 10%; right: 10%;"></div>
 
-        <div class="space-y-6">
+    <div class="glass-container p-8 sm:p-10 text-center z-10">
+        <div class="anime-overlay"></div>
+
+        <div class="relative z-10 space-y-8">
             <div class="flex justify-center">
-                <div class="p-6 bg-sky-500/10 rounded-[2rem] floating border border-sky-500/20">
-                    <i class="fas fa-shield-halved text-6xl text-sky-400"></i>
+                <div class="p-5 bg-sky-500/10 rounded-3xl border border-sky-500/20 shadow-inner">
+                    <i class="fas fa-shield-halved text-5xl text-sky-400"></i>
                 </div>
             </div>
+
             <div class="space-y-2">
-                <h1 class="text-4xl font-black bg-clip-text text-transparent bg-gradient-to-r from-sky-400 via-indigo-400 to-sky-400 animate-gradient-x">
+                <h1 class="text-3xl sm:text-4xl font-black tracking-tight bg-clip-text text-transparent bg-gradient-to-r from-sky-400 to-indigo-400">
                     ˹ ᴀɴɪᴢᴏɴᴇꜰʟɪx ˼
                 </h1>
-                <p class="text-slate-400 text-sm font-semibold tracking-wider uppercase">💎 sᴇᴄᴜʀᴇ ʟɪɴᴋ ᴇɴɢɪɴᴇ 💎</p>
+                <p class="text-slate-400 text-xs font-bold tracking-[0.25em] uppercase shimmer">sᴇᴄᴜʀᴇ ʟɪɴᴋ ᴘʀᴏᴛᴇᴄᴛɪᴏɴ</p>
             </div>
-        </div>
 
-        <div id="status-container" class="space-y-8">
-            <div id="timer-box">
-                <div class="flex justify-center mb-6">
-                    <div class="loader-ring"></div>
+            <div id="interaction-area" class="min-h-[220px] flex flex-col items-center justify-center space-y-6">
+                <!-- Timer Box -->
+                <div id="timer-box" class="space-y-4">
+                    <div class="relative flex items-center justify-center">
+                        <svg class="w-32 h-32">
+                            <circle class="text-slate-800" stroke-width="8" stroke="currentColor" fill="transparent" r="58" cx="64" cy="64"/>
+                            <circle id="progress-circle" class="text-sky-500 progress-ring-circle" stroke-width="8" stroke-dasharray="364.4" stroke-dashoffset="364.4" stroke-linecap="round" stroke="currentColor" fill="transparent" r="58" cx="64" cy="64"/>
+                        </svg>
+                        <span id="seconds" class="absolute text-5xl font-black text-white">8</span>
+                    </div>
+                    <p class="text-sky-400/80 text-xs font-black uppercase tracking-widest">ᴀɴᴀʟʏᴢɪɴɢ sᴇssɪᴏɴ...</p>
                 </div>
-                <div class="text-6xl font-black text-white" id="seconds">4</div>
-                <p class="text-sky-400/80 text-xs mt-4 uppercase tracking-[0.3em] font-bold shimmer">˹ ᴘʀᴇᴘᴀʀɪɴɢ ᴅᴇsᴛɪɴʏ ˼</p>
-            </div>
 
-            <div id="loading-state" class="hidden">
-                <div class="flex flex-col items-center space-y-6">
-                    <div class="loader-ring"></div>
-                    <p class="text-sky-400 font-black text-lg animate-pulse tracking-widest">˹ ꜰɪɴᴀʟɪᴢɪɴɢ ᴠᴇʀɪꜰɪᴄᴀᴛɪᴏɴ ˼</p>
-                </div>
-            </div>
-
-            <div id="error-state" class="hidden">
-                <div class="p-8 bg-red-500/5 border border-red-500/20 rounded-[2rem]">
-                    <i class="fas fa-circle-exclamation text-red-500 text-4xl mb-4"></i>
-                    <p class="text-red-400 text-lg font-black" id="error-msg">˹ ᴠᴇʀɪꜰɪᴄᴀᴛɪᴏɴ ꜰᴀɪʟᴇᴅ ˼</p>
-                    <button onclick="location.reload()" class="mt-6 px-10 py-4 bg-sky-500 hover:bg-sky-400 text-white rounded-[1.5rem] transition-all transform hover:scale-105 active:scale-95 font-black text-sm uppercase tracking-widest shadow-lg shadow-sky-500/25">
-                        ⚡️ ᴛʀʏ ᴀɢᴀɪɴ ⚡️
+                <!-- Verify Button (Hidden initially) -->
+                <div id="action-box" class="hidden w-full space-y-4">
+                    <button id="verify-btn" onclick="startVerification()" class="btn-primary w-full py-5 rounded-2xl text-white font-black text-lg uppercase tracking-widest flex items-center justify-center space-x-3">
+                        <span>⚡️ ᴠᴇʀɪꜰʏ ɴᴏᴡ ⚡️</span>
                     </button>
+                    <p class="text-slate-500 text-[10px] font-bold uppercase tracking-tighter">ᴄʟɪᴄᴋ ᴛᴏ ᴜɴʟᴏᴄᴋ ʏᴏᴜʀ ᴅᴇsᴛɪɴᴀᴛɪᴏɴ</p>
+                </div>
+
+                <!-- Loading State -->
+                <div id="loading-state" class="hidden space-y-4">
+                    <div class="flex justify-center">
+                        <div class="spinner border-4 w-12 h-12"></div>
+                    </div>
+                    <p class="text-sky-400 font-black text-sm tracking-widest animate-pulse uppercase">˹ ꜰɪɴᴀʟɪᴢɪɴɢ ᴄʜᴇᴄᴋ ˼</p>
+                </div>
+
+                <!-- Error State -->
+                <div id="error-state" class="hidden w-full">
+                    <div class="p-6 bg-red-500/10 border border-red-500/20 rounded-3xl space-y-4">
+                        <i class="fas fa-triangle-exclamation text-red-500 text-3xl"></i>
+                        <p id="error-msg" class="text-red-400 text-sm font-black uppercase leading-relaxed"></p>
+                        <button onclick="location.reload()" class="text-xs font-black text-white bg-slate-800 px-6 py-2 rounded-xl uppercase hover:bg-slate-700 transition-colors">
+                            ᴛʀʏ ᴀɢᴀɪɴ
+                        </button>
+                    </div>
                 </div>
             </div>
-        </div>
 
-        <div class="pt-8 border-t border-slate-700/30">
-            <div class="flex items-center justify-center space-x-4 text-slate-500">
-                <i class="fab fa-google text-xl hover:text-sky-400 transition-colors"></i>
-                <span class="text-[10px] font-black uppercase tracking-[0.2em]">ᴘᴏᴡᴇʀᴇᴅ ʙʏ ʀᴇᴄᴀᴘᴛᴄʜᴀ ᴠ𝟹</span>
+            <div class="pt-6 border-t border-slate-800">
+                <div class="flex items-center justify-center space-x-3 text-slate-500">
+                    <i class="fab fa-google text-lg"></i>
+                    <span class="text-[9px] font-black uppercase tracking-widest">ᴘᴏᴡᴇʀᴇᴅ ʙʏ ʀᴇᴄᴀᴘᴛᴄʜᴀ ᴠ𝟹</span>
+                </div>
             </div>
         </div>
     </div>
 
     <script>
-        // ANTI-AUTOMATION: Check for suspicious environment
-        if (window.navigator.webdriver || window.outerWidth === 0 || window.outerHeight === 0) {
-             document.body.innerHTML = "<div class='text-red-500 font-bold p-20'>˹ sᴇᴄᴜʀɪᴛʏ ᴠɪᴏʟᴀᴛɪᴏɴ: ᴀᴜᴛᴏᴍᴀᴛɪᴏɴ ᴅᴇᴛᴇᴄᴛᴇᴅ ˼</div>";
-             throw new Error("Automation detected");
+        // ANTI-AUTOMATION
+        if (window.navigator.webdriver || window.outerWidth === 0) {
+             document.body.innerHTML = "<div class='text-red-500 font-bold p-20'>˹ sᴇᴄᴜʀɪᴛʏ ᴠɪᴏʟᴀᴛɪᴏɴ ˼</div>";
         }
 
-        let timeLeft = 4.0;
-        const totalTime = 4.0;
+        let timeLeft = 8.0;
+        const totalTime = 8.0;
+        const radius = 58;
+        const circumference = 2 * Math.PI * radius;
+
         const secondsEl = document.getElementById('seconds');
-        const progressEl = document.getElementById('progress');
+        const circleEl = document.getElementById('progress-circle');
         const timerBox = document.getElementById('timer-box');
+        const actionBox = document.getElementById('action-box');
         const loadingState = document.getElementById('loading-state');
         const errorState = document.getElementById('error-state');
+        const verifyBtn = document.getElementById('verify-btn');
 
         const timer = setInterval(() => {
             timeLeft -= 0.1;
-            const displaySec = Math.ceil(timeLeft);
-            if (displaySec >= 0) secondsEl.textContent = displaySec;
-
-            const percentage = ((totalTime - timeLeft) / totalTime) * 100;
-            progressEl.style.width = percentage + '%';
-
             if (timeLeft <= 0) {
                 clearInterval(timer);
-                performVerification();
+                secondsEl.textContent = "0";
+                circleEl.style.strokeDashoffset = 0;
+                showVerifyButton();
+            } else {
+                secondsEl.textContent = Math.ceil(timeLeft);
+                const offset = circumference - ((totalTime - timeLeft) / totalTime) * circumference;
+                circleEl.style.strokeDashoffset = offset;
             }
         }, 100);
 
-        function performVerification() {
+        function showVerifyButton() {
             timerBox.classList.add('hidden');
-            loadingState.classList.remove('hidden');
+            actionBox.classList.remove('hidden');
+        }
+
+        function startVerification() {
+            verifyBtn.disabled = true;
+            verifyBtn.innerHTML = '<div class="spinner"></div><span>ᴠᴇʀɪꜰʏɪɴɢ...</span>';
 
             grecaptcha.ready(function() {
-                try {
-                    grecaptcha.execute('{{ RECAPTCHA_SITE_KEY }}', {action: 'verify'}).then(function(token) {
-                        if (!token) {
-                             showError("˹ ʀᴇᴄᴀᴘᴛᴄʜᴀ ᴛᴏᴋᴇɴ ᴍɪssɪɴɢ ˼");
-                             return;
-                        }
-                        sendToBackend(token);
-                    });
-                } catch (e) {
-                    showError("˹ sᴇᴄᴜʀɪᴛʏ ᴇɴɢɪɴᴇ ᴇʀʀᴏʀ ˼");
-                }
+                grecaptcha.execute('{{ RECAPTCHA_SITE_KEY }}', {action: 'verify'}).then(function(token) {
+                    if (!token) {
+                         showError("˹ ʀᴇᴄᴀᴘᴛᴄʜᴀ ꜰᴀɪʟᴇᴅ ˼");
+                         return;
+                    }
+                    sendToBackend(token);
+                });
             });
         }
 
@@ -209,7 +260,7 @@
                 if (data.success) {
                     window.location.href = data.data.redirect;
                 } else {
-                    showError(data.message || '˹ sᴇᴄᴜʀɪᴛʏ ꜰᴀɪʟᴇᴅ ˼');
+                    showError(data.message || '˹ ᴠᴇʀɪꜰɪᴄᴀᴛɪᴏɴ ꜰᴀɪʟᴇᴅ ˼');
                 }
             } catch (err) {
                 showError('˹ ɴᴇᴛᴡᴏʀᴋ ᴇʀʀᴏʀ ˼');
@@ -217,6 +268,7 @@
         }
 
         function showError(msg) {
+            actionBox.classList.add('hidden');
             loadingState.classList.add('hidden');
             errorState.classList.remove('hidden');
             document.getElementById('error-msg').textContent = msg;

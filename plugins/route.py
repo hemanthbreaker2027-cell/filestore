@@ -98,23 +98,22 @@ async def r2_verify(request):
         if score == -1:
              return json_response(False, "Bot configuration error (Invalid reCAPTCHA Secret). Please contact admin.", status=500)
 
-        # STRICT SECURITY: Score must be >= 0.5
-        if not success or score < 0.5:
+        # STRICT SECURITY: Score must be >= 0.3 (Dynamic for mobile)
+        from services.security import MIN_SCORE
+        if not success or score < MIN_SCORE:
             await db.increment_bypass_attempt(identifier)
-            return json_response(False, f"Security check failed (Score: {score}). Automated activity suspected.", status=403)
+            return json_response(False, f"Security check failed (Score: {score}). Please disable your VPN/Ad-blocker and try again.", status=403)
 
         # 2. Decrypt and validate link token again
         token_data = SecureRedirect.decrypt(link_token)
         if not token_data:
             return json_response(False, "Invalid or Expired Link", status=403)
 
-        # 3. Enforce 180-second wait time
+        # 3. Enforce 8-second wait time
         issued_at = token_data.get('issuedAt', 0)
         time_elapsed = int(time.time()) - issued_at
-        if time_elapsed < 180:
-            # Bypass Detected!
-            await db.ban_user_bypass(identifier, duration_hours=24)
-            return json_response(False, "Bypass Detected! Your access has been restricted for 24 hours due to automated activity.", status=403)
+        if time_elapsed < 8:
+            return json_response(False, "Too Fast! Please wait at least 8 seconds before verifying.", status=403)
 
         # 3. Check if token was already used
         token_hash = hashlib.sha256(link_token.encode()).hexdigest()
@@ -213,9 +212,10 @@ async def verify_shortener(request):
         if score == -1:
             return json_response(False, "Bot configuration error (Invalid reCAPTCHA Secret).", status=500)
 
-        # STRICT SECURITY: Score >= 0.5
-        if not success or score < 0.5:
-            return json_response(False, f"Security check failed (Score: {score}). Automated activity suspected.", status=403)
+        # STRICT SECURITY: Score >= 0.3
+        from services.security import MIN_SCORE
+        if not success or score < MIN_SCORE:
+            return json_response(False, f"Security check failed (Score: {score}). Please disable your VPN/Ad-blocker and try again.", status=403)
 
         # 2. Decrypt the original shortlink data
         token_data = SecureRedirect.decrypt(encrypted_payload)

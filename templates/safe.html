@@ -8,128 +8,141 @@
     <script src="https://www.google.com/recaptcha/api.js?render={{ RECAPTCHA_SITE_KEY }}"></script>
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
     <style>
-        @import url('https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;700&display=swap');
+        @import url('https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;700;900&display=swap');
+
+        :root {
+            --primary: #38bdf8;
+            --accent: #818cf8;
+            --glass: rgba(15, 23, 42, 0.7);
+            --glass-border: rgba(255, 255, 255, 0.1);
+        }
 
         body {
             font-family: 'Outfit', sans-serif;
-            background: radial-gradient(circle at center, #1e293b 0%, #0f172a 100%);
+            background: #020617;
+            background-image:
+                radial-gradient(at 100% 100%, rgba(56, 189, 248, 0.15) 0px, transparent 50%),
+                radial-gradient(at 0% 100%, rgba(129, 140, 248, 0.15) 0px, transparent 50%);
             color: #f8fafc;
             min-height: 100vh;
             display: flex;
             align-items: center;
             justify-content: center;
+            padding: 1rem;
+        }
+
+        .glass-container {
+            background: var(--glass);
+            backdrop-filter: blur(24px);
+            -webkit-backdrop-filter: blur(24px);
+            border: 1px solid var(--glass-border);
+            box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
+            border-radius: 2.5rem;
+            width: 100%;
+            max-width: 450px;
+            position: relative;
             overflow: hidden;
         }
 
-        .glass-card {
-            background: rgba(30, 41, 59, 0.6);
-            backdrop-filter: blur(20px);
-            border: 1px solid rgba(255, 255, 255, 0.1);
-            box-shadow: 0 0 40px rgba(56, 189, 248, 0.2);
-            position: relative;
+        .btn-primary {
+            background: linear-gradient(135deg, var(--primary), var(--accent));
+            box-shadow: 0 10px 20px -5px rgba(56, 189, 248, 0.4);
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
         }
 
-        .glass-card::after {
-            content: "";
-            position: absolute;
-            inset: -2px;
-            background: linear-gradient(45deg, transparent, rgba(56, 189, 248, 0.3), transparent);
-            border-radius: inherit;
-            z-index: -1;
-            animation: borderGlow 3s linear infinite;
+        .btn-primary:hover:not(:disabled) {
+            transform: translateY(-2px) scale(1.02);
+            box-shadow: 0 15px 25px -5px rgba(56, 189, 248, 0.5);
         }
 
-        @keyframes borderGlow {
-            0% { opacity: 0.3; }
-            50% { opacity: 1; }
-            100% { opacity: 0.3; }
-        }
-
-        .loader-ring {
-            width: 80px;
-            height: 80px;
-            border: 4px solid rgba(56, 189, 248, 0.1);
-            border-top: 4px solid #38bdf8;
+        .spinner {
+            width: 24px;
+            height: 24px;
+            border: 3px solid rgba(255, 255, 255, 0.3);
+            border-top-color: white;
             border-radius: 50%;
-            animation: spin 0.8s cubic-bezier(0.5, 0, 0.5, 1) infinite;
-            filter: drop-shadow(0 0 10px #38bdf8);
+            animation: spin 0.8s linear infinite;
         }
 
         @keyframes spin {
-            0% { transform: rotate(0deg); }
-            100% { transform: rotate(360deg); }
+            to { transform: rotate(360deg); }
         }
 
         .floating {
-            animation: floating 2s ease-in-out infinite;
+            animation: floating 3s ease-in-out infinite;
         }
 
         @keyframes floating {
-            0%, 100% { transform: translateY(0px) scale(1); }
-            50% { transform: translateY(-10px) scale(1.05); }
-        }
-
-        .shimmer {
-            background: linear-gradient(90deg, transparent, rgba(255,255,255,0.2), transparent);
-            background-size: 200% 100%;
-            animation: shimmer 2s infinite;
-        }
-
-        @keyframes shimmer {
-            0% { background-position: -200% 0; }
-            100% { background-position: 200% 0; }
+            0%, 100% { transform: translateY(0px); }
+            50% { transform: translateY(-10px); }
         }
     </style>
 </head>
-<body class="p-4">
-    <div class="glass-card max-w-md w-full p-10 rounded-[2.5rem] text-center space-y-10 relative overflow-hidden">
-        <div class="space-y-6">
+<body>
+    <div class="glass-container p-8 sm:p-10 text-center relative">
+        <div class="space-y-8 relative z-10">
             <div class="flex justify-center">
-                <div class="p-6 bg-sky-500/10 rounded-[2rem] floating border border-sky-500/20">
-                    <i class="fas fa-shield-halved text-5xl text-sky-400"></i>
+                <div class="p-5 bg-sky-500/10 rounded-3xl border border-sky-500/20 floating">
+                    <i class="fas fa-fingerprint text-5xl text-sky-400"></i>
                 </div>
             </div>
+
             <div class="space-y-2">
-                <h1 class="text-4xl font-black bg-clip-text text-transparent bg-gradient-to-r from-sky-400 via-indigo-400 to-sky-400">
+                <h1 class="text-3xl sm:text-4xl font-black tracking-tight bg-clip-text text-transparent bg-gradient-to-r from-sky-400 to-indigo-400">
                     ˹ ᴀɴɪᴢᴏɴᴇꜰʟɪx ˼
                 </h1>
-                <p class="text-slate-400 text-xs font-bold tracking-[0.2em] uppercase">💎 sᴇᴄᴜʀᴇ ᴠᴇʀɪꜰɪᴄᴀᴛɪᴏɴ 💎</p>
-            </div>
-        </div>
-
-        <div id="content-area" class="min-h-[120px] flex flex-col justify-center items-center">
-            <div id="loading-ui" class="space-y-6">
-                <div class="loader-ring"></div>
-                <p class="text-sky-400 font-black text-sm tracking-widest animate-pulse shimmer">˹ ᴀᴜᴛʜᴇɴᴛɪᴄᴀᴛɪɴɢ ˼</p>
+                <p class="text-slate-400 text-xs font-bold tracking-[0.25em] uppercase">sᴇᴄᴜʀᴇ sᴇssɪᴏɴ ᴠᴇʀɪꜰɪᴄᴀᴛɪᴏɴ</p>
             </div>
 
-            <div id="error-ui" class="hidden space-y-6">
-                <div class="w-16 h-16 bg-red-500/10 rounded-[1.5rem] flex items-center justify-center mx-auto border border-red-500/20">
-                    <i class="fas fa-circle-exclamation text-3xl text-red-500"></i>
+            <div id="content-area" class="min-h-[160px] flex flex-col items-center justify-center space-y-6">
+                <div id="initial-state" class="w-full space-y-4">
+                    <div class="p-4 bg-slate-900/50 rounded-2xl border border-slate-700/30">
+                        <p class="text-slate-300 text-sm font-semibold">Your session is ready for validation.</p>
+                    </div>
+                    <button id="verify-btn" onclick="startVerification()" class="btn-primary w-full py-5 rounded-2xl text-white font-black text-lg uppercase tracking-widest flex items-center justify-center space-x-3">
+                        <span>⚡️ ᴄᴏɴᴛɪɴᴜᴇ ᴛᴏ ʙᴏᴛ ⚡️</span>
+                    </button>
                 </div>
-                <p class="text-red-400 font-black text-sm uppercase tracking-widest" id="error-text">˹ ᴠᴇʀɪꜰɪᴄᴀᴛɪᴏɴ ꜰᴀɪʟᴇᴅ ˼</p>
-                <button onclick="location.reload()" class="px-8 py-3 bg-sky-500 hover:bg-sky-400 text-white rounded-[1rem] transition-all transform hover:scale-105 font-black text-xs uppercase tracking-widest shadow-lg shadow-sky-500/25">
-                    ⚡️ ᴛʀʏ ᴀɢᴀɪɴ ⚡️
-                </button>
-            </div>
-        </div>
 
-        <div class="pt-8 border-t border-slate-700/30">
-            <div class="flex items-center justify-center space-x-3 text-slate-500">
-                <i class="fab fa-google text-lg"></i>
-                <span class="text-[9px] font-black uppercase tracking-[0.15em]">ᴘᴏᴡᴇʀᴇᴅ ʙʏ ʀᴇᴄᴀᴘᴛᴄʜᴀ ᴠ𝟹</span>
+                <div id="loading-ui" class="hidden space-y-4">
+                    <div class="spinner border-4 w-12 h-12 mx-auto"></div>
+                    <p class="text-sky-400 font-black text-sm tracking-widest animate-pulse uppercase">˹ ᴀᴜᴛʜᴇɴᴛɪᴄᴀᴛɪɴɢ ˼</p>
+                </div>
+
+                <div id="error-ui" class="hidden w-full space-y-4">
+                    <div class="p-6 bg-red-500/10 border border-red-500/20 rounded-3xl">
+                        <i class="fas fa-circle-exclamation text-red-500 text-3xl mb-3"></i>
+                        <p id="error-text" class="text-red-400 text-sm font-black uppercase tracking-tight"></p>
+                    </div>
+                    <button onclick="location.reload()" class="text-xs font-black text-white bg-slate-800 px-8 py-3 rounded-xl uppercase hover:bg-slate-700 transition-colors">
+                        ᴛʀʏ ᴀɢᴀɪɴ
+                    </button>
+                </div>
+            </div>
+
+            <div class="pt-6 border-t border-slate-800">
+                <div class="flex items-center justify-center space-x-3 text-slate-500">
+                    <i class="fab fa-google text-lg"></i>
+                    <span class="text-[9px] font-black uppercase tracking-widest">ᴘᴏᴡᴇʀᴇᴅ ʙʏ ʀᴇᴄᴀᴘᴛᴄʜᴀ ᴠ𝟹</span>
+                </div>
             </div>
         </div>
     </div>
 
     <script>
-        window.onload = function() {
+        function startVerification() {
+            const initialUI = document.getElementById('initial-state');
+            const loadingUI = document.getElementById('loading-ui');
+
+            initialUI.classList.add('hidden');
+            loadingUI.classList.remove('hidden');
+
             grecaptcha.ready(() => {
                 grecaptcha.execute('{{ RECAPTCHA_SITE_KEY }}', {action: 'redirect'}).then(recaptchaToken => {
                     performVerification(recaptchaToken);
                 });
             });
-        };
+        }
 
         async function performVerification(recaptchaToken) {
             try {
@@ -155,13 +168,13 @@
         }
 
         function showError(msg) {
-            if (msg.includes("Bypass Detected")) {
+            if (msg && msg.includes("Bypass Detected")) {
                 window.location.href = "/banned";
                 return;
             }
             document.getElementById('loading-ui').classList.add('hidden');
             document.getElementById('error-ui').classList.remove('hidden');
-            document.getElementById('error-text').textContent = msg;
+            document.getElementById('error-text').textContent = msg || "Verification Failed";
         }
     </script>
 </body>
