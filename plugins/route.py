@@ -96,16 +96,20 @@ async def r2_verify(request):
 
         # 1. Verify reCAPTCHA v3
         client_session = request.app['client_session']
-        success, score = await SecurityService.verify_recaptcha(recaptcha_token, ip, client_session)
+        success, score, errors = await SecurityService.verify_recaptcha(recaptcha_token, ip, client_session)
 
         # Check for specific configuration error score
         if score == -1:
              return json_response(False, "Bot configuration error (Invalid reCAPTCHA Secret). Please contact admin.", status=500)
 
-        # STRICT SECURITY: Score must be >= 0.5
-        if not success or score < 0.5:
+        if not success:
             await db.increment_bypass_attempt(identifier)
-            return json_response(False, f"Security check failed (Score: {score}). Automated activity suspected.", status=403)
+            if "low-score" in errors:
+                return json_response(False, f"Security check failed (Score: {score}). Automated activity suspected.", status=403)
+            elif "timeout-or-duplicate" in errors:
+                return json_response(False, "Verification session expired or duplicate. Please refresh and try again.", status=403)
+            else:
+                return json_response(False, f"Verification failed: {', '.join(errors) if errors else 'Unknown Error'}", status=403)
 
         # 2. Decrypt and validate link token again
         token_data = SecureRedirect.decrypt(link_token)
@@ -228,16 +232,20 @@ async def verify_shortener(request):
 
         # 1. Verify reCAPTCHA
         client_session = request.app['client_session']
-        success, score = await SecurityService.verify_recaptcha(recaptcha_token, ip, client_session)
+        success, score, errors = await SecurityService.verify_recaptcha(recaptcha_token, ip, client_session)
 
         if score == -1:
             logger.error(f"[RECAPTCHA ERROR] Invalid Secret - IP: {ip}")
             return json_response(False, "Bot configuration error (Invalid reCAPTCHA Secret).", status=500)
 
-        # STRICT SECURITY: Score >= 0.5
-        if not success or score < 0.5:
-            logger.warning(f"[SECURITY FAIL] Low reCAPTCHA Score ({score}) - IP: {ip}")
-            return json_response(False, f"Security check failed (Score: {score}). Automated activity suspected.", status=403)
+        if not success:
+            logger.warning(f"[SECURITY FAIL] reCAPTCHA Failed - IP: {ip} Score: {score} Errors: {errors}")
+            if "low-score" in errors:
+                return json_response(False, f"Security check failed (Score: {score}). Automated activity suspected.", status=403)
+            elif "timeout-or-duplicate" in errors:
+                return json_response(False, "Verification session expired or duplicate. Please refresh and try again.", status=403)
+            else:
+                return json_response(False, f"Verification failed: {', '.join(errors) if errors else 'Unknown Error'}", status=403)
 
         # 2. Decrypt the original shortlink data
         token_data = SecureRedirect.decrypt(encrypted_payload)

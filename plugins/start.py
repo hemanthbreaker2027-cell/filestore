@@ -153,7 +153,7 @@ async def short_url(client: Client, message: Message, base64_string):
 
         # Check if we should use the new protection flow
         settings = await db.get_settings()
-        shortener_enabled = settings.get('shortener_system', True)
+        shortener_enabled = settings.get('shortener_system', True) and SHORTNER_ENABLED
 
         if shortener_enabled:
              # 1. Generate the bot redirect link

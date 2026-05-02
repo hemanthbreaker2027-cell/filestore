@@ -12,7 +12,7 @@ from database.database import db
 
 # Configuration for reCAPTCHA
 RECAPTCHA_SECRET = os.environ.get("RECAPTCHA_SECRET_KEY", "")
-MIN_SCORE = 0.5  # STRICT SECURITY
+MIN_SCORE = 0.4  # Slightly more permissive for humans
 
 
 class SecurityService:
@@ -24,36 +24,36 @@ class SecurityService:
                 "https://www.google.com/recaptcha/api/siteverify",
                 data={
                     "secret": RECAPTCHA_SECRET,
-                    "response": token
+                    "response": token,
+                    "remoteip": ip
                 }
             ) as resp:
                 result = await resp.json()
 
-            print(f"[RECAPTCHA DEBUG] Result: {result}")
+            print(f"[RECAPTCHA DEBUG] IP: {ip} Result: {result}")
 
-            if result.get("success"):
-                score = result.get("score", 0.5)
+            success = result.get("success", False)
+            score = result.get("score", 0.0)
+            error_codes = result.get("error-codes", [])
 
+            if success:
                 # Allow Google test key
                 if RECAPTCHA_SECRET == "6LeIxAcTAAAAAGG-vFI1TnRWxMZNFuojJ4WifJWe":
-                    return True, score
+                    return True, score, []
 
                 if score >= MIN_SCORE:
-                    return True, score
+                    return True, score, []
 
-                return False, score
-
-            error_codes = result.get("error-codes", [])
-            print(f"[RECAPTCHA ERROR] {error_codes}")
+                return False, score, ["low-score"]
 
             if "invalid-input-secret" in error_codes:
-                return False, -1
+                return False, -1, error_codes
 
-            return False, 0
+            return False, score, error_codes
 
         except Exception as e:
             print(f"[RECAPTCHA EXCEPTION] {e}")
-            return False, 0
+            return False, 0, ["exception"]
 
     @staticmethod
     def get_identifier(request):
