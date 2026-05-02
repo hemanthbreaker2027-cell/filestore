@@ -109,6 +109,15 @@ async def r2_verify(request):
         if not token_data:
             return json_response(False, "Invalid or Expired Link", status=403)
 
+        # 2.1 Security Cross-Check: Match userId
+        if user_id_raw:
+             try:
+                 clean_user_id = int(str(user_id_raw).replace("_", ""))
+                 if token_data.get('user_id') != clean_user_id:
+                      return json_response(False, "Security Token Mismatch", status=403)
+             except:
+                 return json_response(False, "Invalid Identification", status=400)
+
         # 3. Enforce 180-second wait time
         issued_at = token_data.get('issuedAt', 0)
         time_elapsed = int(time.time()) - issued_at
@@ -125,8 +134,12 @@ async def r2_verify(request):
         # 4. Success -> Reset attempts
         await db.reset_bypass_attempts(identifier)
 
-        # 5. Return final destination (Direct link to bot)
+        # 5. Store verification session in DB for end-to-end check
+        clean_user_id = int(str(user_id_raw).replace("_", ""))
         payload = token_data.get('payload')
+        await db.store_r2_verification(clean_user_id, payload)
+
+        # 6. Return final destination (Direct link to bot)
         bot = request.app['bot']
         final_redirect = f"https://t.me/{bot.username}?start=yu3elk{payload}7"
 
@@ -134,7 +147,6 @@ async def r2_verify(request):
         settings = await db.get_settings()
         if settings.get('shortener_mode') == 'based_time' and user_id_raw:
              try:
-                 clean_user_id = int(str(user_id_raw).replace("_", ""))
                  await db.update_verify_status(clean_user_id, is_verified=True, verified_time=time.time())
              except Exception as e:
                  print(f"Error updating based_time status: {e}")

@@ -67,6 +67,7 @@ MIN_SCORE = 0.5 # STRICT SECURITY: High threshold
         # For the new flow, we use the /r2/ system
         now = int(time.time())
         token_data = {
+            "user_id": user_id,
             "payload": payload,
             "issuedAt": now,
             "expiresAt": now + 600 # 10 mins

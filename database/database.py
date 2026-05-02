@@ -387,6 +387,38 @@ class AniZoneFlix:
         await self.shortener_verifications.delete_one({'_id': identifier})
         return record.get('original_url')
 
+    # R2 Flow Verification Sessions
+    async def store_r2_verification(self, user_id: int, payload: str):
+        await self.database['r2_verifications'].update_one(
+            {'_id': user_id},
+            {'$set': {
+                'payload': payload,
+                'verified_at': time.time(),
+                'expires_at': time.time() + 600 # 10 minutes to click the bot link
+            }},
+            upsert=True
+        )
+
+    async def check_and_use_r2_verification(self, user_id: int, payload: str):
+        record = await self.database['r2_verifications'].find_one({'_id': user_id})
+        if not record:
+            return False
+
+        if record.get('payload') != payload:
+            return False
+
+        if time.time() > record.get('expires_at', 0):
+            # Expired
+            await self.database['r2_verifications'].delete_one({'_id': user_id})
+            return False
+
+        # One-time use for ONE PER TIME mode
+        settings = await self.get_settings()
+        if settings.get('shortener_mode') != 'based_time':
+            await self.database['r2_verifications'].delete_one({'_id': user_id})
+
+        return True
+
     # COOLDOWN MANAGEMENT
     async def check_cooldown(self, identifier: str, cooldown_seconds: int = 5):
         record = await self.cooldown_data.find_one({'_id': identifier})

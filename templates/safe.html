@@ -20,14 +20,14 @@
             backdrop-filter: blur(10px);
         }
         .btn-continue {
-            background: #22c55e;
+            background: #ef4444;
             color: #ffffff;
             transition: all 0.3s ease;
         }
         .btn-continue:hover:not(:disabled) {
-            background: #16a34a;
+            background: #dc2626;
             transform: translateY(-1px);
-            box-shadow: 0 4px 12px rgba(34, 197, 94, 0.3);
+            box-shadow: 0 4px 12px rgba(239, 68, 68, 0.3);
         }
         .btn-continue:disabled {
             opacity: 0.5;
@@ -57,17 +57,17 @@
 
             <div class="space-y-2">
                 <h1 class="text-2xl font-extrabold tracking-tight text-white">Verify</h1>
-                <div class="h-1 w-12 bg-green-500 mx-auto rounded-full"></div>
+                <div class="h-1 w-12 bg-red-500 mx-auto rounded-full"></div>
             </div>
 
             <div id="status-area" class="space-y-4">
                 <div class="space-y-1">
-                    <p class="text-sm font-semibold text-green-400">Verification in progress</p>
+                    <p class="text-sm font-semibold text-red-400">Verification in progress</p>
                     <p class="text-xs text-slate-400">Please stay here while we finish the check.</p>
                 </div>
 
                 <div class="flex items-center justify-center space-x-2 text-xs text-slate-500 bg-white/5 py-2 rounded-lg">
-                    <i class="fas fa-sync fa-spin text-green-500"></i>
+                    <i class="fas fa-sync fa-spin text-red-500"></i>
                     <span class="font-medium">Secure handshake running</span>
                 </div>
             </div>
@@ -81,7 +81,7 @@
                 </button>
             </div>
 
-            <button id="continue-btn" disabled class="btn-continue w-full py-4 rounded-xl font-extrabold text-sm uppercase tracking-widest shadow-lg shadow-green-500/20">
+            <button id="continue-btn" disabled class="btn-continue w-full py-4 rounded-xl font-extrabold text-sm uppercase tracking-widest shadow-lg shadow-red-500/20">
                 Continue
             </button>
 
