@@ -81,10 +81,7 @@ async def r2_verify(request):
         recaptcha_token = data.get('recaptchaToken')
         link_token = data.get('linkToken')
 
-        # Get the real user IP from X-Forwarded-For
-        forwarded_for = request.headers.get('X-Forwarded-For', request.remote)
-        ip = forwarded_for.split(',')[0].strip()
-
+        ip = SecurityService.get_client_ip(request)
         identifier = SecurityService.get_identifier(request)
 
         if not all([recaptcha_token, link_token]):
@@ -203,9 +200,7 @@ async def verify_shortener(request):
             return json_response(False, "Missing parameters", status=400)
 
         # 1. Verify reCAPTCHA
-        forwarded_for = request.headers.get('X-Forwarded-For', request.remote)
-        ip = forwarded_for.split(',')[0].strip()
-
+        ip = SecurityService.get_client_ip(request)
         client_session = request.app['client_session']
         success, score = await SecurityService.verify_recaptcha(recaptcha_token, ip, client_session)
 

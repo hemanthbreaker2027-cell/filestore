@@ -7,11 +7,11 @@ import secrets
 import json
 from cryptography.hazmat.primitives.ciphers.aead import AESGCM
 from urllib.parse import urlparse
-from config import JWT_SECRET, SHORTLINK_URL, SHORTLINK_API, WEBSITE_URL, WHITELISTED_DOMAINS
+from config import JWT_SECRET, SHORTLINK_URL, SHORTLINK_API, WEBSITE_URL, WHITELISTED_DOMAINS, RECAPTCHA_SECRET_KEY
 from database.database import db
 
-# Configuration for reCAPTCHA
-RECAPTCHA_SECRET = os.environ.get("RECAPTCHA_SECRET_KEY") or os.environ.get("RECAPTCHA_SECRET", "")
+# Configuration for reCAPTCHA - Fallback to config default if env is missing
+RECAPTCHA_SECRET = os.environ.get("RECAPTCHA_SECRET_KEY") or os.environ.get("RECAPTCHA_SECRET") or RECAPTCHA_SECRET_KEY
 MIN_SCORE = 0.3  # Dynamic Score for Mobile Users
 
 
@@ -24,7 +24,8 @@ class SecurityService:
                 "https://www.google.com/recaptcha/api/siteverify",
                 data={
                     "secret": RECAPTCHA_SECRET,
-                    "response": token
+                    "response": token,
+                    "remoteip": ip
                 }
             ) as resp:
                 result = await resp.json()
@@ -56,14 +57,17 @@ class SecurityService:
             return False, 0
 
     @staticmethod
-    def get_identifier(request):
+    def get_client_ip(request):
         # Robust IP detection for Render/Cloudflare
         xf = request.headers.get("X-Forwarded-For", "")
         cf = request.headers.get("CF-Connecting-IP", "")
 
         # Get primary client IP (leftmost in X-Forwarded-For)
-        ip = cf or (xf.split(',')[0].strip() if xf else request.remote)
+        return cf or (xf.split(',')[0].strip() if xf else request.remote)
 
+    @staticmethod
+    def get_identifier(request):
+        ip = SecurityService.get_client_ip(request)
         ua = request.headers.get("User-Agent", "")
         return hashlib.sha256(f"{ip or 'unknown'}{ua}".encode()).hexdigest()
 
