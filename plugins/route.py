@@ -223,10 +223,17 @@ async def verify_shortener(request):
         parsed_url = urlparse(original_url)
         start_param = parse_qs(parsed_url.query).get('start', [''])[0]
 
+        # Determine the pure payload (base64 part)
         if start_param.startswith("yu3elk") and start_param.endswith("7"):
             payload = start_param[6:-1]
-        elif start_param.startswith("yu3elk"): # Fallback for malformed but identifiable
+        elif start_param.startswith("yu3elk"):
             payload = start_param[6:]
+        else:
+            payload = start_param
+
+        # Ensure final_url has verified markers so bot recognizes it
+        final_param = start_param if start_param.startswith("yu3elk") else f"yu3elk{start_param}7"
+        final_url = original_url.replace(f"start={start_param}", f"start={final_param}")
 
         settings = await db.get_settings()
         if settings.get('shortener_mode') == 'based_time':
@@ -247,7 +254,7 @@ async def verify_shortener(request):
                 pass
 
         # 5. Return final redirection back to bot (Browser side)
-        return json_response(True, "Verified", {"redirect": original_url})
+        return json_response(True, "Verified", {"redirect": final_url})
 
     except Exception as e:
         print(f"API Error: {e}")

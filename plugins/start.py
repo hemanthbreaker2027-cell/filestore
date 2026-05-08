@@ -165,6 +165,7 @@ async def short_url(client: Client, message: Message, base64_string):
         short_link = None
 
         # Base destination link (direct bot link)
+        # We ensure it has prefix/suffix so database stores the full 'verified' version
         destination = f"https://t.me/{client.username}?start=yu3elk{base64_string}7"
 
         # Check if we should use the new protection flow
