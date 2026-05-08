@@ -35,23 +35,29 @@ from services.security import SecurityService
 BAN_SUPPORT = f"{BAN_SUPPORT}"
 TUT_VID = f"{TUT_VID}"
 
-async def send_files(client: Client, message: Message, base64_string, messages=None):
-    user_id = message.from_user.id
-
-    if not await is_subscribed(client, user_id):
-        return await not_joined(client, message)
-
+async def send_files(client: Client, user_id: int, base64_string, messages=None):
     # We fetch settings here because send_files is called from multiple places
-    # (start command, callback query) and might not always have settings passed.
+    # (start command, callback query, web verify) and might not always have settings passed.
     settings = await db.get_settings()
 
     if not settings.get('file_delivery', True) and user_id != OWNER_ID:
-        return await message.reply_text("<b>⚡️ <blockquote>˹ ᴀᴄᴄᴇss ᴅᴇɴɪᴇᴅ ˼\n\n🛡 ꜰɪʟᴇ ᴅᴇʟɪᴠᴇʀʏ ɪs ᴄᴜʀʀᴇɴᴛʟʏ ᴅɪsᴀʙʟᴇᴅ ʙʏ ᴛʜᴇ sᴜᴘʀᴇᴍᴇ ᴀᴅᴍɪɴɪsᴛʀᴀᴛᴏʀ. 💤</blockquote></b>")
+        try:
+            await client.send_message(
+                chat_id=user_id,
+                text="<b>⚡️ <blockquote>˹ ᴀᴄᴄᴇss ᴅᴇɴɪᴇᴅ ˼\n\n🛡 ꜰɪʟᴇ ᴅᴇʟɪᴠᴇʀʏ ɪs ᴄᴜʀʀᴇɴᴛʟʏ ᴅɪsᴀʙʟᴇᴅ ʙʏ ᴛʜᴇ sᴜᴘʀᴇᴍᴇ ᴀᴅᴍɪɴɪsᴛʀᴀᴛᴏʀ. 💤</blockquote></b>"
+            )
+        except: pass
+        return
 
-    temp_msg = await message.reply_photo(
-        photo=random.choice(ANIME_BANNERS),
-        caption="━━━━━━━━━━━━━━━━━━━\n<b>🔍 ˹ ᴘʀᴏᴄᴇssɪɴɢ ʏᴏᴜʀ ʀᴇǫᴜᴇsᴛ ˼... ⚡️</b>\n━━━━━━━━━━━━━━━━━━━"
-    )
+    try:
+        temp_msg = await client.send_photo(
+            chat_id=user_id,
+            photo=random.choice(ANIME_BANNERS),
+            caption="━━━━━━━━━━━━━━━━━━━\n<b>🔍 ˹ ᴘʀᴏᴄᴇssɪɴɢ ʏᴏᴜʀ ʀᴇǫᴜᴇsᴛ ˼... ⚡️</b>\n━━━━━━━━━━━━━━━━━━━"
+        )
+    except Exception as e:
+        print(f"Error sending processing msg: {e}")
+        temp_msg = None
 
     try:
         string = await decode(base64_string)
@@ -78,7 +84,9 @@ async def send_files(client: Client, message: Message, base64_string, messages=N
             if not messages:
                 messages = await get_messages(client, ids)
         except Exception as e:
-            await message.reply_text("Something went wrong!")
+            try:
+                await client.send_message(chat_id=user_id, text="Something went wrong!")
+            except: pass
             print(f"Error getting messages: {e}")
             return
         finally:
@@ -102,7 +110,7 @@ async def send_files(client: Client, message: Message, base64_string, messages=N
                 while True:
                     try:
                         snt_msg = await msg.copy(
-                            chat_id=message.from_user.id,
+                            chat_id=user_id,
                             caption=caption,
                             parse_mode=ParseMode.HTML,
                             reply_markup=reply_markup,
@@ -121,8 +129,9 @@ async def send_files(client: Client, message: Message, base64_string, messages=N
         AniZoneFlix_msgs = [m for m in results if m]
 
         if FILE_AUTO_DELETE > 0:
-            notification_msg = await message.reply(
-                f"<b>⚡️ <blockquote>˹ ᴀᴜᴛᴏ ᴅᴇʟᴇᴛᴇ ᴀʟᴇʀᴛ ˼\n\n🛡 ᴛʜɪs ꜰɪʟᴇ ᴡɪʟʟ ʙᴇ ᴛᴇʀᴍɪɴᴀᴛᴇᴅ ɪɴ {get_exp_time(FILE_AUTO_DELETE)}.\n\n💎 ᴘʟᴇᴀsᴇ sᴀᴠᴇ ᴏʀ ꜰᴏʀᴡᴀʀᴅ ɪᴛ ᴛᴏ ʏᴏᴜʀ sᴀᴠᴇᴅ ᴍᴇssᴀɢᴇs ʙᴇꜰᴏʀᴇ ɪᴛ ɪs ɢᴏɴᴇ! 💫</blockquote></b>"
+            notification_msg = await client.send_message(
+                chat_id=user_id,
+                text=f"<b>⚡️ <blockquote>˹ ᴀᴜᴛᴏ ᴅᴇʟᴇᴛᴇ ᴀʟᴇʀᴛ ˼\n\n🛡 ᴛʜɪs ꜰɪʟᴇ ᴡɪʟʟ ʙᴇ ᴛᴇʀᴍɪɴᴀᴛᴇᴅ ɪɴ {get_exp_time(FILE_AUTO_DELETE)}.\n\n💎 ᴘʟᴇᴀsᴇ sᴀᴠᴇ ᴏʀ ꜰᴏʀᴡᴀʀᴅ ɪᴛ ᴛᴏ ʏᴏᴜʀ sᴀᴠᴇᴅ ᴍᴇssᴀɢᴇs ʙᴇꜰᴏʀᴇ ɪᴛ ɪs ɢᴏɴᴇ! 💫</blockquote></b>"
             )
 
             await asyncio.sleep(FILE_AUTO_DELETE)
@@ -163,24 +172,26 @@ async def short_url(client: Client, message: Message, base64_string):
         shortener_enabled = settings.get('shortener_system', True)
 
         if shortener_enabled:
-            # 1. Shorten the link using the configured shortener (e.g. arolinks.com)
-            if SHORTLINK_URL and SHORTLINK_API:
-                inner_shortlink = await get_shortlink(SHORTLINK_URL, SHORTLINK_API, destination)
-            else:
-                inner_shortlink = destination
+            # 1. Generate unique code and store destination
+            import secrets
+            code = secrets.token_hex(4)
+            await db.store_shortener_verification(str(user_id), code, destination)
 
-            # 2. Wrap it with our own /protect URL for extra security & reCAPTCHA
-            if WEBSITE_URL:
-                short_link = SecurityService.get_protection_url(user_id, inner_shortlink)
+            # 2. Create Wrapped URL using domain
+            wrapped_link = f"https://{WRAPPED_URL_DOMAIN}/eductionssstudiess/?eductionstudiess={code}"
+
+            # 3. Shorten the wrapped link
+            if SHORTLINK_URL and SHORTLINK_API:
+                short_link = await get_shortlink(SHORTLINK_URL, SHORTLINK_API, wrapped_link)
             else:
-                short_link = inner_shortlink
+                short_link = wrapped_link
         else:
             # If disabled, we probably shouldn't be in short_url, but just in case:
-            return await send_files(client, message, base64_string)
+            return await send_files(client, user_id, base64_string)
 
         if not short_link:
             # Fallback to direct send if shortening failed
-            return await send_files(client, message, base64_string)
+            return await send_files(client, user_id, base64_string)
 
         buttons = [
             [
@@ -200,39 +211,57 @@ async def short_url(client: Client, message: Message, base64_string):
 
     except Exception as e:
         print(f"Error in short_url: {e}")
-        await send_files(client, message, base64_string)
+        await send_files(client, user_id, base64_string)
 
 
 async def handle_payload(client: Client, message: Message, basic_payload: str):
     user_id = message.from_user.id
     settings = await db.get_settings()
     is_premium = await is_premium_user(user_id)
+    shortener_enabled = settings.get('shortener_system', True)
 
-    is_verified = basic_payload.startswith("yu3elk")
-    if is_verified:
+    # DIRECT DELIVERY: If shortener is disabled, send files immediately without any checks
+    if not shortener_enabled:
+        if basic_payload.startswith("yu3elk"):
+            base64_string = basic_payload[6:-1]
+        else:
+            base64_string = basic_payload
+        return await send_files(client, user_id, base64_string)
+
+    is_verified_payload = basic_payload.startswith("yu3elk")
+    if is_verified_payload:
         base64_string = basic_payload[6:-1]
     else:
         base64_string = basic_payload
 
-    # Decision logic for shortener
-    shortener_enabled = settings.get('shortener_system', True)
     shortener_mode = settings.get('shortener_mode', 'one_per_time')
     shortener_time = settings.get('shortener_time', 0)
-
     is_admin = await db.admin_exist(user_id) or user_id == OWNER_ID
-
     can_shorten = bool(WEBSITE_URL) or (bool(SHORTLINK_URL) and bool(SHORTLINK_API))
+
+    # SECURITY: Verify the yu3elk prefix against database
+    actual_verified = False
+    if is_verified_payload:
+        verify_status = await db.get_verify_status(user_id)
+        if shortener_mode == 'based_time':
+            if verify_status.get('is_verified'):
+                verified_time = verify_status.get('verified_time', 0)
+                if (time.time() - verified_time) < shortener_time:
+                    actual_verified = True
+        else:
+            # ONE PER TIME
+            if verify_status.get('verify_token') == base64_string:
+                actual_verified = True
 
     # Initial Shortener bypass conditions
     bypass = (
         is_premium or
         is_admin or
-        is_verified or
-        not shortener_enabled or
+        actual_verified or
         not can_shorten
     )
 
-    # BASED TIME Logic
+    # BASED TIME Logic (for normal links when already verified)
     if not bypass and shortener_mode == 'based_time':
         verify_status = await db.get_verify_status(user_id)
         if verify_status.get('is_verified'):
@@ -244,13 +273,17 @@ async def handle_payload(client: Client, message: Message, basic_payload: str):
                 await db.update_verify_status(user_id, is_verified=False)
 
     if bypass:
-        await send_files(client, message, base64_string)
+        await send_files(client, user_id, base64_string)
     else:
         await short_url(client, message, base64_string)
 
 @Bot.on_message(filters.command('start') & filters.private)
 async def start_command(client: Client, message: Message):
     user_id = message.from_user.id
+
+    if not await is_subscribed(client, user_id):
+        return await not_joined(client, message)
+
     settings = await db.get_settings()
 
     # Add user if not already present
@@ -259,10 +292,6 @@ async def start_command(client: Client, message: Message):
             await db.add_user(user_id)
         except:
             pass
-
-    # ✅ Check Force Subscription
-    if not await is_subscribed(client, user_id):
-        return await not_joined(client, message)
 
     # Check if user is banned
     banned_users = await db.get_ban_users()

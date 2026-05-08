@@ -360,32 +360,28 @@ class AniZoneFlix:
         })
 
     # SHORTENER VERIFICATION
-    async def store_shortener_verification(self, identifier: str, code: str, original_url: str = ""):
+    async def store_shortener_verification(self, user_id: str, code: str, original_url: str = ""):
         await self.shortener_verifications.update_one(
-            {'_id': identifier},
+            {'_id': code},
             {'$set': {
-                'code': code,
+                'user_id': user_id,
                 'original_url': original_url,
                 'verified_at': time.time(),
-                'expires_at': time.time() + 300 # 5 minutes to complete the redirect
+                'expires_at': time.time() + 600 # 10 minutes
             }},
             upsert=True
         )
 
-    async def verify_shortener_code(self, identifier: str, code: str):
-        record = await self.shortener_verifications.find_one({'_id': identifier})
+    async def verify_shortener_code(self, code: str):
+        record = await self.shortener_verifications.find_one({'_id': code})
         if not record:
             return None # Not found
 
-        if record.get('code') != code:
-            return None # Mismatch
-
         if time.time() > record.get('expires_at', 0):
+            await self.shortener_verifications.delete_one({'_id': code})
             return None # Expired
 
-        # Success - Delete record (one-time use)
-        await self.shortener_verifications.delete_one({'_id': identifier})
-        return record.get('original_url')
+        return record
 
     # COOLDOWN MANAGEMENT
     async def check_cooldown(self, identifier: str, cooldown_seconds: int = 5):

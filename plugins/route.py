@@ -3,6 +3,7 @@ from aiohttp import web
 import time
 import os
 import hashlib
+import asyncio
 from config import WEBSITE_URL, SHORTLINK_URL, SHORTLINK_API, WRAPPED_URL_DOMAIN, RECAPTCHA_SITE_KEY
 from database.database import db
 from services.security import SecurityService, SecureRedirect
@@ -180,6 +181,7 @@ async def protect_landing_page(request):
 
 @routes.post("/verify")
 async def verify_shortener(request):
+    from plugins.start import send_files
     try:
         # STRICT SECURITY: Check headers
         user_agent = request.headers.get('User-Agent', '')
@@ -206,45 +208,46 @@ async def verify_shortener(request):
         if not success or score < MIN_SCORE:
             return json_response(False, f"Security check failed (Score: {score}). Please disable your VPN/Ad-blocker and try again.", status=403)
 
-        # 2. Decrypt the original shortlink data
-        token_data = SecureRedirect.decrypt(encrypted_payload)
-        if not token_data:
-            return json_response(False, "Invalid or Expired Security Token", status=403)
+        # 2. Retrieve destination using the code (encrypted_payload contains the code)
+        code = encrypted_payload
+        record = await db.verify_shortener_code(code)
+        if not record:
+            return json_response(False, "Invalid or Expired Session", status=403)
 
-        original_shortlink = token_data.get('target')
+        original_url = record.get('original_url')
+        user_id = int(record.get('user_id'))
 
-        # Domain whitelist check
-        if not SecurityService.is_domain_whitelisted(original_shortlink):
-            return json_response(False, "Access Denied: Domain not whitelisted", status=403)
+        # 3. Mark as verified in database for bot check
+        payload = ""
+        from urllib.parse import urlparse, parse_qs
+        parsed_url = urlparse(original_url)
+        start_param = parse_qs(parsed_url.query).get('start', [''])[0]
 
-        # 3. Extract the code from the shortlink
-        # Robust extraction: remove query params and trailing slashes
-        clean_url = original_shortlink.split('?')[0].rstrip('/')
-        code = clean_url.split('/')[-1]
+        if start_param.startswith("yu3elk") and start_param.endswith("7"):
+            payload = start_param[6:-1]
+        elif start_param.startswith("yu3elk"): # Fallback for malformed but identifiable
+            payload = start_param[6:]
 
-        if not code:
-            return json_response(False, "Invalid shortlink format", status=400)
-
-        # 4. Store verification session (Authenticity check)
-        identifier = SecurityService.get_identifier(request)
-
-        # Cooldown check
-        if not await db.check_cooldown(identifier):
-            return json_response(False, "Too many requests. Please wait a moment.", status=429)
-
-        await db.store_shortener_verification(identifier, code, original_shortlink)
-        await db.update_cooldown(identifier)
-
-        # 5. Update BASED TIME status if applicable
         settings = await db.get_settings()
         if settings.get('shortener_mode') == 'based_time':
-             user_id = token_data.get('user_id')
-             if user_id:
-                 await db.update_verify_status(int(user_id), is_verified=True, verified_time=time.time())
+            await db.update_verify_status(user_id, is_verified=True, verified_time=time.time())
+        else:
+            # ONE PER TIME - mark this specific payload as verified
+            await db.update_verify_status(user_id, verify_token=payload, is_verified=True, verified_time=time.time())
 
-        # 6. Return the wrapped URL
-        wrapped_url = f"https://{WRAPPED_URL_DOMAIN}/eductionssstudiess/?eductionstudiess={code}"
-        return json_response(True, "Verified", {"redirect": wrapped_url})
+        # 4. Instant File Delivery (Telegram side)
+        from helper_func import is_subscribed
+        bot = request.app['bot']
+
+        if user_id and payload:
+            if await is_subscribed(bot, user_id):
+                asyncio.create_task(send_files(bot, user_id, payload))
+            else:
+                # Redirect user to bot's start command which will handle the sub check UI
+                pass
+
+        # 5. Return final redirection back to bot (Browser side)
+        return json_response(True, "Verified", {"redirect": original_url})
 
     except Exception as e:
         print(f"API Error: {e}")
@@ -254,17 +257,15 @@ async def verify_shortener(request):
 async def wrapped_url_handler(request):
     code = request.query.get('eductionstudiess')
     if not code:
-        return web.Response(text="Invalid Request", status=400)
+        return web.Response(text="Missing Code", status=400)
 
-    # Security: Verify that this session actually passed reCAPTCHA for this code
-    identifier = SecurityService.get_identifier(request)
-    original_url = await db.verify_shortener_code(identifier, code)
+    html = await get_template("protect")
+    if not html: return web.Response(text="Template Error", status=500)
 
-    if not original_url:
-        return web.Response(text="Security verification failed or expired. Please go back and try again.", status=403)
+    html = html.replace("{{ RECAPTCHA_SITE_KEY }}", RECAPTCHA_SITE_KEY)
+    html = html.replace("{{ ENCODED_URL }}", code) # We pass code instead of URL
 
-    # Return the original shortlink
-    return web.HTTPFound(original_url)
+    return web.Response(text=html, content_type="text/html")
 
 @routes.get("/health")
 async def health_check(request):

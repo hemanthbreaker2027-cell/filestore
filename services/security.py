@@ -129,6 +129,10 @@ class SecurityService:
             if domain.startswith("www."):
                 domain = domain[4:]
 
+            # Support Telegram links as whitelisted for the direct-to-bot redirection
+            if domain == "t.me" or domain == "telegram.me":
+                return True
+
             return domain in WHITELISTED_DOMAINS
         except:
             return False
