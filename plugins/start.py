@@ -173,19 +173,24 @@ async def short_url(client: Client, message: Message, base64_string):
         shortener_enabled = settings.get('shortener_system', True)
 
         if shortener_enabled:
-            # 1. Generate unique code and store destination
-            import secrets
-            code = secrets.token_hex(4)
+            # 1. Generate original external shortlink
+            if SHORTLINK_URL and SHORTLINK_API:
+                external_shortlink = await get_shortlink(SHORTLINK_URL, SHORTLINK_API, destination)
+            else:
+                external_shortlink = destination
+
+            # 2. Extract code (last part of URL)
+            # Example: https://arolinks.com/7JWPCK -> 7JWPCK
+            code = external_shortlink.split('/')[-1]
+            if not code:
+                 import secrets
+                 code = secrets.token_hex(4)
+
+            # 3. Store in DB for verification tracking (store destination link for redirection)
             await db.store_shortener_verification(str(user_id), code, destination)
 
-            # 2. Create Wrapped URL using domain
-            wrapped_link = f"https://{WRAPPED_URL_DOMAIN}/eductionssstudiess/?eductionstudiess={code}"
-
-            # 3. Shorten the wrapped link
-            if SHORTLINK_URL and SHORTLINK_API:
-                short_link = await get_shortlink(SHORTLINK_URL, SHORTLINK_API, wrapped_link)
-            else:
-                short_link = wrapped_link
+            # 4. Create Masked URL as per requirement
+            short_link = f"https://theimmigrationworld.com/eductionssstudiess/?eductionstudiess={code}&uiso=9367"
         else:
             # If disabled, we probably shouldn't be in short_url, but just in case:
             return await send_files(client, user_id, base64_string)

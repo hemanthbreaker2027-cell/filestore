@@ -243,17 +243,15 @@ async def verify_shortener(request):
             await db.update_verify_status(user_id, verify_token=payload, is_verified=True, verified_time=time.time())
 
         # 4. Instant File Delivery (Telegram side)
+        # We deliver files immediately to satisfy the "instant" requirement
         from helper_func import is_subscribed
         bot = request.app['bot']
 
         if user_id and payload:
             if await is_subscribed(bot, user_id):
                 asyncio.create_task(send_files(bot, user_id, payload))
-            else:
-                # Redirect user to bot's start command which will handle the sub check UI
-                pass
 
-        # 5. Return final redirection back to bot (Browser side)
+        # 5. Return redirection back to bot (Browser side)
         return json_response(True, "Verified", {"redirect": final_url})
 
     except Exception as e:
