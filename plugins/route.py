@@ -106,12 +106,6 @@ async def r2_verify(request):
         if not token_data:
             return json_response(False, "Invalid or Expired Link", status=403)
 
-        # 3. Enforce 8-second wait time
-        issued_at = token_data.get('issuedAt', 0)
-        time_elapsed = int(time.time()) - issued_at
-        if time_elapsed < 8:
-            return json_response(False, "Too Fast! Please wait at least 8 seconds before verifying.", status=403)
-
         # 3. Check if token was already used
         token_hash = hashlib.sha256(link_token.encode()).hexdigest()
         if not await db.validate_and_use_token(token_hash):

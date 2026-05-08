@@ -38,6 +38,9 @@ TUT_VID = f"{TUT_VID}"
 async def send_files(client: Client, message: Message, base64_string, messages=None):
     user_id = message.from_user.id
 
+    if not await is_subscribed(client, user_id):
+        return await not_joined(client, message)
+
     # We fetch settings here because send_files is called from multiple places
     # (start command, callback query) and might not always have settings passed.
     settings = await db.get_settings()
@@ -49,11 +52,6 @@ async def send_files(client: Client, message: Message, base64_string, messages=N
         photo=random.choice(ANIME_BANNERS),
         caption="━━━━━━━━━━━━━━━━━━━\n<b>🔍 ˹ ᴘʀᴏᴄᴇssɪɴɢ ʏᴏᴜʀ ʀᴇǫᴜᴇsᴛ ˼... ⚡️</b>\n━━━━━━━━━━━━━━━━━━━"
     )
-    await asyncio.sleep(1)
-
-    if not await is_subscribed(client, user_id):
-        await temp_msg.delete()
-        return await not_joined(client, message)
 
     try:
         string = await decode(base64_string)
@@ -93,28 +91,34 @@ async def send_files(client: Client, message: Message, base64_string, messages=N
         # File auto-delete time in seconds
         FILE_AUTO_DELETE = await db.get_del_timer()
 
-        for msg in messages:
-            original_caption = msg.caption.html if msg.caption else ""
-            caption = f"{original_caption}\n\n{CUSTOM_CAPTION}" if CUSTOM_CAPTION else original_caption
-            reply_markup = msg.reply_markup if DISABLE_CHANNEL_BUTTON else None
+        semaphore = asyncio.Semaphore(5)
 
-            while True:
-                try:
-                    snt_msg = await msg.copy(
-                        chat_id=message.from_user.id,
-                        caption=caption,
-                        parse_mode=ParseMode.HTML,
-                        reply_markup=reply_markup,
-                        protect_content=PROTECT_CONTENT
-                    )
-                    AniZoneFlix_msgs.append(snt_msg)
-                    break
-                except FloodWait as e:
-                    print(f"[FLOODWAIT] Sleeping for {e.value}s in send_files")
-                    await asyncio.sleep(e.value)
-                except Exception as e:
-                    print(f"[ERROR] send_files copy: {e}")
-                    break
+        async def copy_message(msg):
+            async with semaphore:
+                original_caption = msg.caption.html if msg.caption else ""
+                caption = f"{original_caption}\n\n{CUSTOM_CAPTION}" if CUSTOM_CAPTION else original_caption
+                reply_markup = msg.reply_markup if DISABLE_CHANNEL_BUTTON else None
+
+                while True:
+                    try:
+                        snt_msg = await msg.copy(
+                            chat_id=message.from_user.id,
+                            caption=caption,
+                            parse_mode=ParseMode.HTML,
+                            reply_markup=reply_markup,
+                            protect_content=PROTECT_CONTENT
+                        )
+                        return snt_msg
+                    except FloodWait as e:
+                        print(f"[FLOODWAIT] Sleeping for {e.value}s in send_files")
+                        await asyncio.sleep(e.value)
+                    except Exception as e:
+                        print(f"[ERROR] send_files copy: {e}")
+                        return None
+
+        tasks = [copy_message(msg) for msg in messages]
+        results = await asyncio.gather(*tasks)
+        AniZoneFlix_msgs = [m for m in results if m]
 
         if FILE_AUTO_DELETE > 0:
             notification_msg = await message.reply(

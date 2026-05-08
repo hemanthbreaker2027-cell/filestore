@@ -62,12 +62,6 @@ async def is_subscribed(client, user_id):
 
     for cid in channel_ids:
         if not await is_sub(client, user_id, cid):
-            # Retry once if join request might be processing
-            mode = await db.get_channel_mode(cid)
-            if mode == "on":
-                await asyncio.sleep(2)  # give time for @AniZoneFlix to process
-                if await is_sub(client, user_id, cid):
-                    continue
             return False
 
     return True
@@ -212,7 +206,7 @@ async def get_message_id(client, message):
     elif message.forward_sender_name:
         return 0
     elif message.text:
-        pattern = "https://t.me/(?:c/)?(.*)/(\d+)"
+        pattern = r"https://t.me/(?:c/)?(.*)/(\d+)"
         matches = re.match(pattern,message.text)
         if not matches:
             return 0

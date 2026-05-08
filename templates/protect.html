@@ -142,20 +142,8 @@
             </div>
 
             <div id="interaction-area" class="min-h-[220px] flex flex-col items-center justify-center space-y-6">
-                <!-- Timer Box -->
-                <div id="timer-box" class="space-y-4">
-                    <div class="relative flex items-center justify-center">
-                        <svg class="w-32 h-32">
-                            <circle class="text-slate-800" stroke-width="8" stroke="currentColor" fill="transparent" r="58" cx="64" cy="64"/>
-                            <circle id="progress-circle" class="text-sky-500 progress-ring-circle" stroke-width="8" stroke-dasharray="364.4" stroke-dashoffset="364.4" stroke-linecap="round" stroke="currentColor" fill="transparent" r="58" cx="64" cy="64"/>
-                        </svg>
-                        <span id="seconds" class="absolute text-5xl font-black text-white">8</span>
-                    </div>
-                    <p class="text-sky-400/80 text-xs font-black uppercase tracking-widest">ᴀɴᴀʟʏᴢɪɴɢ sᴇssɪᴏɴ...</p>
-                </div>
-
-                <!-- Verify Button (Hidden initially) -->
-                <div id="action-box" class="hidden w-full space-y-4">
+                <!-- Verify Button -->
+                <div id="action-box" class="w-full space-y-4">
                     <button id="verify-btn" onclick="startVerification()" class="btn-primary w-full py-5 rounded-2xl text-white font-black text-lg uppercase tracking-widest flex items-center justify-center space-x-3">
                         <span>⚡️ ᴠᴇʀɪꜰʏ ɴᴏᴡ ⚡️</span>
                     </button>
@@ -197,37 +185,10 @@
              document.body.innerHTML = "<div class='text-red-500 font-bold p-20'>˹ sᴇᴄᴜʀɪᴛʏ ᴠɪᴏʟᴀᴛɪᴏɴ ˼</div>";
         }
 
-        let timeLeft = 8.0;
-        const totalTime = 8.0;
-        const radius = 58;
-        const circumference = 2 * Math.PI * radius;
-
-        const secondsEl = document.getElementById('seconds');
-        const circleEl = document.getElementById('progress-circle');
-        const timerBox = document.getElementById('timer-box');
         const actionBox = document.getElementById('action-box');
         const loadingState = document.getElementById('loading-state');
         const errorState = document.getElementById('error-state');
         const verifyBtn = document.getElementById('verify-btn');
-
-        const timer = setInterval(() => {
-            timeLeft -= 0.1;
-            if (timeLeft <= 0) {
-                clearInterval(timer);
-                secondsEl.textContent = "0";
-                circleEl.style.strokeDashoffset = 0;
-                showVerifyButton();
-            } else {
-                secondsEl.textContent = Math.ceil(timeLeft);
-                const offset = circumference - ((totalTime - timeLeft) / totalTime) * circumference;
-                circleEl.style.strokeDashoffset = offset;
-            }
-        }, 100);
-
-        function showVerifyButton() {
-            timerBox.classList.add('hidden');
-            actionBox.classList.remove('hidden');
-        }
 
         function startVerification() {
             verifyBtn.disabled = true;
