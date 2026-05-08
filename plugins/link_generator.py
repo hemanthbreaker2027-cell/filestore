@@ -44,7 +44,13 @@ async def batch(client: Client, message: Message):
                 return await message.reply_text(f"❌ Error: {e}")
 
             # Ask for count
-            count_msg = await client.ask(message.chat.id, "How many messages?", filters=filters.text, timeout=60)
+            try:
+                count_msg = await client.ask(message.chat.id, "How many messages?", filters=filters.text, timeout=60)
+                if count_msg.text.lower() == "/cancel":
+                    return await message.reply("❌ Batch cancelled.")
+            except asyncio.TimeoutError:
+                return await message.reply("❌ Batch timed out.")
+
             while True:
                 try:
                     num_messages = int(count_msg.text)
@@ -54,8 +60,9 @@ async def batch(client: Client, message: Message):
                     break
                 except ValueError:
                     count_msg = await client.ask(message.chat.id, "Invalid input. Please send a number (e.g., 25).", filters=filters.text, timeout=60)
-                except Exception:
-                    return
+                except Exception as e:
+                    print(f"Batch Count Error: {e}")
+                    return await message.reply(f"❌ Error: {e}")
 
             progress = await message.reply_text(f"🔍 Processing 0/{num_messages}...")
 
