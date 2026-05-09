@@ -1,0 +1,76 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>˹ ᴀɴɪᴢᴏɴᴇꜰʟɪx sᴛʀᴇᴀᴍɪɴɢ ˼</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <link href="https://vjs.zencdn.net/8.10.0/video-js.css" rel="stylesheet" />
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;700;900&display=swap');
+        body { font-family: 'Outfit', sans-serif; background: #020617; color: #f8fafc; }
+        .glass { background: rgba(15, 23, 42, 0.7); backdrop-filter: blur(12px); border: 1px solid rgba(255, 255, 255, 0.1); }
+        .video-js { width: 100%; border-radius: 1rem; overflow: hidden; box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.5); }
+        .btn-premium { transition: all 0.3s ease; background: linear-gradient(135deg, #38bdf8, #818cf8); }
+        .btn-premium:hover { transform: translateY(-2px); box-shadow: 0 10px 15px -3px rgba(56, 189, 248, 0.4); }
+    </style>
+</head>
+<body class="min-h-screen flex flex-col p-4 md:p-8">
+    <div class="max-w-4xl w-full mx-auto space-y-6">
+        <!-- Header -->
+        <div class="flex items-center justify-between glass p-4 rounded-2xl">
+            <h1 class="text-xl font-black bg-clip-text text-transparent bg-gradient-to-r from-sky-400 to-indigo-400">˹ ᴀɴɪᴢᴏɴᴇꜰʟɪx ˼</h1>
+            <div class="flex items-center space-x-2 text-xs font-bold uppercase tracking-widest text-sky-400">
+                <span class="relative flex h-2 w-2">
+                    <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-sky-400 opacity-75"></span>
+                    <span class="relative inline-flex rounded-full h-2 w-2 bg-sky-500"></span>
+                </span>
+                <span>Live Stream</span>
+            </div>
+        </div>
+
+        <!-- Player -->
+        <div class="relative group">
+            <video id="player" class="video-js vjs-big-play-centered vjs-theme-city" controls preload="auto" data-setup='{}'>
+                <source src="{{ STREAM_URL }}" type="video/mp4">
+                <p class="vjs-no-js">To view this video please enable JavaScript, and consider upgrading to a web browser that supports HTML5 video</p>
+            </video>
+        </div>
+
+        <!-- Info & Controls -->
+        <div class="glass p-6 rounded-3xl space-y-6">
+            <div class="space-y-2">
+                <h2 class="text-lg font-bold text-slate-200 uppercase tracking-tight">{{ FILE_NAME }}</h2>
+                <p class="text-slate-500 text-xs font-medium italic">Powered by AniZoneFlix Engine</p>
+            </div>
+
+            <!-- External Players Grid -->
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                <a href="intent://{{ STREAM_URL_NO_PROTO }}#Intent;package=com.mxtech.videoplayer.ad;end" class="flex items-center justify-center space-x-2 bg-slate-800/50 hover:bg-slate-700/50 p-4 rounded-2xl border border-slate-700 transition-all">
+                    <i class="fas fa-play-circle text-sky-400"></i>
+                    <span class="font-bold text-sm uppercase">MX Player</span>
+                </a>
+                <a href="intent://{{ STREAM_URL_NO_PROTO }}#Intent;package=org.videolan.vlc;end" class="flex items-center justify-center space-x-2 bg-slate-800/50 hover:bg-slate-700/50 p-4 rounded-2xl border border-slate-700 transition-all">
+                    <i class="fab fa-vimeo-v text-orange-400"></i>
+                    <span class="font-bold text-sm uppercase">VLC Player</span>
+                </a>
+                <a href="intent://{{ STREAM_URL_NO_PROTO }}#Intent;package=com.playit.videoplayer;end" class="flex items-center justify-center space-x-2 bg-slate-800/50 hover:bg-slate-700/50 p-4 rounded-2xl border border-slate-700 transition-all">
+                    <i class="fas fa-bolt text-indigo-400"></i>
+                    <span class="font-bold text-sm uppercase">PLAYit</span>
+                </a>
+                <a href="{{ STREAM_URL }}" class="flex items-center justify-center space-x-2 bg-slate-800/50 hover:bg-slate-700/50 p-4 rounded-2xl border border-slate-700 transition-all">
+                    <i class="fas fa-external-link-alt text-emerald-400"></i>
+                    <span class="font-bold text-sm uppercase">External Player</span>
+                </a>
+                <a href="{{ DOWNLOAD_URL }}" class="flex items-center justify-center space-x-2 btn-premium p-4 rounded-2xl sm:col-span-2">
+                    <i class="fas fa-download text-white"></i>
+                    <span class="font-bold text-sm uppercase text-white">Download File</span>
+                </a>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://vjs.zencdn.net/8.10.0/video.min.js"></script>
+</body>
+</html>

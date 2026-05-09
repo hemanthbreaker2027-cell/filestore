@@ -64,7 +64,9 @@ class AniZoneFlix:
                 'file_delivery': True,
                 'core_features': True,
                 'shortener_mode': 'one_per_time', # one_per_time or based_time
-                'shortener_time': 0 # Time in seconds for based_time mode
+                'shortener_time': 0, # Time in seconds for based_time mode
+                'stream_enabled': False,
+                'download_enabled': False
             }
             await self.settings_data.insert_one(default_settings)
             return default_settings
@@ -76,6 +78,12 @@ class AniZoneFlix:
             updated = True
         if 'shortener_time' not in settings:
             settings['shortener_time'] = 0
+            updated = True
+        if 'stream_enabled' not in settings:
+            settings['stream_enabled'] = False
+            updated = True
+        if 'download_enabled' not in settings:
+            settings['download_enabled'] = False
             updated = True
 
         if updated:

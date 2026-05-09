@@ -124,7 +124,57 @@ async def send_files(client: Client, user_id: int, base64_string, messages=None)
             async with semaphore:
                 original_caption = msg.caption.html if msg.caption else ""
                 caption = f"{original_caption}\n\n{CUSTOM_CAPTION}" if CUSTOM_CAPTION else original_caption
+
+                # Default reply markup
                 reply_markup = msg.reply_markup if DISABLE_CHANNEL_BUTTON else None
+
+                # STREAM & DOWNLOAD BUTTONS
+                is_video = False
+                file_name = "Requested File"
+                if msg.video:
+                    is_video = True
+                    file_name = msg.video.file_name or "video.mp4"
+                elif msg.document and msg.document.mime_type:
+                    if msg.document.mime_type.startswith('video/') or (msg.document.file_name and msg.document.file_name.lower().endswith(('.mp4', '.mkv', '.avi', '.mov', '.webm'))):
+                        is_video = True
+                        file_name = msg.document.file_name or "file.mkv"
+
+                if is_video and (settings.get('stream_enabled', False) or settings.get('download_enabled', False)):
+                    # Use file_unique_id as code to match demo style
+                    file_obj = msg.video or msg.document
+                    code = getattr(file_obj, 'file_unique_id', None)
+                    if not code:
+                        import secrets
+                        code = secrets.token_hex(4)
+
+                    file_link = f"https://t.me/{client.username}?start=get-{msg.id * abs(client.db_channel.id)}"
+
+                    # Store mapping including file_name
+                    await db.shortener_verifications.update_one(
+                        {'_id': code},
+                        {'$set': {
+                            'user_id': str(user_id),
+                            'original_url': file_link,
+                            'file_name': file_name,
+                            'verified_at': time.time(),
+                            'expires_at': time.time() + 86400 # 24 hours for stream links
+                        }},
+                        upsert=True
+                    )
+
+                    buttons = []
+                    if settings.get('stream_enabled', False):
+                        buttons.append([InlineKeyboardButton("▶ STREAM", url=f"https://{WEBSITE_URL}/watch/{code}")])
+                    if settings.get('download_enabled', False):
+                        buttons.append([InlineKeyboardButton("⬇ DOWNLOAD", url=f"https://{WEBSITE_URL}/download/{code}")])
+
+                    # If we had existing buttons, append ours
+                    if reply_markup and reply_markup.inline_keyboard:
+                        new_kb = list(reply_markup.inline_keyboard)
+                        new_kb.extend(buttons)
+                        reply_markup = InlineKeyboardMarkup(new_kb)
+                    else:
+                        reply_markup = InlineKeyboardMarkup(buttons)
 
                 while True:
                     try:

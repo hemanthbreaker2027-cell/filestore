@@ -272,6 +272,89 @@ async def wrapped_url_handler(request):
 
     return web.Response(text=html, content_type="text/html")
 
+@routes.get("/watch/{code}")
+async def watch_handler(request):
+    code = request.match_info['code']
+    record = await db.verify_shortener_code(code)
+    if not record:
+        return web.Response(text="Invalid or Expired Link", status=403)
+
+    # In a real scenario, you'd have a direct stream link.
+    # For now, we'll use a placeholder or derived link logic if possible.
+    # The requirement asks for same type as demo links: https://cdn2.linkforge.xyz/watch/AgADKS23981
+    # We will assume a service or endpoint provides the raw stream.
+
+    # We will use the 'code' to generate the STREAM_URL
+    # For demo purposes, we will assume the STREAM_URL is derived from some internal logic or service.
+    # In this bot's context, let's use the code to construct a temporary stream URL.
+
+    stream_url = f"https://{request.host}/stream/file/{code}"
+    download_url = f"https://{request.host}/download/{code}"
+
+    html = await get_template("watch")
+    if not html: return web.Response(text="Template Error", status=500)
+
+    html = html.replace("{{ STREAM_URL }}", stream_url)
+    html = html.replace("{{ STREAM_URL_NO_PROTO }}", stream_url.replace("https://", "").replace("http://", ""))
+    html = html.replace("{{ DOWNLOAD_URL }}", download_url)
+    html = html.replace("{{ FILE_NAME }}", record.get('file_name', 'Requested File'))
+
+    return web.Response(text=html, content_type="text/html")
+
+@routes.get("/download/{code}")
+async def download_handler(request):
+    code = request.match_info['code']
+    record = await db.verify_shortener_code(code)
+    if not record:
+        return web.Response(text="Invalid or Expired Link", status=403)
+
+    # Redirect to the actual file or bot
+    return web.HTTPFound(record.get('original_url'))
+
+@routes.get("/stream/file/{code}")
+async def stream_file_handler(request):
+    code = request.match_info['code']
+    record = await db.verify_shortener_code(code)
+    if not record:
+        return web.Response(text="Invalid or Expired Link", status=403)
+
+    # Extract message ID from original_url
+    # original_url format: https://t.me/botname?start=get-MSGID
+    import re
+    match = re.search(r"get-(\d+)", record.get('original_url', ''))
+    if not match:
+        return web.Response(text="Source Not Found", status=404)
+
+    msg_id = int(int(match.group(1)) / abs(request.app['bot'].db_channel.id))
+    bot = request.app['bot']
+
+    try:
+        msg = await bot.get_messages(bot.db_channel.id, msg_id)
+        if not msg or msg.empty:
+            return web.Response(text="File Not Found", status=404)
+
+        file_obj = msg.video or msg.document
+        if not file_obj:
+            return web.Response(text="Invalid Media", status=400)
+
+        # Stream the media from Telegram
+        # Note: This is a basic implementation. High traffic might need a dedicated stream service.
+        response = web.StreamResponse()
+        response.content_type = file_obj.mime_type or 'video/mp4'
+        response.content_length = file_obj.file_size
+
+        await response.prepare(request)
+
+        async for chunk in bot.stream_media(file_obj):
+            await response.write(chunk)
+
+        await response.write_eof()
+        return response
+
+    except Exception as e:
+        print(f"Streaming Error: {e}")
+        return web.Response(text="Streaming Failed", status=500)
+
 @routes.get("/health")
 async def health_check(request):
     return web.Response(text="OK", status=200)
