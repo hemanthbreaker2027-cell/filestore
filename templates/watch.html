@@ -2,249 +2,280 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>˹ ᴀɴɪᴢᴏɴᴇꜰʟɪx sᴛʀᴇᴀᴍɪɴɢ ˼ - {{ FILE_NAME }}</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>˹ ᴀɴɪᴢᴏɴᴇꜰʟɪx ˼ - {{ FILE_NAME }}</title>
     <script src="https://cdn.tailwindcss.com"></script>
-    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" rel="stylesheet">
     <link href="https://vjs.zencdn.net/8.10.0/video-js.css" rel="stylesheet" />
     <link href="https://unpkg.com/@videojs/themes@1/dist/city/index.css" rel="stylesheet">
     <style>
-        @import url('https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;700;900&display=swap');
+        @import url('https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;500;600;700&display=swap');
 
         :root {
-            --primary: #38bdf8;
-            --secondary: #818cf8;
-            --bg: #020617;
-            --glass: rgba(15, 23, 42, 0.7);
+            --primary: #0ea5e9;
+            --secondary: #6366f1;
+            --accent: #f43f5e;
+            --bg: #030712;
+            --glass: rgba(17, 24, 39, 0.7);
         }
 
         body {
-            font-family: 'Outfit', sans-serif;
+            font-family: 'Space Grotesk', sans-serif;
             background: var(--bg);
-            color: #f8fafc;
-            background-image:
-                radial-gradient(at 0% 0%, rgba(56, 189, 248, 0.15) 0px, transparent 50%),
-                radial-gradient(at 100% 0%, rgba(129, 140, 248, 0.15) 0px, transparent 50%);
-            background-attachment: fixed;
+            color: #f3f4f6;
+            overflow-x: hidden;
+            -webkit-tap-highlight-color: transparent;
         }
 
-        .glass {
+        .anime-bg {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: -1;
+            background: linear-gradient(to bottom, rgba(3, 7, 18, 0.8), rgba(3, 7, 18, 1)),
+                        url('https://images.alphacoders.com/132/1322308.png');
+            background-size: cover;
+            background-position: center;
+            opacity: 0.4;
+        }
+
+        .glass-panel {
             background: var(--glass);
-            backdrop-filter: blur(24px);
-            -webkit-backdrop-filter: blur(24px);
-            border: 1px solid rgba(255, 255, 255, 0.1);
-            box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
+            backdrop-filter: blur(16px);
+            -webkit-backdrop-filter: blur(16px);
+            border: 1px solid rgba(255, 255, 255, 0.05);
+        }
+
+        .video-container {
+            position: relative;
+            padding-top: 56.25%;
+            border-radius: 1.5rem;
+            overflow: hidden;
+            box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.8);
         }
 
         .video-js {
+            position: absolute;
+            top: 0;
+            left: 0;
             width: 100%;
-            border-radius: 1.5rem;
-            overflow: hidden;
-            box-shadow: 0 30px 60px -12px rgba(0, 0, 0, 0.6);
+            height: 100%;
         }
 
         .vjs-big-play-centered .vjs-big-play-button {
-            background: linear-gradient(135deg, var(--primary), var(--secondary)) !important;
-            border: none !important;
-            width: 80px !important;
-            height: 80px !important;
-            line-height: 80px !important;
+            width: 70px !important;
+            height: 70px !important;
             border-radius: 50% !important;
-            font-size: 3em !important;
-            transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275) !important;
+            line-height: 70px !important;
+            background: var(--primary) !important;
+            border: none !important;
+            box-shadow: 0 0 20px rgba(14, 165, 233, 0.4) !important;
         }
 
-        .video-js:hover .vjs-big-play-button {
-            transform: scale(1.1) !important;
-            box-shadow: 0 0 40px rgba(56, 189, 248, 0.5) !important;
-        }
-
-        .btn-premium {
+        .action-card {
             transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            border: 1px solid rgba(255, 255, 255, 0.05);
+        }
+
+        .action-card:hover {
+            transform: translateY(-4px);
+            background: rgba(255, 255, 255, 0.05);
+            border-color: var(--primary);
+        }
+
+        .btn-gradient {
             background: linear-gradient(135deg, var(--primary), var(--secondary));
-            font-weight: 800;
-            letter-spacing: 0.05em;
-            text-transform: uppercase;
-        }
-
-        .btn-premium:hover {
-            transform: translateY(-3px) scale(1.02);
-            box-shadow: 0 15px 30px -10px rgba(56, 189, 248, 0.6);
-        }
-
-        .btn-outline {
-            background: rgba(255, 255, 255, 0.03);
-            border: 1px solid rgba(255, 255, 255, 0.1);
             transition: all 0.3s ease;
         }
 
-        .btn-outline:hover {
-            background: rgba(255, 255, 255, 0.08);
-            border-color: var(--primary);
-            transform: translateY(-2px);
+        .btn-gradient:hover {
+            opacity: 0.9;
+            transform: scale(1.02);
+            box-shadow: 0 10px 20px -10px rgba(14, 165, 233, 0.5);
         }
 
-        .shimmer {
-            background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.1), transparent);
-            background-size: 200% 100%;
-            animation: shimmer 2s infinite;
+        /* Toast Styling */
+        #toast {
+            visibility: hidden;
+            min-width: 250px;
+            margin-left: -125px;
+            background-color: #1f2937;
+            color: #fff;
+            text-align: center;
+            border-radius: 12px;
+            padding: 16px;
+            position: fixed;
+            z-index: 1000;
+            left: 50%;
+            bottom: 30px;
+            font-size: 14px;
+            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.5);
+            border: 1px solid rgba(255, 255, 255, 0.1);
         }
 
-        @keyframes shimmer {
-            0% { background-position: -200% 0; }
-            100% { background-position: 200% 0; }
+        #toast.show {
+            visibility: visible;
+            -webkit-animation: fadein 0.5s, fadeout 0.5s 2.5s;
+            animation: fadein 0.5s, fadeout 0.5s 2.5s;
         }
 
-        /* Mobile specific adjustments */
-        @media (max-width: 640px) {
-            .video-js { border-radius: 1rem; }
-            h1 { font-size: 1.5rem; }
-            .btn-grid { grid-template-columns: 1fr; }
-        }
+        @-webkit-keyframes fadein { from {bottom: 0; opacity: 0;} to {bottom: 30px; opacity: 1;} }
+        @keyframes fadein { from {bottom: 0; opacity: 0;} to {bottom: 30px; opacity: 1;} }
+        @-webkit-keyframes fadeout { from {bottom: 30px; opacity: 1;} to {bottom: 0; opacity: 0;} }
+        @keyframes fadeout { from {bottom: 30px; opacity: 1;} to {bottom: 0; opacity: 0;} }
     </style>
 </head>
-<body class="min-h-screen flex flex-col p-4 md:p-8 lg:p-12 relative overflow-x-hidden">
-    <!-- Animated Anime Background -->
-    <div class="fixed inset-0 z-[-1] opacity-20">
-        <img src="https://images.alphacoders.com/132/1322308.png" class="w-full h-full object-cover grayscale" alt="bg">
-        <div class="absolute inset-0 bg-gradient-to-b from-transparent via-[#020617] to-[#020617]"></div>
-    </div>
+<body class="min-h-screen p-4 md:p-10 lg:p-16">
+    <div class="anime-bg"></div>
 
-    <div class="max-w-5xl w-full mx-auto space-y-8 relative z-10">
-        <!-- Premium Header -->
-        <header class="flex items-center justify-between glass p-6 rounded-[2rem] border-b-4 border-sky-500/30">
-            <div class="flex items-center space-x-5">
-                <div class="relative">
-                    <div class="absolute inset-0 bg-sky-500 blur-xl opacity-30 animate-pulse"></div>
-                    <div class="relative p-4 bg-sky-500/10 rounded-2xl border border-sky-500/20">
-                        <i class="fas fa-crown text-sky-400 text-2xl"></i>
-                    </div>
+    <div class="max-w-6xl mx-auto space-y-10">
+        <!-- Header -->
+        <header class="flex items-center justify-between glass-panel p-5 rounded-3xl">
+            <div class="flex items-center space-x-4">
+                <div class="p-3 bg-sky-500/10 rounded-2xl border border-sky-500/20">
+                    <i class="fas fa-shuttle-space text-sky-400 text-xl"></i>
                 </div>
                 <div>
-                    <h1 class="text-3xl font-black bg-clip-text text-transparent bg-gradient-to-r from-sky-400 via-indigo-400 to-purple-400 leading-none">˹ ᴀɴɪᴢᴏɴᴇꜰʟɪx ˼</h1>
-                    <p class="text-[10px] font-black uppercase tracking-[0.3em] text-slate-500 mt-2">ᴜʟᴛɪᴍᴀᴛᴇ sᴛʀᴇᴀᴍɪɴɢ sʏsᴛᴇᴍ</p>
-                </div>
-            </div>
-            <div class="hidden md:flex items-center space-x-4">
-                <div class="flex items-center space-x-2 px-4 py-2 bg-emerald-500/10 rounded-full border border-emerald-500/20">
-                    <span class="h-2 w-2 rounded-full bg-emerald-500 animate-pulse"></span>
-                    <span class="text-[10px] font-bold text-emerald-400 uppercase tracking-widest">ᴜʟᴛʀᴀ sᴘᴇᴇᴅ</span>
+                    <h1 class="text-2xl font-bold tracking-tight text-white">˹ ᴀɴɪᴢᴏɴᴇꜰʟɪx ˼</h1>
+                    <div class="flex items-center space-x-2 text-[10px] font-bold uppercase tracking-widest text-slate-400">
+                        <span class="flex h-1.5 w-1.5 rounded-full bg-emerald-500"></span>
+                        <span>Stream Engine Active</span>
+                    </div>
                 </div>
             </div>
         </header>
 
         <!-- Player Section -->
         <main class="space-y-8">
-            <div class="relative group p-1 bg-gradient-to-r from-sky-500/20 via-indigo-500/20 to-purple-500/20 rounded-[2rem]">
-                <video id="player" class="video-js vjs-big-play-centered vjs-theme-city" controls preload="auto" data-setup='{}'>
+            <div class="video-container glass-panel">
+                <video id="ani-player" class="video-js vjs-theme-city vjs-big-play-centered" controls preload="auto">
                     <source src="{{ STREAM_URL }}" type="video/mp4">
-                    <p class="vjs-no-js">To view this video please enable JavaScript, and consider upgrading to a web browser that supports HTML5 video</p>
+                    <p class="vjs-no-js text-center p-10">Please enable JavaScript to view this video.</p>
                 </video>
             </div>
 
-            <!-- Content Details & Actions -->
-            <div class="glass p-10 rounded-[3rem] space-y-12 border-t border-white/5">
-                <div class="flex flex-col md:flex-row md:items-end justify-between gap-6">
-                    <div class="space-y-4 flex-grow">
-                        <div class="flex flex-wrap items-center gap-3">
-                            <span class="px-4 py-1.5 bg-sky-500/20 text-sky-400 text-[10px] font-black uppercase tracking-[0.2em] rounded-full border border-sky-500/30">🎬 Premium Media</span>
-                            <span class="px-4 py-1.5 bg-purple-500/20 text-purple-400 text-[10px] font-black uppercase tracking-[0.2em] rounded-full border border-purple-500/30">✨ AniZone Engine</span>
-                        </div>
-                        <h2 class="text-3xl md:text-4xl font-black text-white leading-tight tracking-tight">{{ FILE_NAME }}</h2>
-                        <div class="flex items-center space-x-2 text-slate-400">
-                            <i class="fas fa-layer-group text-sky-500"></i>
-                            <span class="text-xs font-bold uppercase tracking-widest">sᴇᴄᴜʀᴇ ᴅɪɢɪᴛᴀʟ ᴀssᴇᴛ • ᴀɴɪᴢᴏɴᴇ ᴘʀᴏᴛᴇᴄᴛᴇᴅ</span>
-                        </div>
+            <!-- Meta Info -->
+            <div class="glass-panel p-8 rounded-[2.5rem] space-y-8 border-t border-white/5">
+                <div class="space-y-4">
+                    <div class="flex flex-wrap gap-2">
+                        <span class="px-3 py-1 bg-sky-500/10 text-sky-400 text-[10px] font-bold uppercase rounded-lg">4K HDR</span>
+                        <span class="px-3 py-1 bg-indigo-500/10 text-indigo-400 text-[10px] font-bold uppercase rounded-lg">High Speed</span>
+                        <span class="px-3 py-1 bg-rose-500/10 text-rose-400 text-[10px] font-bold uppercase rounded-lg">Ad Free</span>
                     </div>
-
-                    <div class="flex-shrink-0">
-                         <a href="{{ DOWNLOAD_URL }}" class="btn-premium px-10 py-5 rounded-2xl flex items-center space-x-3 group">
-                            <i class="fas fa-cloud-arrow-down text-xl group-hover:scale-110 transition-transform"></i>
-                            <span class="text-sm">DOWNLOAD</span>
-                        </a>
-                    </div>
+                    <h2 class="text-2xl md:text-3xl font-bold text-white leading-snug">{{ FILE_NAME }}</h2>
+                    <p class="text-slate-400 text-sm leading-relaxed max-w-3xl">
+                        Experience lightning fast streaming with our premium digital architecture. Optimized for mobile and native player support.
+                    </p>
                 </div>
 
-                <!-- External Players Section -->
-                <div class="space-y-8">
-                    <div class="flex items-center gap-4">
-                        <span class="text-[12px] font-black text-slate-300 uppercase tracking-[0.4em] whitespace-nowrap">ᴇxᴛᴇʀɴᴀʟ ᴘʟᴀʏᴇʀs</span>
-                        <div class="h-px flex-grow bg-gradient-to-r from-slate-800 to-transparent"></div>
+                <div class="h-px bg-white/5"></div>
+
+                <!-- Action Buttons -->
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <!-- Left: External Players -->
+                    <div class="space-y-4">
+                        <p class="text-xs font-bold uppercase tracking-[0.2em] text-slate-500 px-1">Watch in External Player</p>
+                        <div class="grid grid-cols-1 sm:grid-cols-3 gap-3">
+                            <button onclick="openPlayer('mx')" class="action-card flex flex-col items-center justify-center p-5 rounded-2xl group">
+                                <i class="fas fa-circle-play text-2xl text-sky-400 mb-2 group-hover:scale-110 transition-transform"></i>
+                                <span class="text-[10px] font-bold uppercase">MX Player</span>
+                            </button>
+                            <button onclick="openPlayer('playit')" class="action-card flex flex-col items-center justify-center p-5 rounded-2xl group">
+                                <i class="fas fa-bolt text-2xl text-indigo-400 mb-2 group-hover:scale-110 transition-transform"></i>
+                                <span class="text-[10px] font-bold uppercase">PLAYit</span>
+                            </button>
+                            <button onclick="openPlayer('vlc')" class="action-card flex flex-col items-center justify-center p-5 rounded-2xl group">
+                                <i class="fab fa-vimeo-v text-2xl text-orange-400 mb-2 group-hover:scale-110 transition-transform"></i>
+                                <span class="text-[10px] font-bold uppercase">VLC</span>
+                            </button>
+                        </div>
                     </div>
 
-                    <div class="grid grid-cols-1 sm:grid-cols-3 gap-5">
-                        <a href="intent://{{ STREAM_URL_NO_PROTO }}#Intent;package=com.mxtech.videoplayer.ad;type=video/*;end" class="btn-outline flex items-center p-6 rounded-3xl group relative overflow-hidden">
-                            <div class="absolute inset-0 bg-sky-500/5 translate-y-full group-hover:translate-y-0 transition-transform duration-500"></div>
-                            <div class="p-4 bg-sky-500/10 rounded-2xl mr-5 group-hover:bg-sky-500 group-hover:text-white transition-all">
-                                <i class="fas fa-play text-xl"></i>
-                            </div>
-                            <div class="text-left">
-                                <p class="text-xs font-black uppercase tracking-widest text-sky-400 group-hover:text-white transition-colors">MX Player</p>
-                                <p class="text-[9px] font-bold text-slate-500 group-hover:text-sky-200 uppercase mt-1">Best performance</p>
-                            </div>
-                        </a>
-
-                        <a href="intent://{{ STREAM_URL_NO_PROTO }}#Intent;package=org.videolan.vlc;type=video/*;end" class="btn-outline flex items-center p-6 rounded-3xl group relative overflow-hidden">
-                            <div class="absolute inset-0 bg-orange-500/5 translate-y-full group-hover:translate-y-0 transition-transform duration-500"></div>
-                            <div class="p-4 bg-orange-500/10 rounded-2xl mr-5 group-hover:bg-orange-500 group-hover:text-white transition-all">
-                                <i class="fab fa-vimeo-v text-xl"></i>
-                            </div>
-                            <div class="text-left">
-                                <p class="text-xs font-black uppercase tracking-widest text-orange-400 group-hover:text-white transition-colors">VLC Player</p>
-                                <p class="text-[9px] font-bold text-slate-500 group-hover:text-orange-200 uppercase mt-1">Open source Pro</p>
-                            </div>
-                        </a>
-
-                        <a href="intent://{{ STREAM_URL_NO_PROTO }}#Intent;package=com.playit.videoplayer;type=video/*;end" class="btn-outline flex items-center p-6 rounded-3xl group relative overflow-hidden">
-                            <div class="absolute inset-0 bg-indigo-500/5 translate-y-full group-hover:translate-y-0 transition-transform duration-500"></div>
-                            <div class="p-4 bg-indigo-500/10 rounded-2xl mr-5 group-hover:bg-indigo-500 group-hover:text-white transition-all">
-                                <i class="fas fa-bolt text-xl"></i>
-                            </div>
-                            <div class="text-left">
-                                <p class="text-xs font-black uppercase tracking-widest text-indigo-400 group-hover:text-white transition-colors">PLAYit</p>
-                                <p class="text-[9px] font-bold text-slate-500 group-hover:text-indigo-200 uppercase mt-1">Ultra Light Player</p>
-                            </div>
-                        </a>
-                    </div>
-                </div>
-
-                <!-- Footer Features -->
-                <div class="grid grid-cols-2 md:grid-cols-4 gap-6 pt-6 border-t border-white/5">
-                    <div class="text-center space-y-2">
-                        <i class="fas fa-bolt-lightning text-sky-500"></i>
-                        <p class="text-[10px] font-black uppercase text-slate-400">ɪɴsᴛᴀɴᴛ ᴘʟᴀʏ</p>
-                    </div>
-                    <div class="text-center space-y-2">
-                        <i class="fas fa-mobile-screen text-purple-500"></i>
-                        <p class="text-[10px] font-black uppercase text-slate-400">ᴍᴏʙɪʟᴇ ᴏᴘᴛɪᴍɪᴢᴇᴅ</p>
-                    </div>
-                    <div class="text-center space-y-2">
-                        <i class="fas fa-gauge-high text-emerald-500"></i>
-                        <p class="text-[10px] font-black uppercase text-slate-400">ᴀᴜᴛᴏ ǫᴜᴀʟɪᴛʏ</p>
-                    </div>
-                    <div class="text-center space-y-2">
-                        <i class="fas fa-rotate-left text-orange-500"></i>
-                        <p class="text-[10px] font-black uppercase text-slate-400">ʀᴇsᴜᴍᴇ sᴜᴘᴘᴏʀᴛ</p>
+                    <!-- Right: Direct Actions -->
+                    <div class="flex flex-col justify-end space-y-4">
+                        <p class="text-xs font-bold uppercase tracking-[0.2em] text-slate-500 px-1">Direct Actions</p>
+                        <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                            <a href="{{ DOWNLOAD_URL }}" class="btn-gradient flex items-center justify-center space-x-3 p-5 rounded-2xl">
+                                <i class="fas fa-cloud-arrow-down"></i>
+                                <span class="text-xs font-bold uppercase">Download</span>
+                            </a>
+                            <button onclick="copyToClipboard()" class="action-card flex items-center justify-center space-x-3 p-5 rounded-2xl">
+                                <i class="fas fa-copy text-sky-400"></i>
+                                <span class="text-xs font-bold uppercase">Copy Link</span>
+                            </button>
+                        </div>
                     </div>
                 </div>
             </div>
         </main>
 
-        <!-- Footer -->
-        <footer class="text-center py-8">
-            <p class="text-slate-600 text-[10px] font-black uppercase tracking-widest">
-                © 2025 ˹ ᴀɴɪᴢᴏɴᴇꜰʟɪx ˼ • ᴍᴀᴅᴇ ᴡɪᴛʜ <i class="fas fa-heart text-red-500 mx-1"></i> ꜰᴏʀ ᴀɴɪᴍᴇ ʟᴏᴠᴇʀs
+        <footer class="text-center py-10">
+            <p class="text-[10px] font-bold uppercase tracking-[0.3em] text-slate-600">
+                © 2025 ˹ ᴀɴɪᴢᴏɴᴇꜰʟɪx ˼ • Powered by CodexBotz
             </p>
         </footer>
     </div>
 
+    <!-- Toast Notification -->
+    <div id="toast"></div>
+
     <script src="https://vjs.zencdn.net/8.10.0/video.min.js"></script>
     <script>
-        // Smooth player transition
-        const player = videojs('player');
-        player.on('ready', () => {
-            console.log('AniZoneFlix Player Ready');
+        const player = videojs('ani-player', {
+            responsive: true,
+            fluid: true,
+            playbackRates: [0.5, 1, 1.5, 2]
         });
+
+        const streamUrl = "{{ STREAM_URL }}";
+        const cleanStreamUrl = streamUrl.replace('https://', '').replace('http://', '');
+
+        function showToast(msg) {
+            const toast = document.getElementById("toast");
+            toast.innerHTML = msg;
+            toast.className = "show";
+            setTimeout(() => { toast.className = toast.className.replace("show", ""); }, 3000);
+        }
+
+        function openPlayer(type) {
+            let intent;
+            const fileName = encodeURIComponent("{{ FILE_NAME }}");
+
+            // Fix: Added type=video/* to force player selection and avoid Play Store redirect on some browsers
+            switch(type) {
+                case 'mx':
+                    intent = `intent://${cleanStreamUrl}#Intent;package=com.mxtech.videoplayer.ad;type=video/*;S.title=${fileName};end`;
+                    break;
+                case 'playit':
+                    intent = `intent://${cleanStreamUrl}#Intent;package=com.playit.videoplayer;type=video/*;S.title=${fileName};end`;
+                    break;
+                case 'vlc':
+                    intent = `intent://${cleanStreamUrl}#Intent;package=org.videolan.vlc;type=video/*;S.title=${fileName};end`;
+                    break;
+            }
+
+            // Fallback system to detect if app opened
+            const start = Date.now();
+            window.location.href = intent;
+
+            setTimeout(() => {
+                if (Date.now() - start < 1500) {
+                    showToast("<i class='fas fa-circle-exclamation mr-2'></i> Player not installed!");
+                }
+            }, 1000);
+        }
+
+        function copyToClipboard() {
+            const el = document.createElement('textarea');
+            el.value = streamUrl;
+            document.body.appendChild(el);
+            el.select();
+            document.execCommand('copy');
+            document.body.removeChild(el);
+            showToast("<i class='fas fa-check-circle mr-2 text-emerald-400'></i> Link copied to clipboard!");
+        }
     </script>
 </body>
 </html>

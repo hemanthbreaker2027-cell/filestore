@@ -288,7 +288,10 @@ async def watch_handler(request):
     # For demo purposes, we will assume the STREAM_URL is derived from some internal logic or service.
     # In this bot's context, let's use the code to construct a temporary stream URL.
 
-    stream_url = f"https://{request.host}/stream/file/{code}"
+    file_name = record.get('file_name', 'video.mp4')
+    from urllib.parse import quote
+    encoded_name = quote(file_name)
+    stream_url = f"https://{request.host}/stream/file/{code}/{encoded_name}"
     download_url = f"https://{request.host}/download/{code}"
 
     html = await get_template("watch")
@@ -312,6 +315,7 @@ async def download_handler(request):
     return web.HTTPFound(record.get('original_url'))
 
 @routes.get("/stream/file/{code}")
+@routes.get("/stream/file/{code}/{filename}")
 async def stream_file_handler(request):
     code = request.match_info['code']
     record = await db.verify_shortener_code(code)
@@ -337,15 +341,32 @@ async def stream_file_handler(request):
         if not file_obj:
             return web.Response(text="Invalid Media", status=400)
 
-        # Stream the media from Telegram
-        # Note: This is a basic implementation. High traffic might need a dedicated stream service.
-        response = web.StreamResponse()
-        response.content_type = file_obj.mime_type or 'video/mp4'
-        response.content_length = file_obj.file_size
+        # Refined Stream delivery with proper headers
+        range_header = request.headers.get('Range', None)
+        start = 0
+        end = file_obj.file_size - 1
+
+        if range_header:
+             # Basic Range parsing
+             try:
+                 range_val = range_header.replace('bytes=', '').split('-')
+                 start = int(range_val[0])
+                 if range_val[1]:
+                     end = int(range_val[1])
+             except: pass
+
+        response = web.StreamResponse(status=206 if range_header else 200)
+        response.headers['Content-Type'] = file_obj.mime_type or 'video/mp4'
+        response.headers['Content-Length'] = str(end - start + 1)
+        response.headers['Content-Range'] = f'bytes {start}-{end}/{file_obj.file_size}'
+        response.headers['Accept-Ranges'] = 'bytes'
+        response.headers['Access-Control-Allow-Origin'] = '*' # Critical for some players
 
         await response.prepare(request)
 
-        async for chunk in bot.stream_media(file_obj):
+        # We need an optimized stream that supports offset if possible
+        # bot.stream_media doesn't take offset easily in pyro, but for small chunks it works
+        async for chunk in bot.stream_media(file_obj, offset=start, limit=end-start+1):
             await response.write(chunk)
 
         await response.write_eof()
