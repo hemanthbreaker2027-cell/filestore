@@ -1,379 +1,154 @@
+
 <!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>˹ ᴀɴɪᴢᴏɴᴇꜰʟɪx ˼ - {{ FILE_NAME }}</title>
-    <script src="https://cdn.tailwindcss.com"></script>
-    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" rel="stylesheet">
-    <link href="https://vjs.zencdn.net/8.10.0/video-js.css" rel="stylesheet" />
-    <link href="https://unpkg.com/@videojs/themes@1/dist/city/index.css" rel="stylesheet">
-    <link rel="preconnect" href="{{ STREAM_URL }}">
+    <title>Stream - {{ FILE_NAME }}</title>
     <style>
-        @import url('https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;500;600;700&display=swap');
-
-        :root {
-            --primary: #0ea5e9;
-            --secondary: #6366f1;
-            --accent: #f43f5e;
-            --bg: #030712;
-            --glass: rgba(17, 24, 39, 0.75);
-        }
-
         body {
-            font-family: 'Space Grotesk', sans-serif;
-            background: var(--bg);
-            color: #f3f4f6;
-            overflow-x: hidden;
-            -webkit-tap-highlight-color: transparent;
+            margin: 0; padding: 0;
+            background: #050505;
+            color: #eee;
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+            -webkit-font-smoothing: antialiased;
         }
-
-        .anime-bg {
-            position: fixed;
+        .v-container {
+            width: 100%;
+            background: #000;
+            aspect-ratio: 16 / 9;
+            position: sticky;
             top: 0;
-            left: 0;
+            z-index: 100;
+        }
+        video {
             width: 100%;
             height: 100%;
-            z-index: -1;
-            background: linear-gradient(to bottom, rgba(3, 7, 18, 0.85), rgba(3, 7, 18, 1)),
-                        url('https://images.alphacoders.com/132/1322308.png');
-            background-size: cover;
-            background-position: center;
+            outline: none;
         }
-
-        .glass-panel {
-            background: var(--glass);
-            backdrop-filter: blur(24px);
-            -webkit-backdrop-filter: blur(24px);
-            border: 1px solid rgba(255, 255, 255, 0.08);
-            box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.7);
+        .content {
+            padding: 20px 15px;
         }
-
-        .video-container {
-            position: relative;
-            padding-top: 56.25%;
-            border-radius: 2rem;
-            overflow: hidden;
-            border: 1px solid rgba(255, 255, 255, 0.05);
+        .status {
+            display: inline-flex;
+            align-items: center;
+            color: #00ff88;
+            font-size: 10px;
+            font-weight: 800;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            margin-bottom: 12px;
+            background: rgba(0, 255, 136, 0.1);
+            padding: 4px 10px;
+            border-radius: 4px;
         }
-
-        .video-js {
-            position: absolute;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
+        .status::before {
+            content: "";
+            width: 6px; height: 6px;
+            background: #00ff88;
+            border-radius: 50%;
+            margin-right: 8px;
+            box-shadow: 0 0 8px #00ff88;
         }
-
-        .vjs-big-play-centered .vjs-big-play-button {
-            width: 80px !important;
-            height: 80px !important;
-            border-radius: 50% !important;
-            line-height: 80px !important;
-            background: var(--primary) !important;
-            border: none !important;
-            box-shadow: 0 0 30px rgba(14, 165, 233, 0.5) !important;
-        }
-
-        .action-card {
-            transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
-            border: 1px solid rgba(255, 255, 255, 0.05);
-            background: rgba(255, 255, 255, 0.02);
-        }
-
-        .action-card:hover {
-            transform: translateY(-6px) scale(1.02);
-            background: rgba(255, 255, 255, 0.06);
-            border-color: var(--primary);
-            box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.5);
-        }
-
-        .btn-gradient {
-            background: linear-gradient(135deg, var(--primary), var(--secondary));
-            transition: all 0.3s ease;
-        }
-
-        .btn-gradient:hover {
-            transform: scale(1.02);
-            box-shadow: 0 15px 30px -10px rgba(14, 165, 233, 0.6);
-        }
-
-        #toast {
-            visibility: hidden;
-            min-width: 280px;
-            background-color: #1f2937;
+        h1 {
+            font-size: 18px;
+            margin: 0 0 20px 0;
+            line-height: 1.4;
             color: #fff;
-            text-align: center;
-            border-radius: 16px;
-            padding: 20px;
-            position: fixed;
-            z-index: 1000;
-            left: 50%;
-            transform: translateX(-50%);
-            bottom: 30px;
-            font-size: 14px;
+            font-weight: 700;
+        }
+        .p-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 12px;
+        }
+        .p-btn {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            background: #111;
+            border: 1px solid #222;
+            color: #fff;
+            text-decoration: none;
+            padding: 15px 10px;
+            border-radius: 10px;
+            font-size: 12px;
             font-weight: 600;
-            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.8);
-            border: 1px solid rgba(255, 255, 255, 0.1);
+            transition: all 0.2s;
         }
-
-        #toast.show {
-            visibility: visible;
-            animation: fadein 0.5s, fadeout 0.5s 2.5s;
+        .p-btn:active {
+            background: #222;
+            transform: scale(0.95);
         }
-
-        @keyframes fadein { from {bottom: 0; opacity: 0;} to {bottom: 30px; opacity: 1;} }
-        @keyframes fadeout { from {bottom: 30px; opacity: 1;} to {bottom: 0; opacity: 0;} }
+        .p-btn .icon {
+            font-size: 24px;
+            margin-bottom: 8px;
+        }
+        .section-title {
+            font-size: 11px;
+            color: #555;
+            font-weight: 800;
+            margin-bottom: 15px;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            display: flex;
+            align-items: center;
+        }
+        .section-title::after {
+            content: "";
+            flex: 1;
+            height: 1px;
+            background: #222;
+            margin-left: 10px;
+        }
+        .footer {
+            margin-top: 40px;
+            font-size: 10px;
+            color: #333;
+            text-align: center;
+            padding-bottom: 20px;
+            letter-spacing: 0.5px;
+        }
     </style>
 </head>
-<body class="min-h-screen p-4 md:p-8 lg:p-12">
-    <div class="anime-bg"></div>
+<body>
 
-    <div class="max-w-6xl mx-auto space-y-10">
-        <!-- Header -->
-        <header class="flex items-center justify-between glass-panel p-6 rounded-[2rem]">
-            <div class="flex items-center space-x-5">
-                <div class="relative">
-                    <div class="absolute inset-0 bg-sky-500 blur-2xl opacity-20 animate-pulse"></div>
-                    <div class="relative p-4 bg-sky-500/10 rounded-2xl border border-sky-500/20">
-                        <i class="fas fa-crown text-sky-400 text-2xl"></i>
-                    </div>
-                </div>
-                <div>
-                    <h1 class="text-3xl font-bold tracking-tight text-white">˹ ᴀɴɪᴢᴏɴᴇꜰʟɪx ˼</h1>
-                    <div class="flex items-center space-x-2 text-[10px] font-bold uppercase tracking-[0.3em] text-slate-400 mt-1">
-                        <span class="flex h-2 w-2 rounded-full bg-emerald-500 animate-pulse"></span>
-                        <span class="text-emerald-400">Zero-Buffering Engine Active</span>
-                    </div>
-                </div>
-            </div>
+<div class="v-container">
+    <video controls autoplay playsinline preload="auto">
+        <source src="{{ STREAM_URL }}" type="video/mp4">
+    </video>
+</div>
 
-            <div class="hidden md:flex items-center space-x-4">
-                <div class="flex flex-col items-end">
-                    <span class="text-[10px] font-bold text-slate-500 uppercase tracking-widest">Network Status</span>
-                    <span class="text-xs font-black text-emerald-400">⚡ 10.0 GBPS</span>
-                </div>
-            </div>
-        </header>
+<div class="content">
+    <div class="status">ENGINE V6 ACTIVE</div>
+    <h1>{{ FILE_NAME }}</h1>
 
-        <!-- Player Section -->
-        <main class="space-y-10">
-            <div class="relative group">
-                <div class="absolute -inset-1 bg-gradient-to-r from-sky-500 to-indigo-500 rounded-[2.5rem] blur opacity-25 group-hover:opacity-50 transition duration-1000 group-hover:duration-200"></div>
-                <div class="video-container glass-panel relative">
-                    <video id="ani-player" class="video-js vjs-theme-city vjs-big-play-centered" controls preload="auto" crossorigin="anonymous">
-                        <source src="{{ STREAM_URL }}" type="video/mp4">
-                    </video>
-                </div>
-            </div>
+    <div class="section-title">External Players</div>
 
-            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-                <button onclick="boostSpeed()" class="glass-panel p-6 rounded-3xl flex items-center justify-between group hover:border-emerald-500/50 transition-all">
-                    <div class="flex items-center space-x-4">
-                        <div class="p-3 bg-emerald-500/20 rounded-2xl text-emerald-400">
-                            <i class="fas fa-bolt-lightning text-xl animate-bounce"></i>
-                        </div>
-                        <div class="text-left">
-                            <h3 class="font-bold text-white uppercase tracking-wider">Speed Boost Mode</h3>
-                            <p class="text-[10px] text-slate-500 font-bold uppercase">Click to optimize buffering</p>
-                        </div>
-                    </div>
-                    <div id="boost-status" class="px-4 py-1 bg-slate-800 rounded-full text-[10px] font-black text-slate-400 uppercase">OFF</div>
-                </button>
-
-                <a href="{{ DOWNLOAD_URL }}" class="glass-panel p-6 rounded-3xl flex items-center justify-between group hover:border-sky-500/50 transition-all">
-                    <div class="flex items-center space-x-4">
-                        <div class="p-3 bg-sky-500/20 rounded-2xl text-sky-400">
-                            <i class="fas fa-gauge-high text-xl"></i>
-                        </div>
-                        <div class="text-left">
-                            <h3 class="font-bold text-white uppercase tracking-wider">Ultra Download</h3>
-                            <p class="text-[10px] text-slate-500 font-bold uppercase">Direct 10Gbps Link</p>
-                        </div>
-                    </div>
-                    <i class="fas fa-arrow-right text-slate-600 group-hover:text-sky-400 transition-colors"></i>
-                </a>
-            </div>
-
-            <!-- Content Area -->
-            <div class="glass-panel p-10 rounded-[3rem] space-y-12 border-t border-white/5">
-                <div class="flex flex-col md:flex-row md:items-end justify-between gap-8">
-                    <div class="space-y-6 flex-grow">
-                        <div class="flex flex-wrap gap-3">
-                            <span class="px-4 py-1.5 bg-sky-500/20 text-sky-400 text-[10px] font-bold uppercase rounded-full border border-sky-500/30">4K HDR</span>
-                            <span class="px-4 py-1.5 bg-indigo-500/20 text-indigo-400 text-[10px] font-bold uppercase rounded-full border border-indigo-500/30">Premium Asset</span>
-                            <span class="px-4 py-1.5 bg-emerald-500/20 text-emerald-400 text-[10px] font-bold uppercase rounded-full border border-emerald-500/30">Ad Free</span>
-                        </div>
-                        <h2 class="text-3xl md:text-5xl font-bold text-white leading-tight tracking-tight">{{ FILE_NAME }}</h2>
-                        <div class="flex items-center space-x-3 text-slate-400">
-                            <i class="fas fa-shield-halved text-sky-500"></i>
-                            <span class="text-xs font-bold uppercase tracking-widest">ᴀɴɪᴢᴏɴᴇ ᴘʀᴏᴛᴇᴄᴛᴇᴅ • sᴇᴄᴜʀᴇ ᴅᴇʟɪᴠᴇʀʏ</span>
-                        </div>
-                    </div>
-
-                    <div class="flex-shrink-0">
-                         <a href="{{ DOWNLOAD_URL }}" class="btn-gradient px-12 py-6 rounded-2xl flex items-center space-x-4 group">
-                            <i class="fas fa-cloud-arrow-down text-2xl group-hover:scale-110 transition-transform"></i>
-                            <span class="font-bold">DOWNLOAD NOW</span>
-                        </a>
-                    </div>
-                </div>
-
-                <div class="h-px bg-white/5"></div>
-
-                <!-- External Player Grid -->
-                <div class="space-y-8">
-                    <div class="flex items-center gap-6">
-                        <span class="text-xs font-bold text-slate-300 uppercase tracking-[0.4em] whitespace-nowrap">Open in Premium Player</span>
-                        <div class="h-px flex-grow bg-gradient-to-r from-slate-800 to-transparent"></div>
-                    </div>
-
-                    <div class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-4">
-                        <button onclick="openPlayer('mx')" class="action-card flex flex-col items-center justify-center p-4 rounded-2xl group relative overflow-hidden">
-                            <div class="absolute inset-0 bg-sky-500/10 translate-y-full group-hover:translate-y-0 transition-transform"></div>
-                            <div class="relative p-3 bg-sky-500/20 rounded-xl mb-3 group-hover:bg-sky-500 group-hover:text-white transition-all"><i class="fas fa-play text-lg"></i></div>
-                            <p class="relative text-[10px] font-bold uppercase tracking-widest text-white">MX Player</p>
-                        </button>
-
-                        <button onclick="openPlayer('vlc')" class="action-card flex flex-col items-center justify-center p-4 rounded-2xl group relative overflow-hidden">
-                            <div class="absolute inset-0 bg-orange-500/10 translate-y-full group-hover:translate-y-0 transition-transform"></div>
-                            <div class="relative p-3 bg-orange-500/20 rounded-xl mb-3 group-hover:bg-orange-500 group-hover:text-white transition-all"><i class="fab fa-vimeo-v text-lg"></i></div>
-                            <p class="relative text-[10px] font-bold uppercase tracking-widest text-white">VLC Media</p>
-                        </button>
-
-                        <button onclick="openPlayer('playit')" class="action-card flex flex-col items-center justify-center p-4 rounded-2xl group relative overflow-hidden">
-                            <div class="absolute inset-0 bg-indigo-500/10 translate-y-full group-hover:translate-y-0 transition-transform"></div>
-                            <div class="relative p-3 bg-indigo-500/20 rounded-xl mb-3 group-hover:bg-indigo-500 group-hover:text-white transition-all"><i class="fas fa-bolt text-lg"></i></div>
-                            <p class="relative text-[10px] font-bold uppercase tracking-widest text-white">PLAYit</p>
-                        </button>
-
-                        <button onclick="openPlayer('xplayer')" class="action-card flex flex-col items-center justify-center p-4 rounded-2xl group relative overflow-hidden">
-                            <div class="absolute inset-0 bg-emerald-500/10 translate-y-full group-hover:translate-y-0 transition-transform"></div>
-                            <div class="relative p-3 bg-emerald-500/20 rounded-xl mb-3 group-hover:bg-emerald-500 group-hover:text-white transition-all"><i class="fas fa-circle-play text-lg"></i></div>
-                            <p class="relative text-[10px] font-bold uppercase tracking-widest text-white">XPlayer</p>
-                        </button>
-
-                        <button onclick="openPlayer('kmplayer')" class="action-card flex flex-col items-center justify-center p-4 rounded-2xl group relative overflow-hidden">
-                            <div class="absolute inset-0 bg-rose-500/10 translate-y-full group-hover:translate-y-0 transition-transform"></div>
-                            <div class="relative p-3 bg-rose-500/20 rounded-xl mb-3 group-hover:bg-rose-500 group-hover:text-white transition-all"><i class="fas fa-compact-disc text-lg"></i></div>
-                            <p class="relative text-[10px] font-bold uppercase tracking-widest text-white">KMPlayer</p>
-                        </button>
-
-                        <button onclick="openPlayer('mx_pro')" class="action-card flex flex-col items-center justify-center p-4 rounded-2xl group relative overflow-hidden">
-                            <div class="absolute inset-0 bg-blue-500/10 translate-y-full group-hover:translate-y-0 transition-transform"></div>
-                            <div class="relative p-3 bg-blue-500/20 rounded-xl mb-3 group-hover:bg-blue-500 group-hover:text-white transition-all"><i class="fas fa-crown text-lg"></i></div>
-                            <p class="relative text-[10px] font-bold uppercase tracking-widest text-white">MX Pro</p>
-                        </button>
-
-                        <button onclick="openPlayer('nova')" class="action-card flex flex-col items-center justify-center p-4 rounded-2xl group relative overflow-hidden">
-                            <div class="absolute inset-0 bg-purple-500/10 translate-y-full group-hover:translate-y-0 transition-transform"></div>
-                            <div class="relative p-3 bg-purple-500/20 rounded-xl mb-3 group-hover:bg-purple-500 group-hover:text-white transition-all"><i class="fas fa-rocket text-lg"></i></div>
-                            <p class="relative text-[10px] font-bold uppercase tracking-widest text-white">Nova Player</p>
-                        </button>
-
-                        <button onclick="openPlayer('1dm')" class="action-card flex flex-col items-center justify-center p-4 rounded-2xl group relative overflow-hidden">
-                            <div class="absolute inset-0 bg-amber-500/10 translate-y-full group-hover:translate-y-0 transition-transform"></div>
-                            <div class="relative p-3 bg-amber-500/20 rounded-xl mb-3 group-hover:bg-amber-500 group-hover:text-white transition-all"><i class="fas fa-download text-lg"></i></div>
-                            <p class="relative text-[10px] font-bold uppercase tracking-widest text-white">1DM Tool</p>
-                        </button>
-                    </div>
-                </div>
-
-                <div class="flex justify-center">
-                    <button onclick="copyToClipboard()" class="flex items-center space-x-3 text-slate-500 hover:text-sky-400 transition-colors py-4">
-                        <i class="fas fa-link"></i>
-                        <span class="text-[10px] font-bold uppercase tracking-widest">Copy Stream Link</span>
-                    </button>
-                </div>
-            </div>
-        </main>
-
-        <footer class="text-center py-12">
-            <p class="text-[10px] font-bold uppercase tracking-[0.4em] text-slate-700">
-                © 2025 ˹ ᴀɴɪᴢᴏɴᴇꜰʟɪx ˼ • All Rights Reserved
-            </p>
-        </footer>
+    <div class="p-grid">
+        <a href="intent:{{ STREAM_URL }}#Intent;action=android.intent.action.VIEW;type=video/*;S.title={{ FILE_NAME }};package=com.mxtech.videoplayer.ad;end" class="p-btn">
+            <span class="icon">Ⓜ️</span>
+            MX PLAYER
+        </a>
+        <a href="intent:{{ STREAM_URL }}#Intent;action=android.intent.action.VIEW;type=video/*;S.title={{ FILE_NAME }};package=org.videolan.vlc;end" class="p-btn">
+            <span class="icon">🧡</span>
+            VLC PLAYER
+        </a>
+        <a href="intent:{{ STREAM_URL }}#Intent;action=android.intent.action.VIEW;type=video/*;S.title={{ FILE_NAME }};package=com.gravity.videoplayer;end" class="p-btn">
+            <span class="icon">▶️</span>
+            PLAYIT
+        </a>
+        <a href="intent:{{ STREAM_URL }}#Intent;action=android.intent.action.VIEW;type=video/*;S.title={{ FILE_NAME }};end" class="p-btn">
+            <span class="icon">⚡</span>
+            SYSTEM
+        </a>
     </div>
+</div>
 
-    <div id="toast"></div>
+<div class="footer">
+    &copy; 2025 ANIZONEFLIX SECURE STREAMING
+</div>
 
-    <script src="https://vjs.zencdn.net/8.10.0/video.min.js"></script>
-    <script>
-        const player = videojs('ani-player', {
-            responsive: true,
-            fluid: true,
-            playbackRates: [0.5, 1, 1.25, 1.5, 2],
-            html5: {
-                vhs: {
-                    overrideNative: true
-                },
-                nativeVideoTracks: false,
-                nativeAudioTracks: false,
-                nativeTextTracks: false
-            }
-        });
-
-        const streamUrl = "{{ STREAM_URL }}";
-
-        function boostSpeed() {
-            const btn = document.getElementById('boost-status');
-            btn.innerHTML = "INITIALIZING...";
-            btn.className = "px-4 py-1 bg-emerald-500 rounded-full text-[10px] font-black text-white uppercase animate-pulse";
-
-            // Artificial boost effect: preload data
-            const video = document.getElementById('ani-player_html5_api');
-            if (video) {
-                video.play();
-                setTimeout(() => {
-                    btn.innerHTML = "ACTIVE";
-                    btn.className = "px-4 py-1 bg-emerald-500 rounded-full text-[10px] font-black text-white uppercase";
-                    showToast("<i class='fas fa-bolt mr-2'></i> Zero-Buffering Mode Activated!");
-                }, 1500);
-            }
-        }
-
-        function showToast(msg) {
-            const toast = document.getElementById("toast");
-            toast.innerHTML = msg;
-            toast.className = "show";
-            setTimeout(() => { toast.className = ""; }, 3000);
-        }
-
-        function openPlayer(type) {
-            const fileName = encodeURIComponent("{{ FILE_NAME }}");
-            const streamUrl = "{{ STREAM_URL }}";
-            const cleanUrl = streamUrl.replace(/^https?:\/\//, '');
-            const scheme = streamUrl.startsWith('https') ? 'https' : 'http';
-
-            const intents = {
-                mx: `intent://${cleanUrl}#Intent;package=com.mxtech.videoplayer.ad;type=video/*;scheme=${scheme};S.title=${fileName};end`,
-                mx_pro: `intent://${cleanUrl}#Intent;package=com.mxtech.videoplayer.pro;type=video/*;scheme=${scheme};S.title=${fileName};end`,
-                vlc: `intent://${cleanUrl}#Intent;package=org.videolan.vlc;type=video/*;scheme=${scheme};S.title=${fileName};end`,
-                playit: `intent://${cleanUrl}#Intent;package=com.playit.videoplayer;type=video/*;scheme=${scheme};S.title=${fileName};end`,
-                xplayer: `intent://${cleanUrl}#Intent;package=com.videoplayer.videomplayer;type=video/*;scheme=${scheme};S.title=${fileName};end`,
-                kmplayer: `intent://${cleanUrl}#Intent;package=com.kmplayer;type=video/*;scheme=${scheme};S.title=${fileName};end`,
-                nova: `intent://${cleanUrl}#Intent;package=org.courville.nova;type=video/*;scheme=${scheme};S.title=${fileName};end`,
-                '1dm': `intent://${cleanUrl}#Intent;package=idm.internet.download.manager;type=video/*;scheme=${scheme};S.title=${fileName};end`
-            };
-
-            const start = Date.now();
-            window.location.href = intents[type];
-
-            setTimeout(() => {
-                const elapsed = Date.now() - start;
-                // Only show toast if app didn't launch (user stayed on page)
-                // and visibility state is still visible
-                if (elapsed < 3500 && document.visibilityState === 'visible') {
-                    showToast("<i class='fas fa-circle-exclamation mr-2 text-rose-500'></i> Player not found or failed to launch!");
-                }
-            }, 3000);
-        }
-
-        function copyToClipboard() {
-            navigator.clipboard.writeText(streamUrl).then(() => {
-                showToast("<i class='fas fa-check-circle mr-2 text-emerald-400'></i> Link copied to clipboard!");
-            });
-        }
-    </script>
 </body>
 </html>
