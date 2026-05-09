@@ -4,6 +4,7 @@ from pyrogram.types import Message, InlineKeyboardMarkup, InlineKeyboardButton, 
 from bot import Bot
 from config import OWNER_ID, ANIME_BANNERS
 from database.database import db
+from helper_func import admin
 import random
 
 def get_panel_markup(settings):
