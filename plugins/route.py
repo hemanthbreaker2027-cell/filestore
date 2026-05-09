@@ -272,9 +272,9 @@ async def wrapped_url_handler(request):
 
     return web.Response(text=html, content_type="text/html")
 
-@routes.get("/watch/{code}")
+@routes.get("/watch")
 async def watch_handler(request):
-    code = request.match_info['code']
+    code = request.query.get('path')
     record = await db.verify_shortener_code(code)
     if not record:
         return web.Response(text="Invalid or Expired Link", status=403)

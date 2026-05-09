@@ -164,7 +164,7 @@ async def send_files(client: Client, user_id: int, base64_string, messages=None)
 
                     buttons = []
                     if settings.get('stream_enabled', False):
-                        buttons.append([InlineKeyboardButton("▶ STREAM", url=f"https://{WEBSITE_URL}/watch/{code}")])
+                        buttons.append([InlineKeyboardButton("▶ STREAM", url=f"https://{WEBSITE_URL}/watch?path={code}")])
                     if settings.get('download_enabled', False):
                         buttons.append([InlineKeyboardButton("⬇ DOWNLOAD", url=f"https://{WEBSITE_URL}/download/{code}")])
 
