@@ -374,9 +374,16 @@ async def stream_file_handler(request):
 
         await response.prepare(request)
 
-        # Optimized streaming
+        # Optimized streaming with manual chunk management for "No Buffer" experience
+        # We use a larger chunk size for fast delivery
+        chunk_size = 1024 * 1024 # 1MB chunks
+
         async for chunk in bot.stream_media(file_obj, offset=start, limit=end-start+1):
+            if not chunk:
+                break
             await response.write(chunk)
+            # Ensure data is flushed to the client
+            await response.drain()
 
         await response.write_eof()
         return response

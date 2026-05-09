@@ -186,41 +186,41 @@
                 <!-- External Player Grid -->
                 <div class="space-y-8">
                     <div class="flex items-center gap-6">
-                        <span class="text-xs font-bold text-slate-300 uppercase tracking-[0.4em] whitespace-nowrap">Watch in External Player</span>
+                        <span class="text-xs font-bold text-slate-300 uppercase tracking-[0.4em] whitespace-nowrap">Open in Premium Player</span>
                         <div class="h-px flex-grow bg-gradient-to-r from-slate-800 to-transparent"></div>
                     </div>
 
                     <div class="grid grid-cols-1 sm:grid-cols-3 gap-6">
                         <button onclick="openPlayer('mx')" class="action-card flex items-center p-6 rounded-3xl group relative overflow-hidden">
-                            <div class="absolute inset-0 bg-sky-500/5 translate-y-full group-hover:translate-y-0 transition-transform duration-500"></div>
-                            <div class="p-4 bg-sky-500/10 rounded-2xl mr-6 group-hover:bg-sky-500 group-hover:text-white transition-all">
+                            <div class="absolute inset-0 bg-sky-500/10 translate-y-full group-hover:translate-y-0 transition-transform duration-500"></div>
+                            <div class="relative p-4 bg-sky-500/20 rounded-2xl mr-6 group-hover:bg-sky-500 group-hover:text-white transition-all border border-sky-500/30">
                                 <i class="fas fa-play text-xl"></i>
                             </div>
-                            <div class="text-left">
-                                <p class="text-xs font-bold uppercase tracking-widest text-sky-400 group-hover:text-white">MX Player</p>
-                                <p class="text-[9px] font-bold text-slate-500 uppercase mt-1">Best performance</p>
-                            </div>
-                        </button>
-
-                        <button onclick="openPlayer('playit')" class="action-card flex items-center p-6 rounded-3xl group relative overflow-hidden">
-                            <div class="absolute inset-0 bg-indigo-500/5 translate-y-full group-hover:translate-y-0 transition-transform duration-500"></div>
-                            <div class="p-4 bg-indigo-500/10 rounded-2xl mr-6 group-hover:bg-indigo-500 group-hover:text-white transition-all">
-                                <i class="fas fa-bolt text-xl"></i>
-                            </div>
-                            <div class="text-left">
-                                <p class="text-xs font-bold uppercase tracking-widest text-indigo-400 group-hover:text-white">PLAYit</p>
-                                <p class="text-[9px] font-bold text-slate-500 uppercase mt-1">Ultra Light Player</p>
+                            <div class="relative text-left">
+                                <p class="text-sm font-bold uppercase tracking-widest text-white">MX Player</p>
+                                <p class="text-[9px] font-bold text-sky-400 uppercase mt-1">Recommended</p>
                             </div>
                         </button>
 
                         <button onclick="openPlayer('vlc')" class="action-card flex items-center p-6 rounded-3xl group relative overflow-hidden">
-                            <div class="absolute inset-0 bg-orange-500/5 translate-y-full group-hover:translate-y-0 transition-transform duration-500"></div>
-                            <div class="p-4 bg-orange-500/10 rounded-2xl mr-6 group-hover:bg-orange-500 group-hover:text-white transition-all">
+                            <div class="absolute inset-0 bg-orange-500/10 translate-y-full group-hover:translate-y-0 transition-transform duration-500"></div>
+                            <div class="relative p-4 bg-orange-500/20 rounded-2xl mr-6 group-hover:bg-orange-500 group-hover:text-white transition-all border border-orange-500/30">
                                 <i class="fab fa-vimeo-v text-xl"></i>
                             </div>
-                            <div class="text-left">
-                                <p class="text-xs font-bold uppercase tracking-widest text-orange-400 group-hover:text-white">VLC Player</p>
-                                <p class="text-[9px] font-bold text-slate-500 uppercase mt-1">Open source Pro</p>
+                            <div class="relative text-left">
+                                <p class="text-sm font-bold uppercase tracking-widest text-white">VLC Media</p>
+                                <p class="text-[9px] font-bold text-orange-400 uppercase mt-1">Original Quality</p>
+                            </div>
+                        </button>
+
+                        <button onclick="openPlayer('playit')" class="action-card flex items-center p-6 rounded-3xl group relative overflow-hidden">
+                            <div class="absolute inset-0 bg-indigo-500/10 translate-y-full group-hover:translate-y-0 transition-transform duration-500"></div>
+                            <div class="relative p-4 bg-indigo-500/20 rounded-2xl mr-6 group-hover:bg-indigo-500 group-hover:text-white transition-all border border-indigo-500/30">
+                                <i class="fas fa-bolt text-xl"></i>
+                            </div>
+                            <div class="relative text-left">
+                                <p class="text-sm font-bold uppercase tracking-widest text-white">PLAYit</p>
+                                <p class="text-[9px] font-bold text-indigo-400 uppercase mt-1">Fast & Simple</p>
                             </div>
                         </button>
                     </div>
@@ -262,34 +262,39 @@
         }
 
         function openPlayer(type) {
-            let intent;
             const fileName = encodeURIComponent("{{ FILE_NAME }}");
+            let intent;
 
-            // Refined Intent Scheme: Pass data as URI to avoid parsing issues
-            // Force action.VIEW and clear specific flags for better app triggering
-            const baseIntent = `#Intent;action=android.intent.action.VIEW;type=video/*;S.title=${fileName};end`;
+            // Premium Intent logic: bypass Play Store redirects and force app launch
+            const intentMap = {
+                mx: `intent:${streamUrl}#Intent;package=com.mxtech.videoplayer.ad;S.title=${fileName};end`,
+                vlc: `intent:${streamUrl}#Intent;package=org.videolan.vlc;S.title=${fileName};end`,
+                playit: `playit://playurl?url=${encodeURIComponent(streamUrl)}&title=${fileName}`
+            };
 
-            switch(type) {
-                case 'mx':
-                    intent = `intent:${streamUrl}${baseIntent.replace('end', 'package=com.mxtech.videoplayer.ad;end')}`;
-                    break;
-                case 'playit':
-                    intent = `intent:${streamUrl}${baseIntent.replace('end', 'package=com.playit.videoplayer;end')}`;
-                    break;
-                case 'vlc':
-                    intent = `intent:${streamUrl}${baseIntent.replace('end', 'package=org.videolan.vlc;end')}`;
-                    break;
+            intent = intentMap[type];
+
+            // Special handling for PLAYit deep link
+            if (type === 'playit') {
+                const start = Date.now();
+                window.location.href = intent;
+                setTimeout(() => {
+                    if (Date.now() - start < 2000) {
+                        // Fallback to intent if deep link fails
+                        window.location.href = `intent:${streamUrl}#Intent;package=com.playit.videoplayer;S.title=${fileName};end`;
+                    }
+                }, 1500);
+                return;
             }
 
             const start = Date.now();
             window.location.href = intent;
 
-            // Detect if app didn't open (user stayed on page)
             setTimeout(() => {
-                if (Date.now() - start < 1500) {
-                    showToast("<i class='fas fa-circle-exclamation mr-2 text-rose-500'></i> Player not installed!");
+                if (Date.now() - start < 2000) {
+                    showToast("<i class='fas fa-circle-exclamation mr-2 text-rose-500'></i> " + type.toUpperCase() + " Player not found!");
                 }
-            }, 1000);
+            }, 1500);
         }
 
         function copyToClipboard() {
