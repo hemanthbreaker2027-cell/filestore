@@ -264,39 +264,24 @@
         function openPlayer(type) {
             const fileName = encodeURIComponent("{{ FILE_NAME }}");
             const streamUrl = "{{ STREAM_URL }}";
-            let intent;
 
-            // Refined Intent logic with explicit action and improved compatibility
-            const baseIntent = (pkg) => `intent:${streamUrl}#Intent;action=android.intent.action.VIEW;package=${pkg};S.title=${fileName};end`;
+            const intentMap = {
+                mx: `intent:${streamUrl}#Intent;action=android.intent.action.VIEW;package=com.mxtech.videoplayer.ad;S.title=${fileName};end`,
+                vlc: `intent:${streamUrl}#Intent;action=android.intent.action.VIEW;package=org.videolan.vlc;S.title=${fileName};end`,
+                playit: `intent:${streamUrl}#Intent;action=android.intent.action.VIEW;package=com.playit.videoplayer;S.title=${fileName};end`
+            };
 
             const start = Date.now();
-
-            if (type === 'playit') {
-                // Try direct deep link first, then fallback to intent
-                window.location.href = `playit://playurl?url=${encodeURIComponent(streamUrl)}&title=${fileName}`;
-                setTimeout(() => {
-                    if (Date.now() - start < 1500) {
-                        window.location.href = baseIntent('com.playit.videoplayer');
-                    }
-                }, 1000);
-            } else if (type === 'vlc') {
-                // Try VLC protocol first
-                window.location.href = `vlc://${streamUrl.replace(/^https?:\/\//, '')}`;
-                setTimeout(() => {
-                    if (Date.now() - start < 1500) {
-                        window.location.href = baseIntent('org.videolan.vlc');
-                    }
-                }, 1000);
-            } else {
-                // MX Player
-                window.location.href = baseIntent('com.mxtech.videoplayer.ad');
-            }
+            window.location.href = intentMap[type];
 
             setTimeout(() => {
-                if (Date.now() - start < 2500) {
+                const timeDiff = Date.now() - start;
+                // If we're still on the page after 2.5s and the app didn't open (timeDiff is small)
+                // We show the toast. Also check document visibility.
+                if (timeDiff < 3000 && !document.hidden && !document.webkitHidden) {
                     showToast("<i class='fas fa-circle-exclamation mr-2 text-rose-500'></i> " + type.toUpperCase() + " Player not found!");
                 }
-            }, 2000);
+            }, 2500);
         }
 
         function copyToClipboard() {

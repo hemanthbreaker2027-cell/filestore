@@ -372,11 +372,21 @@ async def stream_file_handler(request, is_download=False):
         await response.prepare(request)
 
         # Optimized streaming loop for low latency and high throughput
-        # Explicit drain and no-cache ensures no intermediate buffering
+        # Manual buffering of chunks to satisfy high-speed players like MX/Playit
+        buffer = b""
+        buffer_size = 1024 * 1024 # 1MB Buffer
+
         async for chunk in bot.stream_media(file_obj, offset=start, limit=end-start+1):
             if not chunk:
                 break
-            await response.write(chunk)
+            buffer += chunk
+            if len(buffer) >= buffer_size:
+                await response.write(buffer)
+                await response.drain()
+                buffer = b""
+
+        if buffer:
+            await response.write(buffer)
             await response.drain()
 
         await response.write_eof()
