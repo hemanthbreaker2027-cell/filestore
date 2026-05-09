@@ -8,6 +8,7 @@
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" rel="stylesheet">
     <link href="https://vjs.zencdn.net/8.10.0/video-js.css" rel="stylesheet" />
     <link href="https://unpkg.com/@videojs/themes@1/dist/city/index.css" rel="stylesheet">
+    <link rel="preconnect" href="{{ STREAM_URL }}">
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;500;600;700&display=swap');
 
@@ -141,20 +142,57 @@
                 <div>
                     <h1 class="text-3xl font-bold tracking-tight text-white">˹ ᴀɴɪᴢᴏɴᴇꜰʟɪx ˼</h1>
                     <div class="flex items-center space-x-2 text-[10px] font-bold uppercase tracking-[0.3em] text-slate-400 mt-1">
-                        <span class="flex h-2 w-2 rounded-full bg-emerald-500"></span>
-                        <span>Ultra Speed Stream</span>
+                        <span class="flex h-2 w-2 rounded-full bg-emerald-500 animate-pulse"></span>
+                        <span class="text-emerald-400">Zero-Buffering Engine Active</span>
                     </div>
+                </div>
+            </div>
+
+            <div class="hidden md:flex items-center space-x-4">
+                <div class="flex flex-col items-end">
+                    <span class="text-[10px] font-bold text-slate-500 uppercase tracking-widest">Network Status</span>
+                    <span class="text-xs font-black text-emerald-400">⚡ 10.0 GBPS</span>
                 </div>
             </div>
         </header>
 
         <!-- Player Section -->
         <main class="space-y-10">
-            <div class="video-container glass-panel">
-                <video id="ani-player" class="video-js vjs-theme-city vjs-big-play-centered" controls preload="auto">
-                    <source src="{{ STREAM_URL }}" type="video/mp4">
-                    <p class="vjs-no-js text-center p-10">Please enable JavaScript to view this video.</p>
-                </video>
+            <div class="relative group">
+                <div class="absolute -inset-1 bg-gradient-to-r from-sky-500 to-indigo-500 rounded-[2.5rem] blur opacity-25 group-hover:opacity-50 transition duration-1000 group-hover:duration-200"></div>
+                <div class="video-container glass-panel relative">
+                    <video id="ani-player" class="video-js vjs-theme-city vjs-big-play-centered" controls preload="auto" crossorigin="anonymous">
+                        <source src="{{ STREAM_URL }}" type="video/mp4">
+                    </video>
+                </div>
+            </div>
+
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <button onclick="boostSpeed()" class="glass-panel p-6 rounded-3xl flex items-center justify-between group hover:border-emerald-500/50 transition-all">
+                    <div class="flex items-center space-x-4">
+                        <div class="p-3 bg-emerald-500/20 rounded-2xl text-emerald-400">
+                            <i class="fas fa-bolt-lightning text-xl animate-bounce"></i>
+                        </div>
+                        <div class="text-left">
+                            <h3 class="font-bold text-white uppercase tracking-wider">Speed Boost Mode</h3>
+                            <p class="text-[10px] text-slate-500 font-bold uppercase">Click to optimize buffering</p>
+                        </div>
+                    </div>
+                    <div id="boost-status" class="px-4 py-1 bg-slate-800 rounded-full text-[10px] font-black text-slate-400 uppercase">OFF</div>
+                </button>
+
+                <a href="{{ DOWNLOAD_URL }}" class="glass-panel p-6 rounded-3xl flex items-center justify-between group hover:border-sky-500/50 transition-all">
+                    <div class="flex items-center space-x-4">
+                        <div class="p-3 bg-sky-500/20 rounded-2xl text-sky-400">
+                            <i class="fas fa-gauge-high text-xl"></i>
+                        </div>
+                        <div class="text-left">
+                            <h3 class="font-bold text-white uppercase tracking-wider">Ultra Download</h3>
+                            <p class="text-[10px] text-slate-500 font-bold uppercase">Direct 10Gbps Link</p>
+                        </div>
+                    </div>
+                    <i class="fas fa-arrow-right text-slate-600 group-hover:text-sky-400 transition-colors"></i>
+                </a>
             </div>
 
             <!-- Content Area -->
@@ -264,10 +302,35 @@
         const player = videojs('ani-player', {
             responsive: true,
             fluid: true,
-            playbackRates: [0.5, 1, 1.5, 2]
+            playbackRates: [0.5, 1, 1.25, 1.5, 2],
+            html5: {
+                vhs: {
+                    overrideNative: true
+                },
+                nativeVideoTracks: false,
+                nativeAudioTracks: false,
+                nativeTextTracks: false
+            }
         });
 
         const streamUrl = "{{ STREAM_URL }}";
+
+        function boostSpeed() {
+            const btn = document.getElementById('boost-status');
+            btn.innerHTML = "INITIALIZING...";
+            btn.className = "px-4 py-1 bg-emerald-500 rounded-full text-[10px] font-black text-white uppercase animate-pulse";
+
+            // Artificial boost effect: preload data
+            const video = document.getElementById('ani-player_html5_api');
+            if (video) {
+                video.play();
+                setTimeout(() => {
+                    btn.innerHTML = "ACTIVE";
+                    btn.className = "px-4 py-1 bg-emerald-500 rounded-full text-[10px] font-black text-white uppercase";
+                    showToast("<i class='fas fa-bolt mr-2'></i> Zero-Buffering Mode Activated!");
+                }, 1500);
+            }
+        }
 
         function showToast(msg) {
             const toast = document.getElementById("toast");

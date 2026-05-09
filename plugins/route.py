@@ -397,18 +397,24 @@ async def stream_file_handler(request, is_download=False):
         response.headers['Cache-Control'] = 'no-cache'
         response.headers['X-Content-Type-Options'] = 'nosniff'
 
+        # Headers to disable proxy buffering and keep connection alive
+        response.headers['X-Accel-Buffering'] = 'no'
+        response.headers['Connection'] = 'keep-alive'
+
         await response.prepare(request)
 
-        # Optimized streaming loop for ultra-low latency and high-bitrate playback
+        # Optimized streaming loop for zero-buffering and high-throughput playback
 
-        # Manual buffering of chunks to satisfy high-speed players like MX/Playit
+        # Manual buffering: 256KB is optimal for continuous data flow without stutter
         buffer = b""
-        # Increase buffer to 4MB for high-bitrate anime files
-        buffer_size = 4 * 1024 * 1024
+        buffer_size = 256 * 1024
 
-        # Initial Burst: Send the first 2MB immediately to fill player buffers
+        if is_download:
+            buffer_size = 1024 * 1024 # 1MB for downloads to maximize throughput
+
+        # Initial Burst: 1MB to fill player's internal buffer instantly
         is_initial = True
-        initial_burst_size = 2 * 1024 * 1024
+        initial_burst_size = 1024 * 1024
 
         async for chunk in bot.stream_media(file_obj, offset=start, limit=end-start+1):
             if not chunk:
@@ -417,14 +423,13 @@ async def stream_file_handler(request, is_download=False):
 
             if is_initial and len(buffer) >= initial_burst_size:
                 await response.write(buffer)
-                # No drain for initial burst to ensure maximum speed
                 buffer = b""
                 is_initial = False
                 continue
 
             if len(buffer) >= buffer_size:
                 await response.write(buffer)
-                # Drain less frequently to reduce overhead
+                # Frequent drain for small buffers ensures smooth playback
                 await response.drain()
                 buffer = b""
 

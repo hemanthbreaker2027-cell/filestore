@@ -50,16 +50,8 @@ async def send_files(client: Client, user_id: int, base64_string, messages=None)
         return
 
     try:
-        temp_msg = await client.send_photo(
-            chat_id=user_id,
-            photo=random.choice(ANIME_BANNERS),
-            caption="━━━━━━━━━━━━━━━━━━━\n<b>🔍 ˹ ᴘʀᴏᴄᴇssɪɴɢ ʏᴏᴜʀ ʀᴇǫᴜᴇsᴛ ˼... ⚡️</b>\n━━━━━━━━━━━━━━━━━━━"
-        )
-    except Exception as e:
-        print(f"Error sending processing msg: {e}")
+        # Instant delivery: Skip processing message to reduce roundtrips and latency
         temp_msg = None
-
-    try:
         string = await decode(base64_string)
         argument = string.split("-")
 
@@ -90,10 +82,11 @@ async def send_files(client: Client, user_id: int, base64_string, messages=None)
             print(f"Error getting messages: {e}")
             return
         finally:
-            try:
-                await temp_msg.delete()
-            except:
-                pass
+            if temp_msg:
+                try:
+                    await temp_msg.delete()
+                except:
+                    pass
 
         AniZoneFlix_msgs = []
         # File auto-delete time in seconds
