@@ -306,24 +306,17 @@ async def watch_handler(request):
 
 @routes.get("/download/{code}")
 async def download_handler(request):
-    code = request.match_info['code']
-    record = await db.verify_shortener_code(code)
-    if not record:
-        return web.Response(text="Invalid or Expired Link", status=403)
-
-    # Redirect to the actual file or bot
-    return web.HTTPFound(record.get('original_url'))
+    return await stream_file_handler(request, is_download=True)
 
 @routes.get("/stream/file/{code}")
 @routes.get("/stream/file/{code}/{filename}")
-async def stream_file_handler(request):
-    code = request.match_info['code']
+async def stream_file_handler(request, is_download=False):
+    code = request.match_info.get('code')
     record = await db.verify_shortener_code(code)
     if not record:
         return web.Response(text="Invalid or Expired Link", status=403)
 
     # Extract message ID from original_url
-    # original_url format: https://t.me/botname?start=get-MSGID
     import re
     match = re.search(r"get-(\d+)", record.get('original_url', ''))
     if not match:
@@ -341,13 +334,15 @@ async def stream_file_handler(request):
         if not file_obj:
             return web.Response(text="Invalid Media", status=400)
 
+        file_size = file_obj.file_size
+        file_name = file_obj.file_name or "file"
+
         # Refined Stream delivery with proper headers
         range_header = request.headers.get('Range', None)
         start = 0
-        end = file_obj.file_size - 1
+        end = file_size - 1
 
         if range_header:
-             # Basic Range parsing
              try:
                  range_val = range_header.replace('bytes=', '').split('-')
                  start = int(range_val[0])
@@ -355,34 +350,33 @@ async def stream_file_handler(request):
                      end = int(range_val[1])
              except: pass
 
-        response = web.StreamResponse(status=206 if range_header else 200)
-        response.headers['Content-Type'] = file_obj.mime_type or 'video/mp4'
-        response.headers['Content-Length'] = str(end - start + 1)
-        if range_header:
-            response.headers['Content-Range'] = f'bytes {start}-{end}/{file_obj.file_size}'
-        response.headers['Accept-Ranges'] = 'bytes'
-        response.headers['Access-Control-Allow-Origin'] = '*'
-        response.headers['Access-Control-Allow-Methods'] = 'GET, OPTIONS'
-        response.headers['Access-Control-Allow-Headers'] = 'Range, Content-Type'
-        response.headers['Access-Control-Expose-Headers'] = 'Content-Range, Content-Length, Accept-Ranges'
+        status = 206 if range_header else 200
+        response = web.StreamResponse(status=status)
 
-        # Improve MIME type detection
-        if not file_obj.mime_type:
-            ext = os.path.splitext(file_obj.file_name or '')[1].lower()
-            mimes = {'.mkv': 'video/x-matroska', '.mp4': 'video/mp4', '.avi': 'video/x-msvideo', '.m3u8': 'application/x-mpegURL'}
-            response.headers['Content-Type'] = mimes.get(ext, 'video/mp4')
+        # Headers for Buffering and Download
+        response.headers['Content-Type'] = file_obj.mime_type or 'application/octet-stream'
+        response.headers['Content-Length'] = str(end - start + 1)
+        response.headers['Accept-Ranges'] = 'bytes'
+
+        if range_header:
+            response.headers['Content-Range'] = f'bytes {start}-{end}/{file_size}'
+
+        if is_download:
+            from urllib.parse import quote
+            response.headers['Content-Disposition'] = f'attachment; filename="{quote(file_name)}"'
+
+        # CORS and Performance
+        response.headers['Access-Control-Allow-Origin'] = '*'
+        response.headers['Cache-Control'] = 'no-cache'
 
         await response.prepare(request)
 
-        # Optimized streaming with manual chunk management for "No Buffer" experience
-        # We use a larger chunk size for fast delivery
-        chunk_size = 1024 * 1024 # 1MB chunks
-
+        # Optimized streaming loop for low latency and high throughput
+        # Explicit drain and no-cache ensures no intermediate buffering
         async for chunk in bot.stream_media(file_obj, offset=start, limit=end-start+1):
             if not chunk:
                 break
             await response.write(chunk)
-            # Ensure data is flushed to the client
             await response.drain()
 
         await response.write_eof()

@@ -263,38 +263,40 @@
 
         function openPlayer(type) {
             const fileName = encodeURIComponent("{{ FILE_NAME }}");
+            const streamUrl = "{{ STREAM_URL }}";
             let intent;
 
-            // Premium Intent logic: bypass Play Store redirects and force app launch
-            const intentMap = {
-                mx: `intent:${streamUrl}#Intent;package=com.mxtech.videoplayer.ad;S.title=${fileName};end`,
-                vlc: `intent:${streamUrl}#Intent;package=org.videolan.vlc;S.title=${fileName};end`,
-                playit: `playit://playurl?url=${encodeURIComponent(streamUrl)}&title=${fileName}`
-            };
-
-            intent = intentMap[type];
-
-            // Special handling for PLAYit deep link
-            if (type === 'playit') {
-                const start = Date.now();
-                window.location.href = intent;
-                setTimeout(() => {
-                    if (Date.now() - start < 2000) {
-                        // Fallback to intent if deep link fails
-                        window.location.href = `intent:${streamUrl}#Intent;package=com.playit.videoplayer;S.title=${fileName};end`;
-                    }
-                }, 1500);
-                return;
-            }
+            // Refined Intent logic with explicit action and improved compatibility
+            const baseIntent = (pkg) => `intent:${streamUrl}#Intent;action=android.intent.action.VIEW;package=${pkg};S.title=${fileName};end`;
 
             const start = Date.now();
-            window.location.href = intent;
+
+            if (type === 'playit') {
+                // Try direct deep link first, then fallback to intent
+                window.location.href = `playit://playurl?url=${encodeURIComponent(streamUrl)}&title=${fileName}`;
+                setTimeout(() => {
+                    if (Date.now() - start < 1500) {
+                        window.location.href = baseIntent('com.playit.videoplayer');
+                    }
+                }, 1000);
+            } else if (type === 'vlc') {
+                // Try VLC protocol first
+                window.location.href = `vlc://${streamUrl.replace(/^https?:\/\//, '')}`;
+                setTimeout(() => {
+                    if (Date.now() - start < 1500) {
+                        window.location.href = baseIntent('org.videolan.vlc');
+                    }
+                }, 1000);
+            } else {
+                // MX Player
+                window.location.href = baseIntent('com.mxtech.videoplayer.ad');
+            }
 
             setTimeout(() => {
-                if (Date.now() - start < 2000) {
+                if (Date.now() - start < 2500) {
                     showToast("<i class='fas fa-circle-exclamation mr-2 text-rose-500'></i> " + type.toUpperCase() + " Player not found!");
                 }
-            }, 1500);
+            }, 2000);
         }
 
         function copyToClipboard() {
