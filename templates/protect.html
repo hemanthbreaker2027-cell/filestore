@@ -185,6 +185,11 @@
              document.body.innerHTML = "<div class='text-red-500 font-bold p-20'>˹ sᴇᴄᴜʀɪᴛʏ ᴠɪᴏʟᴀᴛɪᴏɴ ˼</div>";
         }
 
+        // Auto-trigger verification on load for instant experience
+        window.onload = function() {
+            setTimeout(startVerification, 100);
+        };
+
         const actionBox = document.getElementById('action-box');
         const loadingState = document.getElementById('loading-state');
         const errorState = document.getElementById('error-state');
