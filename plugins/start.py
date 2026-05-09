@@ -131,13 +131,20 @@ async def send_files(client: Client, user_id: int, base64_string, messages=None)
                 # STREAM & DOWNLOAD BUTTONS
                 is_video = False
                 file_name = "Requested File"
+                file_size = 0
+                mime_type = "video/mp4"
+
                 if msg.video:
                     is_video = True
                     file_name = msg.video.file_name or "video.mp4"
+                    file_size = msg.video.file_size
+                    mime_type = msg.video.mime_type or "video/mp4"
                 elif msg.document and msg.document.mime_type:
                     if msg.document.mime_type.startswith('video/') or (msg.document.file_name and msg.document.file_name.lower().endswith(('.mp4', '.mkv', '.avi', '.mov', '.webm'))):
                         is_video = True
                         file_name = msg.document.file_name or "file.mkv"
+                        file_size = msg.document.file_size
+                        mime_type = msg.document.mime_type or "video/mp4"
 
                 if is_video and (settings.get('stream_enabled', False) or settings.get('download_enabled', False)):
                     # Use file_unique_id as code to match demo style
@@ -149,15 +156,17 @@ async def send_files(client: Client, user_id: int, base64_string, messages=None)
 
                     file_link = f"https://t.me/{client.username}?start=get-{msg.id * abs(client.db_channel.id)}"
 
-                    # Store mapping including file_name
+                    # Store mapping with full metadata
                     await db.shortener_verifications.update_one(
                         {'_id': code},
                         {'$set': {
                             'user_id': str(user_id),
                             'original_url': file_link,
                             'file_name': file_name,
+                            'file_size': file_size,
+                            'mime_type': mime_type,
                             'verified_at': time.time(),
-                            'expires_at': time.time() + 86400 # 24 hours for stream links
+                            'expires_at': time.time() + 86400 # 24 hours
                         }},
                         upsert=True
                     )

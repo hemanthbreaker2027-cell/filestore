@@ -358,14 +358,23 @@ async def stream_file_handler(request):
         response = web.StreamResponse(status=206 if range_header else 200)
         response.headers['Content-Type'] = file_obj.mime_type or 'video/mp4'
         response.headers['Content-Length'] = str(end - start + 1)
-        response.headers['Content-Range'] = f'bytes {start}-{end}/{file_obj.file_size}'
+        if range_header:
+            response.headers['Content-Range'] = f'bytes {start}-{end}/{file_obj.file_size}'
         response.headers['Accept-Ranges'] = 'bytes'
-        response.headers['Access-Control-Allow-Origin'] = '*' # Critical for some players
+        response.headers['Access-Control-Allow-Origin'] = '*'
+        response.headers['Access-Control-Allow-Methods'] = 'GET, OPTIONS'
+        response.headers['Access-Control-Allow-Headers'] = 'Range, Content-Type'
+        response.headers['Access-Control-Expose-Headers'] = 'Content-Range, Content-Length, Accept-Ranges'
+
+        # Improve MIME type detection
+        if not file_obj.mime_type:
+            ext = os.path.splitext(file_obj.file_name or '')[1].lower()
+            mimes = {'.mkv': 'video/x-matroska', '.mp4': 'video/mp4', '.avi': 'video/x-msvideo', '.m3u8': 'application/x-mpegURL'}
+            response.headers['Content-Type'] = mimes.get(ext, 'video/mp4')
 
         await response.prepare(request)
 
-        # We need an optimized stream that supports offset if possible
-        # bot.stream_media doesn't take offset easily in pyro, but for small chunks it works
+        # Optimized streaming
         async for chunk in bot.stream_media(file_obj, offset=start, limit=end-start+1):
             await response.write(chunk)
 
