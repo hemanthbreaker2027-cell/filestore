@@ -318,11 +318,38 @@ async def stream_file_handler(request, is_download=False):
 
     # Extract message ID from original_url
     import re
-    match = re.search(r"get-(\d+)", record.get('original_url', ''))
-    if not match:
-        return web.Response(text="Source Not Found", status=404)
+    from helper_func import decode
 
-    msg_id = int(int(match.group(1)) / abs(request.app['bot'].db_channel.id))
+    original_url = record.get('original_url', '')
+    msg_id = None
+
+    # Pattern 1: Direct get-ID
+    match = re.search(r"get-(\d+)", original_url)
+    if match:
+        msg_id = int(int(match.group(1)) / abs(request.app['bot'].db_channel.id))
+    else:
+        # Pattern 2: yu3elk base64 payload
+        match = re.search(r"start=(?:yu3elk)?([a-zA-Z0-9_-]+)7?", original_url)
+        if match:
+            try:
+                payload = match.group(1)
+                # Remove yu3elk if it's there
+                if payload.startswith("yu3elk"):
+                    payload = payload[6:]
+                # Remove trailing 7 if it's there
+                if payload.endswith("7"):
+                    payload = payload[:-1]
+
+                decoded = await decode(payload)
+                # decoded should be like "get-12345" or "12345"
+                inner_match = re.search(r"(?:get-)?(\d+)", decoded)
+                if inner_match:
+                    msg_id = int(int(inner_match.group(1)) / abs(request.app['bot'].db_channel.id))
+            except Exception as e:
+                print(f"Error decoding payload in stream: {e}")
+
+    if not msg_id:
+        return web.Response(text="Source Not Found", status=404)
     bot = request.app['bot']
 
     try:

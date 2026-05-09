@@ -190,38 +190,53 @@
                         <div class="h-px flex-grow bg-gradient-to-r from-slate-800 to-transparent"></div>
                     </div>
 
-                    <div class="grid grid-cols-1 sm:grid-cols-3 gap-6">
-                        <button onclick="openPlayer('mx')" class="action-card flex items-center p-6 rounded-3xl group relative overflow-hidden">
-                            <div class="absolute inset-0 bg-sky-500/10 translate-y-full group-hover:translate-y-0 transition-transform duration-500"></div>
-                            <div class="relative p-4 bg-sky-500/20 rounded-2xl mr-6 group-hover:bg-sky-500 group-hover:text-white transition-all border border-sky-500/30">
-                                <i class="fas fa-play text-xl"></i>
-                            </div>
-                            <div class="relative text-left">
-                                <p class="text-sm font-bold uppercase tracking-widest text-white">MX Player</p>
-                                <p class="text-[9px] font-bold text-sky-400 uppercase mt-1">Recommended</p>
-                            </div>
+                    <div class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-4">
+                        <button onclick="openPlayer('mx')" class="action-card flex flex-col items-center justify-center p-4 rounded-2xl group relative overflow-hidden">
+                            <div class="absolute inset-0 bg-sky-500/10 translate-y-full group-hover:translate-y-0 transition-transform"></div>
+                            <div class="relative p-3 bg-sky-500/20 rounded-xl mb-3 group-hover:bg-sky-500 group-hover:text-white transition-all"><i class="fas fa-play text-lg"></i></div>
+                            <p class="relative text-[10px] font-bold uppercase tracking-widest text-white">MX Player</p>
                         </button>
 
-                        <button onclick="openPlayer('vlc')" class="action-card flex items-center p-6 rounded-3xl group relative overflow-hidden">
-                            <div class="absolute inset-0 bg-orange-500/10 translate-y-full group-hover:translate-y-0 transition-transform duration-500"></div>
-                            <div class="relative p-4 bg-orange-500/20 rounded-2xl mr-6 group-hover:bg-orange-500 group-hover:text-white transition-all border border-orange-500/30">
-                                <i class="fab fa-vimeo-v text-xl"></i>
-                            </div>
-                            <div class="relative text-left">
-                                <p class="text-sm font-bold uppercase tracking-widest text-white">VLC Media</p>
-                                <p class="text-[9px] font-bold text-orange-400 uppercase mt-1">Original Quality</p>
-                            </div>
+                        <button onclick="openPlayer('vlc')" class="action-card flex flex-col items-center justify-center p-4 rounded-2xl group relative overflow-hidden">
+                            <div class="absolute inset-0 bg-orange-500/10 translate-y-full group-hover:translate-y-0 transition-transform"></div>
+                            <div class="relative p-3 bg-orange-500/20 rounded-xl mb-3 group-hover:bg-orange-500 group-hover:text-white transition-all"><i class="fab fa-vimeo-v text-lg"></i></div>
+                            <p class="relative text-[10px] font-bold uppercase tracking-widest text-white">VLC Media</p>
                         </button>
 
-                        <button onclick="openPlayer('playit')" class="action-card flex items-center p-6 rounded-3xl group relative overflow-hidden">
-                            <div class="absolute inset-0 bg-indigo-500/10 translate-y-full group-hover:translate-y-0 transition-transform duration-500"></div>
-                            <div class="relative p-4 bg-indigo-500/20 rounded-2xl mr-6 group-hover:bg-indigo-500 group-hover:text-white transition-all border border-indigo-500/30">
-                                <i class="fas fa-bolt text-xl"></i>
-                            </div>
-                            <div class="relative text-left">
-                                <p class="text-sm font-bold uppercase tracking-widest text-white">PLAYit</p>
-                                <p class="text-[9px] font-bold text-indigo-400 uppercase mt-1">Fast & Simple</p>
-                            </div>
+                        <button onclick="openPlayer('playit')" class="action-card flex flex-col items-center justify-center p-4 rounded-2xl group relative overflow-hidden">
+                            <div class="absolute inset-0 bg-indigo-500/10 translate-y-full group-hover:translate-y-0 transition-transform"></div>
+                            <div class="relative p-3 bg-indigo-500/20 rounded-xl mb-3 group-hover:bg-indigo-500 group-hover:text-white transition-all"><i class="fas fa-bolt text-lg"></i></div>
+                            <p class="relative text-[10px] font-bold uppercase tracking-widest text-white">PLAYit</p>
+                        </button>
+
+                        <button onclick="openPlayer('xplayer')" class="action-card flex flex-col items-center justify-center p-4 rounded-2xl group relative overflow-hidden">
+                            <div class="absolute inset-0 bg-emerald-500/10 translate-y-full group-hover:translate-y-0 transition-transform"></div>
+                            <div class="relative p-3 bg-emerald-500/20 rounded-xl mb-3 group-hover:bg-emerald-500 group-hover:text-white transition-all"><i class="fas fa-circle-play text-lg"></i></div>
+                            <p class="relative text-[10px] font-bold uppercase tracking-widest text-white">XPlayer</p>
+                        </button>
+
+                        <button onclick="openPlayer('kmplayer')" class="action-card flex flex-col items-center justify-center p-4 rounded-2xl group relative overflow-hidden">
+                            <div class="absolute inset-0 bg-rose-500/10 translate-y-full group-hover:translate-y-0 transition-transform"></div>
+                            <div class="relative p-3 bg-rose-500/20 rounded-xl mb-3 group-hover:bg-rose-500 group-hover:text-white transition-all"><i class="fas fa-compact-disc text-lg"></i></div>
+                            <p class="relative text-[10px] font-bold uppercase tracking-widest text-white">KMPlayer</p>
+                        </button>
+
+                        <button onclick="openPlayer('mx_pro')" class="action-card flex flex-col items-center justify-center p-4 rounded-2xl group relative overflow-hidden">
+                            <div class="absolute inset-0 bg-blue-500/10 translate-y-full group-hover:translate-y-0 transition-transform"></div>
+                            <div class="relative p-3 bg-blue-500/20 rounded-xl mb-3 group-hover:bg-blue-500 group-hover:text-white transition-all"><i class="fas fa-crown text-lg"></i></div>
+                            <p class="relative text-[10px] font-bold uppercase tracking-widest text-white">MX Pro</p>
+                        </button>
+
+                        <button onclick="openPlayer('nova')" class="action-card flex flex-col items-center justify-center p-4 rounded-2xl group relative overflow-hidden">
+                            <div class="absolute inset-0 bg-purple-500/10 translate-y-full group-hover:translate-y-0 transition-transform"></div>
+                            <div class="relative p-3 bg-purple-500/20 rounded-xl mb-3 group-hover:bg-purple-500 group-hover:text-white transition-all"><i class="fas fa-rocket text-lg"></i></div>
+                            <p class="relative text-[10px] font-bold uppercase tracking-widest text-white">Nova Player</p>
+                        </button>
+
+                        <button onclick="openPlayer('1dm')" class="action-card flex flex-col items-center justify-center p-4 rounded-2xl group relative overflow-hidden">
+                            <div class="absolute inset-0 bg-amber-500/10 translate-y-full group-hover:translate-y-0 transition-transform"></div>
+                            <div class="relative p-3 bg-amber-500/20 rounded-xl mb-3 group-hover:bg-amber-500 group-hover:text-white transition-all"><i class="fas fa-download text-lg"></i></div>
+                            <p class="relative text-[10px] font-bold uppercase tracking-widest text-white">1DM Tool</p>
                         </button>
                     </div>
                 </div>
@@ -264,24 +279,31 @@
         function openPlayer(type) {
             const fileName = encodeURIComponent("{{ FILE_NAME }}");
             const streamUrl = "{{ STREAM_URL }}";
+            const cleanUrl = streamUrl.replace(/^https?:\/\//, '');
+            const scheme = streamUrl.startsWith('https') ? 'https' : 'http';
 
-            const intentMap = {
-                mx: `intent:${streamUrl}#Intent;action=android.intent.action.VIEW;package=com.mxtech.videoplayer.ad;S.title=${fileName};end`,
-                vlc: `intent:${streamUrl}#Intent;action=android.intent.action.VIEW;package=org.videolan.vlc;S.title=${fileName};end`,
-                playit: `intent:${streamUrl}#Intent;action=android.intent.action.VIEW;package=com.playit.videoplayer;S.title=${fileName};end`
+            const intents = {
+                mx: `intent://${cleanUrl}#Intent;package=com.mxtech.videoplayer.ad;type=video/*;scheme=${scheme};S.title=${fileName};end`,
+                mx_pro: `intent://${cleanUrl}#Intent;package=com.mxtech.videoplayer.pro;type=video/*;scheme=${scheme};S.title=${fileName};end`,
+                vlc: `intent://${cleanUrl}#Intent;package=org.videolan.vlc;type=video/*;scheme=${scheme};S.title=${fileName};end`,
+                playit: `intent://${cleanUrl}#Intent;package=com.playit.videoplayer;type=video/*;scheme=${scheme};S.title=${fileName};end`,
+                xplayer: `intent://${cleanUrl}#Intent;package=com.videoplayer.videomplayer;type=video/*;scheme=${scheme};S.title=${fileName};end`,
+                kmplayer: `intent://${cleanUrl}#Intent;package=com.kmplayer;type=video/*;scheme=${scheme};S.title=${fileName};end`,
+                nova: `intent://${cleanUrl}#Intent;package=org.courville.nova;type=video/*;scheme=${scheme};S.title=${fileName};end`,
+                '1dm': `intent://${cleanUrl}#Intent;package=idm.internet.download.manager;type=video/*;scheme=${scheme};S.title=${fileName};end`
             };
 
             const start = Date.now();
-            window.location.href = intentMap[type];
+            window.location.href = intents[type];
 
             setTimeout(() => {
-                const timeDiff = Date.now() - start;
-                // If we're still on the page after 2.5s and the app didn't open (timeDiff is small)
-                // We show the toast. Also check document visibility.
-                if (timeDiff < 3000 && !document.hidden && !document.webkitHidden) {
-                    showToast("<i class='fas fa-circle-exclamation mr-2 text-rose-500'></i> " + type.toUpperCase() + " Player not found!");
+                const elapsed = Date.now() - start;
+                // Only show toast if app didn't launch (user stayed on page)
+                // and visibility state is still visible
+                if (elapsed < 3500 && document.visibilityState === 'visible') {
+                    showToast("<i class='fas fa-circle-exclamation mr-2 text-rose-500'></i> Player not found or failed to launch!");
                 }
-            }, 2500);
+            }, 3000);
         }
 
         function copyToClipboard() {

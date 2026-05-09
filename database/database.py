@@ -376,7 +376,7 @@ class AniZoneFlix:
                 'user_id': user_id,
                 'original_url': original_url,
                 'verified_at': time.time(),
-                'expires_at': time.time() + 600 # 10 minutes
+                'expires_at': time.time() + 3600 # 1 hour expiry
             }},
             upsert=True
         )
