@@ -92,24 +92,33 @@ async def send_files(client: Client, user_id: int, base64_string, messages=None)
         # File auto-delete time in seconds
         FILE_AUTO_DELETE = await db.get_del_timer()
 
-        # STICKER LOGIC: Scan captions for keywords
-        try:
-            sticker_mappings = await db.get_all_stickers()
-            if sticker_mappings:
-                unique_stickers_to_send = set()
+for msg in messages:
 
-                for msg in messages:
-                    caption_text = (msg.caption or "").lower()
-                    for keyword, sticker_id in sticker_mappings.items():
-                        if keyword in caption_text:
-                            unique_stickers_to_send.add(sticker_id)
+    # Detect sticker for THIS file only
+    try:
+        sticker_mappings = await db.get_all_stickers()
 
-                for sticker_id in unique_stickers_to_send:
+        if sticker_mappings:
+            caption_text = (msg.caption or "").lower()
+
+            for keyword, sticker_id in sticker_mappings.items():
+                if keyword in caption_text:
                     try:
-                        await client.send_sticker(chat_id=user_id, sticker=sticker_id)
-                    except: pass
-        except Exception as e:
-            print(f"Error in sticker logic: {e}")
+                        await client.send_sticker(
+                            chat_id=user_id,
+                            sticker=sticker_id
+                        )
+                    except:
+                        pass
+                    break
+    except Exception as e:
+        print(f"Sticker Error: {e}")
+
+    # Send file after sticker
+    sent = await copy_message(msg)
+
+    if sent:
+        AniZoneFlix_msgs.append(sent)
 
         semaphore = asyncio.Semaphore(5)
 
