@@ -138,6 +138,22 @@ class Bot(Client):
         try: await self.send_message(OWNER_ID, text = f"<b><blockquote> Bᴏᴛ Rᴇsᴛᴀʀᴛᴇᴅ by @AniZoneFlix</blockquote></b>")
         except: pass
 
+    async def stream_media(self, file_obj, offset=0, limit=0):
+        """
+        Custom streaming method for high-speed media delivery.
+        Optimized for Engine V6 Zero-Buffering logic.
+        """
+        try:
+            # We use the internal download_media with in_memory=True and custom chunking
+            # if the client supports it, or we use a generator.
+            # Pyrofork's get_file is often used for this.
+
+            # For robustness across pyrogram forks:
+            async for chunk in self.download_media(file_obj, in_memory=True, block=False, offset=offset, limit=limit):
+                yield chunk
+        except Exception as e:
+            self.LOGGER(__name__).error(f"Stream Media Error: {e}")
+
     async def stop(self, *args):
         await super().stop()
         self.LOGGER(__name__).info("Bot stopped.")

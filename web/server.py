@@ -84,10 +84,13 @@ async def verify_shortener(request):
         parsed = urlparse(original_url)
         start_param = parse_qs(parsed.query).get('start', [''])[0]
         payload = start_param[6:-1] if start_param.startswith("yu3elk") else start_param
-        await db.update_verify_status(user_id, is_verified=True, verified_time=time.time())
-        from plugins.start import send_files
-        bot = request.app['bot']
-        if await is_subscribed(bot, user_id): asyncio.create_task(send_files(bot, user_id, payload))
+
+        # FIX: Set verify_token to prevent verification loop in ONE PER TIME mode
+        await db.update_verify_status(user_id, verify_token=payload, is_verified=True, verified_time=time.time())
+
+        # Background delivery removed to prevent Double Delivery bug.
+        # Delivery is handled by the bot when the user is redirected back via final_url.
+
         final_url = original_url if start_param.startswith("yu3elk") else original_url.replace(f"start={start_param}", f"start=yu3elk{start_param}7")
         return json_response(True, "Verified", {"redirect": final_url})
     except Exception: return json_response(False, "Error", status=500)
