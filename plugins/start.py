@@ -92,121 +92,109 @@ async def send_files(client: Client, user_id: int, base64_string, messages=None)
         # File auto-delete time in seconds
         FILE_AUTO_DELETE = await db.get_del_timer()
 
-for msg in messages:
+        # STICKER LOGIC MAPPINGS
+        sticker_mappings = {}
+        try:
+            sticker_mappings = await db.get_all_stickers()
+        except Exception as e:
+            print(f"Error fetching sticker mappings: {e}")
 
-    # Detect sticker for THIS file only
-    try:
-        sticker_mappings = await db.get_all_stickers()
+        # SEQUENTIAL DELIVERY TO MAINTAIN ORDER: Sticker -> File -> Sticker -> File
+        for msg in messages:
+            if not msg or msg.empty: continue
 
-        if sticker_mappings:
+            # 1. PER-MESSAGE STICKER DETECTION & DELIVERY
             caption_text = (msg.caption or "").lower()
+            if sticker_mappings:
+                for keyword, sticker_id in sticker_mappings.items():
+                    if keyword in caption_text:
+                        try:
+                            await client.send_sticker(chat_id=user_id, sticker=sticker_id)
+                            # Send first matching sticker and proceed to file
+                            break
+                        except: pass
 
-            for keyword, sticker_id in sticker_mappings.items():
-                if keyword in caption_text:
-                    try:
-                        await client.send_sticker(
-                            chat_id=user_id,
-                            sticker=sticker_id
-                        )
-                    except:
-                        pass
-                    break
-    except Exception as e:
-        print(f"Sticker Error: {e}")
+            # 2. FILE DELIVERY LOGIC
+            original_caption = msg.caption.html if msg.caption else ""
+            caption = f"{original_caption}\n\n{CUSTOM_CAPTION}" if CUSTOM_CAPTION else original_caption
 
-    # Send file after sticker
-    sent = await copy_message(msg)
+            # Default reply markup
+            reply_markup = msg.reply_markup if DISABLE_CHANNEL_BUTTON else None
 
-    if sent:
-        AniZoneFlix_msgs.append(sent)
+            # STREAM & DOWNLOAD BUTTONS
+            is_video = False
+            file_name = "Requested File"
+            file_size = 0
+            mime_type = "video/mp4"
 
-        semaphore = asyncio.Semaphore(5)
-
-        async def copy_message(msg):
-            async with semaphore:
-                original_caption = msg.caption.html if msg.caption else ""
-                caption = f"{original_caption}\n\n{CUSTOM_CAPTION}" if CUSTOM_CAPTION else original_caption
-
-                # Default reply markup
-                reply_markup = msg.reply_markup if DISABLE_CHANNEL_BUTTON else None
-
-                # STREAM & DOWNLOAD BUTTONS
-                is_video = False
-                file_name = "Requested File"
-                file_size = 0
-                mime_type = "video/mp4"
-
-                if msg.video:
+            if msg.video:
+                is_video = True
+                file_name = msg.video.file_name or "video.mp4"
+                file_size = msg.video.file_size
+                mime_type = msg.video.mime_type or "video/mp4"
+            elif msg.document and msg.document.mime_type:
+                if msg.document.mime_type.startswith('video/') or (msg.document.file_name and msg.document.file_name.lower().endswith(('.mp4', '.mkv', '.avi', '.mov', '.webm'))):
                     is_video = True
-                    file_name = msg.video.file_name or "video.mp4"
-                    file_size = msg.video.file_size
-                    mime_type = msg.video.mime_type or "video/mp4"
-                elif msg.document and msg.document.mime_type:
-                    if msg.document.mime_type.startswith('video/') or (msg.document.file_name and msg.document.file_name.lower().endswith(('.mp4', '.mkv', '.avi', '.mov', '.webm'))):
-                        is_video = True
-                        file_name = msg.document.file_name or "file.mkv"
-                        file_size = msg.document.file_size
-                        mime_type = msg.document.mime_type or "video/mp4"
+                    file_name = msg.document.file_name or "file.mkv"
+                    file_size = msg.document.file_size
+                    mime_type = msg.document.mime_type or "video/mp4"
 
-                if is_video and (settings.get('stream_enabled', False) or settings.get('download_enabled', False)):
-                    # Use file_unique_id as code to match demo style
-                    file_obj = msg.video or msg.document
-                    code = getattr(file_obj, 'file_unique_id', None)
-                    if not code:
-                        import secrets
-                        code = secrets.token_hex(4)
+            if is_video and (settings.get('stream_enabled', False) or settings.get('download_enabled', False)):
+                file_obj = msg.video or msg.document
+                code = getattr(file_obj, 'file_unique_id', None)
+                if not code:
+                    import secrets
+                    code = secrets.token_hex(4)
 
-                    file_link = f"https://t.me/{client.username}?start=get-{msg.id * abs(client.db_channel.id)}"
+                file_link = f"https://t.me/{client.username}?start=get-{msg.id * abs(client.db_channel.id)}"
 
-                    # Store mapping with full metadata
-                    await db.shortener_verifications.update_one(
-                        {'_id': code},
-                        {'$set': {
-                            'user_id': str(user_id),
-                            'original_url': file_link,
-                            'file_name': file_name,
-                            'file_size': file_size,
-                            'mime_type': mime_type,
-                            'verified_at': time.time(),
-                            'expires_at': time.time() + 86400 # 24 hours
-                        }},
-                        upsert=True
+                await db.shortener_verifications.update_one(
+                    {'_id': code},
+                    {'$set': {
+                        'user_id': str(user_id),
+                        'original_url': file_link,
+                        'file_name': file_name,
+                        'file_size': file_size,
+                        'mime_type': mime_type,
+                        'verified_at': time.time(),
+                        'expires_at': time.time() + 86400
+                    }},
+                    upsert=True
+                )
+
+                buttons = []
+                if settings.get('stream_enabled', False):
+                    buttons.append([InlineKeyboardButton("▶ STREAM", url=f"https://{WEBSITE_URL}/watch?path={code}")])
+                if settings.get('download_enabled', False):
+                    buttons.append([InlineKeyboardButton("⬇ DOWNLOAD", url=f"https://{WEBSITE_URL}/download/{code}")])
+
+                if reply_markup and reply_markup.inline_keyboard:
+                    new_kb = list(reply_markup.inline_keyboard)
+                    new_kb.extend(buttons)
+                    reply_markup = InlineKeyboardMarkup(new_kb)
+                else:
+                    reply_markup = InlineKeyboardMarkup(buttons)
+
+            # Copy file message
+            sent = None
+            while True:
+                try:
+                    sent = await msg.copy(
+                        chat_id=user_id,
+                        caption=caption,
+                        parse_mode=ParseMode.HTML,
+                        reply_markup=reply_markup,
+                        protect_content=PROTECT_CONTENT
                     )
+                    break
+                except FloodWait as e:
+                    await asyncio.sleep(e.value)
+                except Exception as e:
+                    print(f"Error copying msg: {e}")
+                    break
 
-                    buttons = []
-                    if settings.get('stream_enabled', False):
-                        buttons.append([InlineKeyboardButton("▶ STREAM", url=f"https://{WEBSITE_URL}/watch?path={code}")])
-                    if settings.get('download_enabled', False):
-                        buttons.append([InlineKeyboardButton("⬇ DOWNLOAD", url=f"https://{WEBSITE_URL}/download/{code}")])
-
-                    # If we had existing buttons, append ours
-                    if reply_markup and reply_markup.inline_keyboard:
-                        new_kb = list(reply_markup.inline_keyboard)
-                        new_kb.extend(buttons)
-                        reply_markup = InlineKeyboardMarkup(new_kb)
-                    else:
-                        reply_markup = InlineKeyboardMarkup(buttons)
-
-                while True:
-                    try:
-                        snt_msg = await msg.copy(
-                            chat_id=user_id,
-                            caption=caption,
-                            parse_mode=ParseMode.HTML,
-                            reply_markup=reply_markup,
-                            protect_content=PROTECT_CONTENT
-                        )
-                        return snt_msg
-                    except FloodWait as e:
-                        print(f"[FLOODWAIT] Sleeping for {e.value}s in send_files")
-                        await asyncio.sleep(e.value)
-                    except Exception as e:
-                        print(f"[ERROR] send_files copy: {e}")
-                        return None
-
-        tasks = [copy_message(msg) for msg in messages]
-        results = await asyncio.gather(*tasks)
-        AniZoneFlix_msgs = [m for m in results if m]
+            if sent:
+                AniZoneFlix_msgs.append(sent)
 
         if FILE_AUTO_DELETE > 0:
             notification_msg = await client.send_message(
