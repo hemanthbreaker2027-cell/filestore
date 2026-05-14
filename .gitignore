@@ -141,3 +141,5 @@ cython_debug/
 # Bot Sessions
 *.session
 *.session-journal
+node_modules/
+.next/
