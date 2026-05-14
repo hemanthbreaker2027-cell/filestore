@@ -117,9 +117,9 @@ async def send_files(client: Client, user_id: int, base64_string, messages=None)
         except Exception as e:
             print(f"Error in unique sticker logic: {e}")
 
-        # 2. SEQUENTIAL DELIVERY (V8 Interleaved Engine)
-        # Optimized for Sticker -> File sequence as requested
-        semaphore = asyncio.Semaphore(5)
+        # 2. SEQUENTIAL DELIVERY (V9 Interleaved Engine)
+        # Optimized for Sticker -> Media sequence with enhanced resilience
+        semaphore = asyncio.Semaphore(10)
 
         async def deliver_item(msg):
             if not msg or msg.empty: return None

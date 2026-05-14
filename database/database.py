@@ -54,43 +54,43 @@ class AniZoneFlix:
         self.sticker_data = self.database['stickers']
 
 
-    # SETTINGS & FEATURE FLAGS
+    # SETTINGS & FEATURE FLAGS - V9 ENGINE
     async def get_settings(self):
         settings = await self.settings_data.find_one({'_id': 'bot_settings'})
-        if not settings:
-            from config import WEBSITE_URL, WRAPPED_URL_DOMAIN
-            default_settings = {
-                '_id': 'bot_settings',
-                'shortener_system': True,
-                'file_delivery': True,
-                'core_features': True,
-                'shortener_mode': 'one_per_time', # one_per_time or based_time
-                'shortener_time': 0, # Time in seconds for based_time mode
-                'stream_enabled': False,
-                'download_enabled': False,
-                'verify_timer': 10,
-                'website_url': WEBSITE_URL,
-                'wrapped_url_domain': WRAPPED_URL_DOMAIN,
-                'session_expiry': 300, # 5 minutes
-                'shorten_admins': False
-            }
-            await self.settings_data.insert_one(default_settings)
-            return default_settings
-
-        # Ensure new fields exist for existing users
-        updated = False
         from config import WEBSITE_URL, WRAPPED_URL_DOMAIN
-        fields_to_check = {
-            'shortener_mode': 'one_per_time',
-            'shortener_time': 0,
+
+        default_settings = {
+            '_id': 'bot_settings',
+            'shortener_system': True,
+            'file_delivery': True,
+            'core_features': True,
+            'shortener_mode': 'one_per_time', # one_per_time or based_time
+            'shortener_time': 0, # Time in seconds for based_time mode
             'stream_enabled': False,
             'download_enabled': False,
             'verify_timer': 10,
             'website_url': WEBSITE_URL,
             'wrapped_url_domain': WRAPPED_URL_DOMAIN,
-            'session_expiry': 300,
-            'shorten_admins': False
+            'session_expiry': 300, # 5 minutes
+            'shorten_admins': False,
+            'v9_engine': True
         }
+
+        if not settings:
+            await self.settings_data.insert_one(default_settings)
+            return default_settings
+
+        # Ensure new fields exist for existing users (Migration Logic)
+        updated = False
+        for field, default in default_settings.items():
+            if field not in settings:
+                settings[field] = default
+                updated = True
+
+        if updated:
+            await self.settings_data.update_one({'_id': 'bot_settings'}, {'$set': settings})
+
+        return settings
 
         for field, default in fields_to_check.items():
             if field not in settings:

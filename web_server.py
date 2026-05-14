@@ -7,7 +7,7 @@ import re
 import os
 import mimetypes
 from urllib.parse import quote, urlparse, parse_qs
-from config import WEBSITE_URL, WRAPPED_URL_DOMAIN
+from config import WEBSITE_URL, WRAPPED_URL_DOMAIN, RECAPTCHA_SITE_KEY, RECAPTCHA_SECRET_KEY
 from database.database import db
 from services.security import SecurityService, SecureRedirect
 from helper_func import decode, is_subscribed
@@ -199,11 +199,12 @@ async def stream_file_handler(request, is_download=False):
 
         await resp.prepare(request)
 
-        # ENGINE V7: Ultra-Speed Parallel Pipe
-        chunk_size = 2 * 1024 * 1024 if is_download else 1024 * 1024
+        # ENGINE V9: Dynamic High-Throughput Pipe
+        # We use larger chunks for high-speed delivery
+        chunk_size = 3 * 1024 * 1024 if is_download else 1.5 * 1024 * 1024
 
-        # We increase the prefetch queue size for downloads to maximize bandwidth
-        prefetch_limit = 8 if is_download else 4
+        # Parallel Prefetch Optimization
+        prefetch_limit = 10 if is_download else 5
         queue = asyncio.Queue(maxsize=prefetch_limit)
         stop_event = asyncio.Event()
 
