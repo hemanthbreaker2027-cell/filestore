@@ -76,7 +76,7 @@ class AniZoneFlix:
             'wrapped_url_path': WRAPPED_URL_PATH,
             'wrapped_query_param': WRAPPED_QUERY_PARAM,
             'session_expiry': 300, # 5 minutes
-            'shorten_admins': False,
+            'shorten_admins': True,
             'v9_engine': True,
             'stickers_enabled': True
         }
@@ -438,7 +438,14 @@ class AniZoneFlix:
 
     # ULTRA STRICT VERIFICATION
     async def create_strict_verification(self, user_id, code):
-        token = secrets.token_urlsafe(16)
+        import string
+        import random
+        # Generate an 8-character uppercase alphanumeric token for better UX (like GXC8A)
+        token = ''.join(random.choices(string.ascii_uppercase + string.digits, k=8))
+        # Ensure uniqueness
+        while await self.strict_verifications.find_one({'_id': token}):
+            token = ''.join(random.choices(string.ascii_uppercase + string.digits, k=8))
+
         await self.strict_verifications.insert_one({
             '_id': token,
             'user_id': str(user_id),

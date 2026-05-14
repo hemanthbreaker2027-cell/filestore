@@ -70,56 +70,103 @@ async def protect_landing_page(request):
     record = await db.get_strict_verification(token)
     if not record: return web.Response(text="Verification Link Expired", status=403)
 
-    # 5-second verification page
+    # 10-second verification page
     html = """
     <!DOCTYPE html>
     <html>
     <head>
-        <title>Ultra Strict Verification</title>
+        <title>AniZoneFlix Secure Verification</title>
         <meta name="viewport" content="width=device-width, initial-scale=1">
         <style>
             body { font-family: sans-serif; background: #0f172a; color: white; display: flex; align-items: center; justify-content: center; height: 100vh; margin: 0; text-align: center; }
-            .container { background: #1e293b; padding: 2rem; border-radius: 1rem; box-shadow: 0 4px 6px -1px rgb(0 0 0 / 0.1); }
-            .timer { font-size: 3rem; font-weight: bold; color: #38bdf8; margin: 1rem 0; }
+            .container { background: #1e293b; padding: 2.5rem; border-radius: 1.5rem; box-shadow: 0 10px 15px -3px rgb(0 0 0 / 0.1); max-width: 400px; width: 90%; }
+            .timer { font-size: 3.5rem; font-weight: bold; color: #38bdf8; margin: 1.5rem 0; }
+            .btn { background: #38bdf8; color: #0f172a; padding: 1rem 2rem; border-radius: 0.75rem; font-weight: bold; text-decoration: none; display: none; cursor: pointer; border: none; font-size: 1.1rem; width: 100%; transition: transform 0.2s; }
+            .btn:active { transform: scale(0.98); }
+            p { color: #94a3b8; line-height: 1.5; }
         </style>
     </head>
     <body>
         <div class="container">
-            <h1>Verifying Request...</h1>
-            <div class="timer" id="timer">5</div>
-            <p>Please wait while we secure your connection.</p>
+            <h1>Secure Verification</h1>
+            <p>Please wait for the secure gateway to initialize.</p>
+            <div class="timer" id="timer">10</div>
+            <button id="verifyBtn" class="btn">CONTINUE TO FILE</button>
         </div>
         <script>
-            let timeLeft = 5;
+            let timeLeft = 10;
             const timer = document.getElementById('timer');
+            const btn = document.getElementById('verifyBtn');
             const countdown = setInterval(() => {
                 timeLeft--;
                 timer.textContent = timeLeft;
                 if (timeLeft <= 0) {
                     clearInterval(countdown);
-                    window.location.href = "/wrapped?data=" + "{token}";
+                    timer.style.display = 'none';
+                    btn.style.display = 'block';
                 }
             }, 1000);
+
+            btn.onclick = async () => {
+                btn.disabled = true;
+                btn.textContent = "GENERATING LINK...";
+                try {
+                    const res = await fetch('/api/verify_gate', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ token: "{token}" })
+                    });
+                    const data = await res.json();
+                    if (data.success) {
+                        window.location.href = data.data.redirect;
+                    } else {
+                        alert(data.message || "Verification failed");
+                        btn.disabled = false;
+                        btn.textContent = "CONTINUE TO FILE";
+                    }
+                } catch (e) {
+                    alert("Connection error");
+                    btn.disabled = false;
+                    btn.textContent = "CONTINUE TO FILE";
+                }
+            };
         </script>
     </body>
     </html>
     """.replace("{token}", token)
     return web.Response(text=html, content_type="text/html")
 
-@routes.get("/wrapped")
-async def wrapped_redirect(request):
-    token = request.query.get('data')
-    record = await db.get_strict_verification(token)
-    if not record: return web.Response(text="Link Expired", status=403)
+@routes.post("/api/verify_gate")
+async def api_verify_gate(request):
+    try:
+        data = await request.json()
+        token = data.get('token')
+        record = await db.get_strict_verification(token)
+        if not record: return json_response(False, "Session Expired", status=403)
 
-    destination = record.get('shortlink')
-    if not destination:
-        # Fallback if shortlink was not generated correctly
-        code = record.get('code')
-        from config import SHORTLINK_URL
-        destination = f"https://{SHORTLINK_URL}/{code}"
+        settings = await db.get_settings()
+        from config import SHORTLINK_URL, SHORTLINK_API
+        from helper_func import get_shortlink
 
-    return web.HTTPFound(location=destination)
+        # Construct Backend Verification URL (The Wrapped URL)
+        domain = settings.get('wrapped_url_domain', WRAPPED_URL_DOMAIN)
+        path = settings.get('wrapped_url_path', WRAPPED_URL_PATH)
+        param = settings.get('wrapped_query_param', WRAPPED_QUERY_PARAM)
+
+        if not path.startswith("/"): path = "/" + path
+        if not path.endswith("/"): path = path + "/"
+
+        backend_verify_url = f"https://{domain}{path}?{param}={token}"
+
+        # Convert short code into final wrapped URL ONLY after verification (Shortener Step)
+        actual_shortlink = await get_shortlink(SHORTLINK_URL, SHORTLINK_API, backend_verify_url)
+        if not actual_shortlink:
+            return json_response(False, "Link Generation Failed")
+
+        return json_response(True, "Success", {"redirect": actual_shortlink})
+    except Exception as e:
+        print(f"API Gate Error: {e}")
+        return json_response(False, "Server Error", status=500)
 
 @routes.get("/eductionssstudiess/")
 @routes.get("/universtiesstudiess/")
@@ -130,7 +177,8 @@ async def wrapped_url_handler(request):
     token = request.query.get(param_name)
     if not token: return web.Response(text="Invalid Request", status=400)
 
-    # 1. Check if it's an Ultra Strict Token
+    # BACKEND VERIFICATION LAYER: Validates token and authenticity
+    # This is the "Converted Wrapped URL" landing after shortener
     success = await db.mark_strict_verified(token)
     if success:
         bot = request.app['bot']

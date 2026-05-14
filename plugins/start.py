@@ -36,8 +36,6 @@ BAN_SUPPORT = f"{BAN_SUPPORT}"
 TUT_VID = f"{TUT_VID}"
 
 async def send_files(client: Client, user_id: int, base64_string, messages=None):
-    # We fetch settings here because send_files is called from multiple places
-    # (start command, callback query, web verify) and might not always have settings passed.
     settings = await db.get_settings()
 
     if not settings.get('file_delivery', True) and user_id != OWNER_ID:
@@ -217,11 +215,16 @@ async def send_files(client: Client, user_id: int, base64_string, messages=None)
             # ULTRA STRICT HASH APPEND - Monospace at the very end of delivery
             hash_code = base64_string[-5:].upper() if len(base64_string) >= 5 else "GXC8A"
             last_msg = AniZoneFlix_msgs[-1]
-            current_cap = last_msg.caption.html if hasattr(last_msg.caption, 'html') else (last_msg.caption or "")
-            await last_msg.edit_caption(
-                caption=f"{current_cap}\n\n<code>{hash_code}</code>",
-                reply_markup=last_msg.reply_markup
-            )
+            if last_msg.caption:
+                current_cap = last_msg.caption.html if hasattr(last_msg.caption, 'html') else last_msg.caption
+                await last_msg.edit_caption(
+                    caption=f"{current_cap}\n\n<code>{hash_code}</code>",
+                    reply_markup=last_msg.reply_markup
+                )
+            else:
+                # If last message has no caption (like a sticker), send hash separately or on the message before if possible
+                # For simplicity, send a small text message
+                await client.send_message(chat_id=user_id, text=f"<code>{hash_code}</code>")
         except Exception as e:
             print(f"Error appending hash: {e}")
 
@@ -258,44 +261,21 @@ async def send_files(client: Client, user_id: int, base64_string, messages=None)
 
 async def short_url(client: Client, message: Message, base64_string):
     user_id = message.from_user.id
-    # REQUIRED CORRECT BEHAVIOR: Always fetch latest settings
     settings = await db.get_settings()
     shortener_enabled = settings.get('shortener_system', True)
 
-    # REQUIRED CORRECT BEHAVIOR: WHEN SHORTNER_ENABLED = false
     if not shortener_enabled:
         return await send_files(client, user_id, base64_string)
 
     try:
-        if shortener_enabled:
-            # ULTRA STRICT FLOW
-            # 1. Generate local verification token
-            token = await db.create_strict_verification(user_id, base64_string)
+        # ULTRA STRICT FLOW
+        # 1. Generate local verification token (GXC8A format)
+        token = await db.create_strict_verification(user_id, base64_string)
 
-            # 2. Construct Backend Verification URL (The destination for the shortlink)
-            # Use dynamic wrapped URL credentials
-            domain = settings.get('wrapped_url_domain', WRAPPED_URL_DOMAIN)
-            path = settings.get('wrapped_url_path', WRAPPED_URL_PATH)
-            param = settings.get('wrapped_query_param', WRAPPED_QUERY_PARAM)
-
-            if not path.startswith("/"): path = "/" + path
-            if not path.endswith("/"): path = path + "/"
-
-            backend_verify_url = f"https://{domain}{path}?{param}={token}"
-
-            # 3. Generate the actual shortlink
-            actual_shortlink = await get_shortlink(SHORTLINK_URL, SHORTLINK_API, backend_verify_url)
-
-            # 4. Save shortlink in record for the /wrapped redirect
-            await db.strict_verifications.update_one({'_id': token}, {'$set': {'shortlink': actual_shortlink}})
-
-            # 5. Construct Protected URL (The one sent to the user)
-            # MUST follow the format: /protect?data=<token>
-            web_domain = settings.get('website_url', WEBSITE_URL)
-            base_url = web_domain if web_domain.startswith("http") else f"https://{web_domain}"
-            short_link = f"{base_url}/protect?data={token}"
-        else:
-            return await send_files(client, user_id, base64_string)
+        # 2. Construct Protected URL (Bot Layer: Bot never exposes original URLs)
+        web_domain = settings.get('website_url', WEBSITE_URL)
+        base_url = web_domain if web_domain.startswith("http") else f"https://{web_domain}"
+        short_link = f"{base_url}/protect?data={token}"
 
         buttons = [
             [
@@ -307,14 +287,25 @@ async def short_url(client: Client, message: Message, base64_string):
             ]
         ]
 
-        await message.reply_photo(
-            photo=random.choice(ANIME_BANNERS),
-            caption=SHORT_MSG,
-            reply_markup=InlineKeyboardMarkup(buttons),
-        )
+        try:
+            await message.reply_photo(
+                photo=random.choice(ANIME_BANNERS),
+                caption=SHORT_MSG,
+                reply_markup=InlineKeyboardMarkup(buttons),
+            )
+        except Exception as photo_err:
+            print(f"Photo reply failed: {photo_err}, falling back to text")
+            await message.reply_text(
+                text=SHORT_MSG + f"\n\n🔗 <b>Verification Link:</b> {short_link}",
+                reply_markup=InlineKeyboardMarkup(buttons),
+                disable_web_page_preview=True
+            )
 
     except Exception as e:
-        print(f"Error in short_url: {e}")
+        print(f"CRITICAL ERROR in short_url: {e}")
+        # If shortener fails, we MUST decide: bypass or tell user?
+        # User said "fix it", so if it fails, maybe tell them why or fallback.
+        # Fallback to direct delivery to ensure "sending anything"
         await send_files(client, user_id, base64_string)
 
 
@@ -338,11 +329,17 @@ async def handle_payload(client: Client, message: Message, basic_payload: str):
     is_premium = await is_premium_user(user_id)
     is_admin = await db.admin_exist(user_id) or user_id == OWNER_ID
 
-    shorten_admins = settings.get('shorten_admins', False)
+    shorten_admins = settings.get('shorten_admins', True)
 
     shortener_mode = settings.get('shortener_mode', 'one_per_time')
     shortener_time = settings.get('shortener_time', 0)
-    can_shorten = bool(WEBSITE_URL) or (bool(SHORTLINK_URL) and bool(SHORTLINK_API))
+
+    # STRICT CONFIG CHECK
+    can_shorten = all([
+        bool(WEBSITE_URL),
+        bool(SHORTLINK_URL),
+        bool(SHORTLINK_API)
+    ])
 
     # Check actual verification state from database
     actual_verified = False
@@ -369,17 +366,23 @@ async def handle_payload(client: Client, message: Message, basic_payload: str):
     # Final Bypass Determination
     is_bypassed_admin = is_admin and not shorten_admins
 
-    bypass = (
-        is_premium or
-        is_bypassed_admin or
-        actual_verified or
-        not can_shorten
-    )
+    # Logic: If Shortener is OFF, bypass immediately.
+    if not shortener_enabled:
+        return await send_files(client, user_id, base64_string)
 
-    if bypass:
-        await send_files(client, user_id, base64_string)
-    else:
-        await short_url(client, message, base64_string)
+    # If ON, check other bypasses
+    if is_premium or is_bypassed_admin or actual_verified:
+        return await send_files(client, user_id, base64_string)
+
+    # Check if we CAN shorten
+    if not can_shorten:
+        print(f"[CONFIG ERROR] Shortener enabled but credentials missing: URL={SHORTLINK_URL}, API={bool(SHORTLINK_API)}")
+        if is_admin:
+            await message.reply_text("<b>⚠️ Warning: Shortener enabled but credentials (URL/API) missing in config.py! Delivering files directly.</b>")
+        return await send_files(client, user_id, base64_string)
+
+    # Proceed to shortener
+    await short_url(client, message, base64_string)
 
 @Bot.on_message(filters.command('start') & filters.private)
 async def start_command(client: Client, message: Message):

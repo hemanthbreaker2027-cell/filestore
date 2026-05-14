@@ -1,1 +1,6 @@
 [01-May-26 14:57:31 - WARNING] - pyrogram.crypto.aes - TgCrypto is missing! Pyrogram will work the same, but at a much slower speed. More info: https://docs.pyrogram.org/topics/speedups
+[14-May-26 16:32:24 - WARNING] - pyrogram.crypto.aes - TgCrypto is missing! Pyrogram will work the same, but at a much slower speed. More info: https://pyrofork.wulan17.dev/main/topics/speedups
+[14-May-26 16:33:34 - WARNING] - pyrogram.crypto.aes - TgCrypto is missing! Pyrogram will work the same, but at a much slower speed. More info: https://pyrofork.wulan17.dev/main/topics/speedups
+[14-May-26 16:33:37 - INFO] - aiohttp.access - ::1 [14/May/2026:16:33:37 +0000] "GET /health HTTP/1.1" 200 154 "-" "curl/8.5.0"
+[14-May-26 16:35:06 - WARNING] - pyrogram.crypto.aes - TgCrypto is missing! Pyrogram will work the same, but at a much slower speed. More info: https://pyrofork.wulan17.dev/main/topics/speedups
+[14-May-26 16:35:17 - INFO] - aiohttp.access - ::1 [14/May/2026:16:35:14 +0000] "GET /protect?data=TESTTOK HTTP/1.1" 200 3053 "-" "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) HeadlessChrome/145.0.7632.6 Safari/537.36"
