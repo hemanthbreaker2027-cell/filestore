@@ -3,6 +3,7 @@
 
 import motor.motor_asyncio
 import time
+import secrets
 import pymongo, os
 from config import DB_URI, DB_NAME
 import logging
@@ -52,39 +53,44 @@ class AniZoneFlix:
         self.shortener_verifications = self.database['shortener_verifications']
         self.cooldown_data = self.database['cooldowns']
         self.sticker_data = self.database['stickers']
+        self.strict_verifications = self.database['strict_verifications']
 
 
-    # SETTINGS & FEATURE FLAGS
+    # SETTINGS & FEATURE FLAGS - V9 ENGINE
     async def get_settings(self):
         settings = await self.settings_data.find_one({'_id': 'bot_settings'})
+        from config import WEBSITE_URL, WRAPPED_URL_DOMAIN, WRAPPED_URL_PATH, WRAPPED_QUERY_PARAM
+
+        default_settings = {
+            '_id': 'bot_settings',
+            'shortener_system': True,
+            'file_delivery': True,
+            'core_features': True,
+            'shortener_mode': 'one_per_time', # one_per_time or based_time
+            'shortener_time': 0, # Time in seconds for based_time mode
+            'stream_enabled': False,
+            'download_enabled': False,
+            'verify_timer': 10,
+            'website_url': WEBSITE_URL,
+            'wrapped_url_domain': WRAPPED_URL_DOMAIN,
+            'wrapped_url_path': WRAPPED_URL_PATH,
+            'wrapped_query_param': WRAPPED_QUERY_PARAM,
+            'session_expiry': 300, # 5 minutes
+            'shorten_admins': True,
+            'v9_engine': True,
+            'stickers_enabled': True
+        }
+
         if not settings:
-            default_settings = {
-                '_id': 'bot_settings',
-                'shortener_system': True,
-                'file_delivery': True,
-                'core_features': True,
-                'shortener_mode': 'one_per_time', # one_per_time or based_time
-                'shortener_time': 0, # Time in seconds for based_time mode
-                'stream_enabled': False,
-                'download_enabled': False
-            }
             await self.settings_data.insert_one(default_settings)
             return default_settings
 
-        # Ensure new fields exist for existing users
+        # Ensure new fields exist for existing users (Migration Logic)
         updated = False
-        if 'shortener_mode' not in settings:
-            settings['shortener_mode'] = 'one_per_time'
-            updated = True
-        if 'shortener_time' not in settings:
-            settings['shortener_time'] = 0
-            updated = True
-        if 'stream_enabled' not in settings:
-            settings['stream_enabled'] = False
-            updated = True
-        if 'download_enabled' not in settings:
-            settings['download_enabled'] = False
-            updated = True
+        for field, default in default_settings.items():
+            if field not in settings:
+                settings[field] = default
+                updated = True
 
         if updated:
             await self.settings_data.update_one({'_id': 'bot_settings'}, {'$set': settings})
@@ -429,6 +435,48 @@ class AniZoneFlix:
         docs = await self.sticker_data.find().to_list(length=None)
         # Return as a dictionary for faster lookup {keyword: file_id}
         return {doc['_id']: doc['sticker_file_id'] for doc in docs}
+
+    # ULTRA STRICT VERIFICATION
+    async def create_strict_verification(self, user_id, code):
+        import string
+        import random
+        # Generate an 8-character uppercase alphanumeric token for better UX (like GXC8A)
+        token = ''.join(random.choices(string.ascii_uppercase + string.digits, k=8))
+        # Ensure uniqueness
+        while await self.strict_verifications.find_one({'_id': token}):
+            token = ''.join(random.choices(string.ascii_uppercase + string.digits, k=8))
+
+        await self.strict_verifications.insert_one({
+            '_id': token,
+            'user_id': str(user_id),
+            'code': code,
+            'status': 'unverified',
+            'created_at': time.time(),
+            'expires_at': time.time() + 600 # 10 mins
+        })
+        return token
+
+    async def mark_strict_verified(self, token):
+        result = await self.strict_verifications.update_one(
+            {'_id': token, 'status': 'unverified'},
+            {'$set': {'status': 'verified', 'verified_at': time.time()}}
+        )
+        return result.modified_count > 0
+
+    async def get_strict_verification(self, token):
+        record = await self.strict_verifications.find_one({'_id': token})
+        if not record: return None
+        if time.time() > record.get('expires_at', 0):
+            await self.strict_verifications.delete_one({'_id': token})
+            return None
+        return record
+
+    async def consume_strict_verification(self, token):
+        record = await self.get_strict_verification(token)
+        if record and record.get('status') == 'verified':
+            await self.strict_verifications.delete_one({'_id': token})
+            return record
+        return None
 
     # RESTART TASKS
     async def clear_all_bans(self):

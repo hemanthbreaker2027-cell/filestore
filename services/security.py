@@ -5,56 +5,14 @@ import os
 import base64
 import secrets
 import json
+import jwt
 from cryptography.hazmat.primitives.ciphers.aead import AESGCM
 from urllib.parse import urlparse
-from config import JWT_SECRET, SHORTLINK_URL, SHORTLINK_API, WEBSITE_URL, WHITELISTED_DOMAINS, RECAPTCHA_SECRET_KEY
+from config import JWT_SECRET, SECURE_SECRET_KEY, SHORTLINK_URL, SHORTLINK_API, WEBSITE_URL, WHITELISTED_DOMAINS
 from database.database import db
-
-# Configuration for reCAPTCHA - Fallback to config default if env is missing
-RECAPTCHA_SECRET = os.environ.get("RECAPTCHA_SECRET_KEY") or os.environ.get("RECAPTCHA_SECRET") or RECAPTCHA_SECRET_KEY
-MIN_SCORE = 0.3  # Dynamic Score for Mobile Users
 
 
 class SecurityService:
-
-    @staticmethod
-    async def verify_recaptcha(token: str, ip: str, session: aiohttp.ClientSession):
-        try:
-            async with session.post(
-                "https://www.google.com/recaptcha/api/siteverify",
-                data={
-                    "secret": RECAPTCHA_SECRET,
-                    "response": token,
-                    "remoteip": ip
-                }
-            ) as resp:
-                result = await resp.json()
-
-            print(f"[RECAPTCHA DEBUG] Result: {result}")
-
-            if result.get("success"):
-                score = result.get("score", 0.5)
-
-                # Allow Google test key
-                if RECAPTCHA_SECRET == "6LeIxAcTAAAAAGG-vFI1TnRWxMZNFuojJ4WifJWe":
-                    return True, score
-
-                if score >= MIN_SCORE:
-                    return True, score
-
-                return False, score
-
-            error_codes = result.get("error-codes", [])
-            print(f"[RECAPTCHA ERROR] {error_codes}")
-
-            if "invalid-input-secret" in error_codes:
-                return False, -1
-
-            return False, 0
-
-        except Exception as e:
-            print(f"[RECAPTCHA EXCEPTION] {e}")
-            return False, 0
 
     @staticmethod
     def get_client_ip(request):
@@ -139,6 +97,28 @@ class SecurityService:
 
 
 class SecureRedirect:
+
+    @staticmethod
+    async def generate_protected_token(code: str):
+        settings = await db.get_settings()
+        expiry = settings.get('session_expiry', 300)
+        payload = {
+            "code": code,
+            "exp": int(time.time()) + expiry
+        }
+        return jwt.encode(payload, SECURE_SECRET_KEY, algorithm="HS256")
+
+    @staticmethod
+    def verify_protected_token(token: str):
+        try:
+            payload = jwt.decode(token, SECURE_SECRET_KEY, algorithms=["HS256"])
+            return payload
+        except jwt.ExpiredSignatureError:
+            print("[JWT ERROR] Token Expired")
+            return None
+        except jwt.InvalidTokenError as e:
+            print(f"[JWT ERROR] Invalid Token: {e}")
+            return None
 
     @staticmethod
     def _get_key():

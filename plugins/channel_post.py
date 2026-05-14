@@ -36,12 +36,23 @@ async def channel_post(client: Client, message: Message):
     base64_string = await encode(string)
     link = f"https://t.me/{client.username}?start={base64_string}"
 
-    reply_markup = InlineKeyboardMarkup([[InlineKeyboardButton("🔁 Share URL", url=f'https://telegram.me/share/url?url={link}')]])
+    share_button = [InlineKeyboardButton("🔁 Share URL", url=f'https://telegram.me/share/url?url={link}')]
+
+    # Preserve existing buttons
+    buttons = []
+    if message.reply_markup and message.reply_markup.inline_keyboard:
+        buttons.extend(list(message.reply_markup.inline_keyboard))
+
+    buttons.append(share_button)
+    reply_markup = InlineKeyboardMarkup(buttons)
 
     await reply_text.edit(f"<b>Here is your link</b>\n\n{link}", reply_markup=reply_markup, disable_web_page_preview = True)
 
     if not DISABLE_CHANNEL_BUTTON:
-        await post_message.edit_reply_markup(reply_markup)
+        try:
+            await post_message.edit_reply_markup(reply_markup)
+        except Exception as e:
+            print(f"Error editing post reply markup: {e}")
 
 # Don't Remove Credit @AniZoneFlix, @AniZoneFlix
 # Ask Doubt on telegram @AniZoneFlix

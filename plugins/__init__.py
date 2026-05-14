@@ -7,7 +7,7 @@
 
 import aiohttp
 from aiohttp import web
-from web.server import routes
+from web_server import routes
 
 
 async def on_cleanup(app):

@@ -26,12 +26,32 @@ def get_panel_markup(settings):
             InlineKeyboardButton("BASED TIME" + (" ✅" if mode == 'based_time' else ""), callback_data="set_mode_time")
         ],
         [
+            InlineKeyboardButton(f"⏱️ Tɪᴍᴇʀ: {settings.get('verify_timer')}s", callback_data="set_val_verify_timer"),
+            InlineKeyboardButton(f"⏳ Exᴘɪʀʏ: {settings.get('session_expiry')}s", callback_data="set_val_session_expiry")
+        ],
+        [
+            InlineKeyboardButton(f"🌐 Wᴇʙsɪᴛᴇ", callback_data="set_val_website_url"),
+            InlineKeyboardButton(f"🔗 Dᴏᴍᴀɪɴ", callback_data="set_val_wrapped_url_domain")
+        ],
+        [
+            InlineKeyboardButton(f"📁 Pᴀᴛʜ", callback_data="set_val_wrapped_url_path"),
+            InlineKeyboardButton(f"🆔 Pᴀʀᴀᴍ", callback_data="set_val_wrapped_query_param")
+        ],
+        [
             InlineKeyboardButton(f"ꜱᴛʀᴇᴀᴍ ꜱʏꜱᴛᴇᴍ {get_badge('stream_enabled')}", callback_data="none"),
             InlineKeyboardButton(get_status("stream_enabled"), callback_data="tg_stream_enabled")
         ],
         [
             InlineKeyboardButton(f"ᴅᴏᴡɴʟᴏᴀᴅ ꜱʏꜱᴛᴇᴍ {get_badge('download_enabled')}", callback_data="none"),
             InlineKeyboardButton(get_status("download_enabled"), callback_data="tg_download_enabled")
+        ],
+        [
+            InlineKeyboardButton(f"ꜱʜᴏʀᴛᴇɴ ᴀᴅᴍɪɴꜱ {get_badge('shorten_admins')}", callback_data="none"),
+            InlineKeyboardButton(get_status("shorten_admins"), callback_data="tg_shorten_admins")
+        ],
+        [
+            InlineKeyboardButton(f"ꜱᴛɪᴄᴋᴇʀꜱ ꜱʏꜱᴛᴇᴍ {get_badge('stickers_enabled')}", callback_data="none"),
+            InlineKeyboardButton(get_status("stickers_enabled"), callback_data="tg_stickers_enabled")
         ],
         [
             InlineKeyboardButton(f"ꜰɪʟᴇ ᴅᴇʟɪᴠᴇʀʏ {get_badge('file_delivery')}", callback_data="none"),
@@ -72,22 +92,19 @@ async def owner_panel(client: Bot, message: Message):
         reply_markup=get_panel_markup(settings)
     )
 
-@Bot.on_callback_query(filters.regex(r"^(tg_|refresh_panel|set_mode_)"))
+@Bot.on_callback_query(filters.regex(r"^(tg_|refresh_panel|set_mode_|set_val_)"))
 async def panel_callback(client: Bot, query: CallbackQuery):
     if query.from_user.id != OWNER_ID:
         return await query.answer("˹ ᴀᴄᴄᴇss ᴅᴇɴɪᴇᴅ, ᴍᴏʀᴛᴀʟ! ˼", show_alert=True)
 
     data = query.data
-    settings = await db.get_settings()
 
     if data == "refresh_panel":
         await query.answer("˹ ʀᴇꜰʀᴇsʜɪɴɢ ᴅᴀsʜʙᴏᴀʀᴅ... ˼", show_alert=False)
     elif data == "set_mode_one":
         await db.update_setting('shortener_mode', 'one_per_time')
         await query.answer("Mode set to: ONE PER TIME")
-        settings['shortener_mode'] = 'one_per_time'
     elif data == "set_mode_time":
-        # Interactive flow for time
         await query.answer()
         msg = await client.ask(query.message.chat.id, "<b>🛡 ˹ ᴀᴄᴛɪᴠᴀᴛᴇ ʙᴀsᴇᴅ ᴛɪᴍᴇ ᴍᴏᴅᴇ ˼</b>\n\n💎 ᴘʟᴇᴀsᴇ ᴇɴᴛᴇʀ ᴛʜᴇ ᴠᴀʟɪᴅɪᴛʏ ᴛɪᴍᴇ ɪɴ sᴇᴄᴏɴᴅs (ᴇ.ɢ. 3600 ꜰᴏʀ 1 ʜᴏᴜʀ):")
         try:
@@ -95,17 +112,40 @@ async def panel_callback(client: Bot, query: CallbackQuery):
             await db.update_setting('shortener_mode', 'based_time')
             await db.update_setting('shortener_time', val)
             await msg.reply(f"✅ ʙᴀsᴇᴅ ᴛɪᴍᴇ ᴍᴏᴅᴇ ᴀᴄᴛɪᴠᴀᴛᴇᴅ!\n🚀 Validity: `{val}` seconds.")
-            settings['shortener_mode'] = 'based_time'
-            settings['shortener_time'] = val
         except:
             await msg.reply("❌ Invalid number. Mode not changed.")
             return
-    else:
+    elif data.startswith("set_val_"):
+        key = data.replace("set_val_", "")
+        await query.answer()
+        prompt = {
+            'verify_timer': "Enter verification timer in seconds (e.g. 10):",
+            'website_url': "Enter your deployment domain (e.g. your-app.onrender.com):",
+            'wrapped_url_domain': "Enter wrapped URL domain (e.g. darkguruji.com):",
+            'wrapped_url_path': "Enter wrapped URL path (e.g. /universtiesstudiess/):",
+            'wrapped_query_param': "Enter wrapped query parameter (e.g. insurancessstudiess):",
+            'session_expiry': "Enter JWT session expiry in seconds (e.g. 300):"
+        }.get(key, "Enter new value:")
+
+        msg = await client.ask(query.message.chat.id, f"<b>🛠 ˹ Sᴇᴛ {key.replace('_', ' ').upper()} ˼</b>\n\n💎 {prompt}")
+        new_val = msg.text.strip()
+        if key in ['verify_timer', 'session_expiry']:
+            try: new_val = int(new_val)
+            except:
+                await msg.reply("❌ Invalid number.")
+                return
+
+        await db.update_setting(key, new_val)
+        await msg.reply(f"✅ {key.replace('_', ' ').title()} updated to: `{new_val}`")
+    elif data.startswith("tg_"):
+        settings = await db.get_settings()
         key = data.replace("tg_", "")
         new_val = not settings.get(key, True)
         await db.update_setting(key, new_val)
-        settings[key] = new_val
         await query.answer(f"˹ {key.replace('_', ' ').title()} {'ᴇɴᴀʙʟᴇᴅ' if new_val else 'ᴅɪsᴀʙʟᴇᴅ'} ˼")
+
+    # Fetch fresh settings for UI update
+    settings = await db.get_settings()
 
     caption = (
         "━━━━━━━━━━━━━━━━━━━\n"
@@ -124,8 +164,8 @@ async def panel_callback(client: Bot, query: CallbackQuery):
             caption=caption,
             reply_markup=get_panel_markup(settings)
         )
-    except:
-        pass
+    except Exception as e:
+        print(f"[PANEL ERROR] {e}")
 
 @Bot.on_message(filters.command('stream') & filters.private & admin)
 async def toggle_stream(client: Bot, message: Message):
