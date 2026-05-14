@@ -171,10 +171,11 @@ async def send_files(client: Client, user_id: int, base64_string, messages=None)
                     )
 
                     buttons = []
+                    base_web_url = settings.get('website_url', WEBSITE_URL)
                     if settings.get('stream_enabled', False):
-                        buttons.append([InlineKeyboardButton("▶ STREAM", url=f"https://{WEBSITE_URL}/watch?path={code}")])
+                        buttons.append([InlineKeyboardButton("▶ STREAM", url=f"https://{base_web_url}/watch?path={code}")])
                     if settings.get('download_enabled', False):
-                        buttons.append([InlineKeyboardButton("⬇ DOWNLOAD", url=f"https://{WEBSITE_URL}/download/{code}")])
+                        buttons.append([InlineKeyboardButton("⬇ DOWNLOAD", url=f"https://{base_web_url}/download/{code}")])
 
                     if reply_markup and reply_markup.inline_keyboard:
                         new_kb = list(reply_markup.inline_keyboard)
