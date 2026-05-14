@@ -236,13 +236,17 @@ async def send_files(client: Client, user_id: int, base64_string, messages=None)
 
 async def short_url(client: Client, message: Message, base64_string):
     user_id = message.from_user.id
+    # REQUIRED CORRECT BEHAVIOR: Always fetch latest settings
+    settings = await db.get_settings()
+    shortener_enabled = settings.get('shortener_system', True)
+
+    # REQUIRED CORRECT BEHAVIOR: WHEN SHORTNER_ENABLED = false
+    if not shortener_enabled:
+        return await send_files(client, user_id, base64_string)
+
     try:
         # Base destination link (direct bot link)
         destination = f"https://t.me/{client.username}?start=yu3elk{base64_string}7"
-
-        # Check if we should use the new protection flow
-        settings = await db.get_settings()
-        shortener_enabled = settings.get('shortener_system', True)
 
         if shortener_enabled:
             # 1. Generate short code
@@ -289,60 +293,51 @@ async def short_url(client: Client, message: Message, base64_string):
 async def handle_payload(client: Client, message: Message, basic_payload: str):
     user_id = message.from_user.id
     settings = await db.get_settings()
-    is_premium = await is_premium_user(user_id)
     shortener_enabled = settings.get('shortener_system', True)
 
-    # DIRECT DELIVERY: If shortener is disabled, send files immediately without any checks
-    if not shortener_enabled:
-        if basic_payload.startswith("yu3elk"):
-            base64_string = basic_payload[6:-1]
-        else:
-            base64_string = basic_payload
-        return await send_files(client, user_id, base64_string)
-
+    # Clean payload and get base64 string
     is_verified_payload = basic_payload.startswith("yu3elk")
     if is_verified_payload:
         base64_string = basic_payload[6:-1]
     else:
         base64_string = basic_payload
 
+    # REQUIRED CORRECT BEHAVIOR: WHEN SHORTNER_ENABLED = false
+    if not shortener_enabled:
+        return await send_files(client, user_id, base64_string)
+
+    # REQUIRED CORRECT BEHAVIOR: WHEN SHORTNER_ENABLED = true
+    is_premium = await is_premium_user(user_id)
+    is_admin = await db.admin_exist(user_id) or user_id == OWNER_ID
+
     shortener_mode = settings.get('shortener_mode', 'one_per_time')
     shortener_time = settings.get('shortener_time', 0)
-    is_admin = await db.admin_exist(user_id) or user_id == OWNER_ID
     can_shorten = bool(WEBSITE_URL) or (bool(SHORTLINK_URL) and bool(SHORTLINK_API))
 
-    # SECURITY: Verify the yu3elk prefix against database
+    # Check actual verification state from database
     actual_verified = False
-    if is_verified_payload:
-        verify_status = await db.get_verify_status(user_id)
+    verify_status = await db.get_verify_status(user_id)
+
+    if verify_status.get('is_verified'):
         if shortener_mode == 'based_time':
-            if verify_status.get('is_verified'):
-                verified_time = verify_status.get('verified_time', 0)
-                if (time.time() - verified_time) < shortener_time:
-                    actual_verified = True
+            verified_time = verify_status.get('verified_time', 0)
+            if (time.time() - verified_time) < shortener_time:
+                actual_verified = True
+            else:
+                # Time expired, reset status in real-time
+                await db.update_verify_status(user_id, is_verified=False)
         else:
-            # ONE PER TIME
-            if verify_status.get('verify_token') == base64_string:
+            # ONE PER TIME Mode
+            if is_verified_payload and verify_status.get('verify_token') == base64_string:
                 actual_verified = True
 
-    # Initial Shortener bypass conditions
+    # Final Bypass Determination
     bypass = (
         is_premium or
         is_admin or
         actual_verified or
         not can_shorten
     )
-
-    # BASED TIME Logic (for normal links when already verified)
-    if not bypass and shortener_mode == 'based_time':
-        verify_status = await db.get_verify_status(user_id)
-        if verify_status.get('is_verified'):
-            verified_time = verify_status.get('verified_time', 0)
-            if (time.time() - verified_time) < shortener_time:
-                bypass = True
-            else:
-                # Time expired, reset status
-                await db.update_verify_status(user_id, is_verified=False)
 
     if bypass:
         await send_files(client, user_id, base64_string)
