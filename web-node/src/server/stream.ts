@@ -1,6 +1,6 @@
 import Fastify from 'fastify';
 import { TelegramClient } from 'telegram';
-import { StringSession } from 'telegram/sessions';
+import { StringSession } from 'telegram/sessions/index.js';
 import { MongoClient } from 'mongodb';
 import mimetypes from 'mime-types';
 import bigInt from 'big-integer';
