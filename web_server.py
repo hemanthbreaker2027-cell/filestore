@@ -7,7 +7,7 @@ import re
 import os
 import mimetypes
 from urllib.parse import quote, urlparse, parse_qs
-from config import WEBSITE_URL, WRAPPED_URL_DOMAIN, RECAPTCHA_SITE_KEY, RECAPTCHA_SECRET_KEY
+from config import WEBSITE_URL, WRAPPED_URL_DOMAIN, WRAPPED_URL_PATH, WRAPPED_QUERY_PARAM, RECAPTCHA_SITE_KEY, RECAPTCHA_SECRET_KEY
 from database.database import db
 from services.security import SecurityService, SecureRedirect
 from helper_func import decode, is_subscribed
@@ -121,41 +121,41 @@ async def wrapped_redirect(request):
 
     return web.HTTPFound(location=destination)
 
-@routes.get("/verify-backend")
-async def backend_verify_handler(request):
-    token = request.query.get('data')
-    if not token: return web.Response(text="Missing Token", status=400)
-
-    success = await db.mark_strict_verified(token)
-    if not success: return web.Response(text="Verification Failed or Already Verified", status=403)
-
-    # 1-second verification page
-    html = """
-    <!DOCTYPE html>
-    <html>
-    <head>
-        <title>Verifying...</title>
-        <meta http-equiv="refresh" content="1;url=https://t.me/{bot_username}?start=verify_{token}">
-        <style>
-            body { font-family: sans-serif; background: #0f172a; color: white; display: flex; align-items: center; justify-content: center; height: 100vh; margin: 0; }
-            .dot { animation: pulse 1s infinite; }
-            @keyframes pulse { 0% { opacity: 0.2; } 50% { opacity: 1; } 100% { opacity: 0.2; } }
-        </style>
-    </head>
-    <body>
-        <h1>Verifying<span class="dot">...</span></h1>
-    </body>
-    </html>
-    """.replace("{bot_username}", request.app['bot'].username).replace("{token}", token)
-    return web.Response(text=html, content_type="text/html")
-
-
 @routes.get("/eductionssstudiess/")
+@routes.get("/universtiesstudiess/")
+@routes.get("/{path:.*}studiess/") # Flexible matching for paths ending in studiess/
 async def wrapped_url_handler(request):
-    code = request.query.get('eductionstudiess')
-    if not code: return web.Response(text="Invalid Request", status=400)
+    settings = await db.get_settings()
+    param_name = settings.get('wrapped_query_param', WRAPPED_QUERY_PARAM)
+    token = request.query.get(param_name)
+    if not token: return web.Response(text="Invalid Request", status=400)
 
-    record = await db.verify_shortener_code(code)
+    # 1. Check if it's an Ultra Strict Token
+    success = await db.mark_strict_verified(token)
+    if success:
+        bot = request.app['bot']
+        # 1-second verification page before returning to bot
+        html = """
+        <!DOCTYPE html>
+        <html>
+        <head>
+            <title>Verifying...</title>
+            <meta http-equiv="refresh" content="1;url=https://t.me/{bot_username}?start=verify_{token}">
+            <style>
+                body { font-family: sans-serif; background: #0f172a; color: white; display: flex; align-items: center; justify-content: center; height: 100vh; margin: 0; }
+                .dot { animation: pulse 1s infinite; }
+                @keyframes pulse { 0% { opacity: 0.2; } 50% { opacity: 1; } 100% { opacity: 0.2; } }
+            </style>
+        </head>
+        <body>
+            <h1>Verifying Request<span class="dot">...</span></h1>
+        </body>
+        </html>
+        """.replace("{bot_username}", bot.username).replace("{token}", token)
+        return web.Response(text=html, content_type="text/html")
+
+    # 2. Check if it's a Universal Flow code (legacy/fallback)
+    record = await db.verify_shortener_code(token)
     if not record: return web.Response(text="Link Expired or Invalid", status=403)
 
     user_id, original_url = int(record.get('user_id')), record.get('original_url')
@@ -180,12 +180,18 @@ async def verify_protected_token(request):
 
         code = payload.get('code')
 
-        # 2. Fetch latest wrapped domain from DB
+        # 2. Fetch latest wrapped domain and path from DB
         settings = await db.get_settings()
         domain = settings.get('wrapped_url_domain', WRAPPED_URL_DOMAIN)
+        path = settings.get('wrapped_url_path', WRAPPED_URL_PATH)
+        param = settings.get('wrapped_query_param', WRAPPED_QUERY_PARAM)
+
+        # Ensure path format
+        if not path.startswith("/"): path = "/" + path
+        if not path.endswith("/"): path = path + "/"
 
         # 3. Return Converted Wrapped URL
-        wrapped_url = f"https://{domain}/eductionssstudiess/?eductionstudiess={code}"
+        wrapped_url = f"https://{domain}{path}?{param}={code}"
         return json_response(True, "Verified", {"redirect": wrapped_url})
     except Exception as e:
         print(f"[VERIFY ERROR] {e}")

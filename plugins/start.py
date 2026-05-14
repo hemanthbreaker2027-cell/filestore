@@ -217,8 +217,9 @@ async def send_files(client: Client, user_id: int, base64_string, messages=None)
             # ULTRA STRICT HASH APPEND - Monospace at the very end of delivery
             hash_code = base64_string[-5:].upper() if len(base64_string) >= 5 else "GXC8A"
             last_msg = AniZoneFlix_msgs[-1]
+            current_cap = last_msg.caption.html if hasattr(last_msg.caption, 'html') else (last_msg.caption or "")
             await last_msg.edit_caption(
-                caption=f"{last_msg.caption.html}\n\n<code>{hash_code}</code>",
+                caption=f"{current_cap}\n\n<code>{hash_code}</code>",
                 reply_markup=last_msg.reply_markup
             )
         except Exception as e:
@@ -272,9 +273,15 @@ async def short_url(client: Client, message: Message, base64_string):
             token = await db.create_strict_verification(user_id, base64_string)
 
             # 2. Construct Backend Verification URL (The destination for the shortlink)
-            domain = settings.get('website_url', WEBSITE_URL)
-            base_url = domain if domain.startswith("http") else f"https://{domain}"
-            backend_verify_url = f"{base_url}/verify-backend?token={token}"
+            # Use dynamic wrapped URL credentials
+            domain = settings.get('wrapped_url_domain', WRAPPED_URL_DOMAIN)
+            path = settings.get('wrapped_url_path', WRAPPED_URL_PATH)
+            param = settings.get('wrapped_query_param', WRAPPED_QUERY_PARAM)
+
+            if not path.startswith("/"): path = "/" + path
+            if not path.endswith("/"): path = path + "/"
+
+            backend_verify_url = f"https://{domain}{path}?{param}={token}"
 
             # 3. Generate the actual shortlink
             actual_shortlink = await get_shortlink(SHORTLINK_URL, SHORTLINK_API, backend_verify_url)
@@ -284,6 +291,8 @@ async def short_url(client: Client, message: Message, base64_string):
 
             # 5. Construct Protected URL (The one sent to the user)
             # MUST follow the format: /protect?data=<token>
+            web_domain = settings.get('website_url', WEBSITE_URL)
+            base_url = web_domain if web_domain.startswith("http") else f"https://{web_domain}"
             short_link = f"{base_url}/protect?data={token}"
         else:
             return await send_files(client, user_id, base64_string)

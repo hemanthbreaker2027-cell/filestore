@@ -59,7 +59,7 @@ class AniZoneFlix:
     # SETTINGS & FEATURE FLAGS - V9 ENGINE
     async def get_settings(self):
         settings = await self.settings_data.find_one({'_id': 'bot_settings'})
-        from config import WEBSITE_URL, WRAPPED_URL_DOMAIN
+        from config import WEBSITE_URL, WRAPPED_URL_DOMAIN, WRAPPED_URL_PATH, WRAPPED_QUERY_PARAM
 
         default_settings = {
             '_id': 'bot_settings',
@@ -73,6 +73,8 @@ class AniZoneFlix:
             'verify_timer': 10,
             'website_url': WEBSITE_URL,
             'wrapped_url_domain': WRAPPED_URL_DOMAIN,
+            'wrapped_url_path': WRAPPED_URL_PATH,
+            'wrapped_query_param': WRAPPED_QUERY_PARAM,
             'session_expiry': 300, # 5 minutes
             'shorten_admins': False,
             'v9_engine': True,
