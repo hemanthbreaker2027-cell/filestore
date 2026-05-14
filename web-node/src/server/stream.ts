@@ -1,5 +1,5 @@
 import Fastify from 'fastify';
-import { TelegramClient, Api } from 'telegram';
+import { TelegramClient } from 'telegram';
 import { StringSession } from 'telegram/sessions';
 import { MongoClient } from 'mongodb';
 import { quote } from 'querystring';

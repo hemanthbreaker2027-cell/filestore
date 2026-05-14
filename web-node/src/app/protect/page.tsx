@@ -1,10 +1,10 @@
 "use client";
 
-import { useEffect, useState, useRef } from "react";
+import { useEffect, useState, useRef, Suspense } from "react";
 import { useSearchParams } from "next/navigation";
 import { Shield, TriangleAlert, Loader2, Chrome } from "lucide-react";
 
-export default function ProtectPage() {
+function ProtectContent() {
   const searchParams = useSearchParams();
   const [status, setStatus] = useState<"checking" | "ready" | "verifying" | "error">("checking");
   const [errorMsg, setErrorMsg] = useState("");
@@ -54,18 +54,9 @@ export default function ProtectPage() {
       }
     };
 
-    // Broadcast our presence
     broadcastChannel.current.postMessage("ping");
 
-    // 3. STORAGE LOCK
     const storageKey = `active_session_${data}`;
-    const existingSession = localStorage.getItem(storageKey);
-    const sessionExpiry = localStorage.getItem(`${storageKey}_expiry`);
-
-    if (existingSession && sessionExpiry && parseInt(sessionExpiry) > Date.now()) {
-        // Double check with broadcast if it's really another tab or just a refresh
-    }
-
     localStorage.setItem(storageKey, "active");
     localStorage.setItem(`${storageKey}_expiry`, (Date.now() + 30000).toString());
 
@@ -119,7 +110,7 @@ export default function ProtectPage() {
 
   return (
     <div className="min-h-screen flex items-center justify-center p-4">
-      <div className="glass-container p-8 sm:p-10 rounded-[2.5rem] w-full max-width-[450px] text-center relative overflow-hidden z-10">
+      <div className="glass-container p-8 sm:p-10 rounded-[2.5rem] w-full max-w-[450px] text-center relative overflow-hidden z-10">
         <div className="absolute top-0 left-0 right-0 h-[120px] bg-gradient-to-b from-sky-400/20 to-transparent z-0"></div>
 
         <div className="relative z-10 space-y-8">
@@ -198,4 +189,12 @@ export default function ProtectPage() {
       </div>
     </div>
   );
+}
+
+export default function ProtectPage() {
+    return (
+        <Suspense fallback={<div>Loading...</div>}>
+            <ProtectContent />
+        </Suspense>
+    );
 }
