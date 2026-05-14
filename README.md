@@ -1,61 +1,62 @@
 
-# AniZoneFlix FileStore Bot v6.0 - Zero Buffering Edition 🚀
+# AniZoneFlix FileStore Bot v6.0 - Universal Link Protection Flow 🚀
 
-An advanced Telegram FileStore bot with a high-performance streaming engine designed for zero buffering, instant playback, and seamless external player integration.
+An advanced Telegram FileStore bot with a secure, multi-layer link protection system and a high-performance streaming engine.
+
+## 🛡️ Universal Link Protection Flow
+
+The bot implements a strict, secure gateway for all file access:
+
+1.  **Bot Layer:** Generates a tamper-proof, time-limited protected link using JWT (HS256).
+2.  **Protected Link Layer:** `https://yourdomain.com/protect?data=<signed_token>`
+3.  **Frontend Verification Layer:** A mandatory 10-second timer page that validates token integrity.
+4.  **Backend Verification Layer:** Validates the JWT, expiry, and request authenticity.
+5.  **Converted Wrapped URL Layer:** Backend converts the internal code into a "Wrapped URL" (e.g., `theimmigrationworld.com`) ONLY after successful verification.
+6.  **Final Destination:** User is redirected to the file or destination.
 
 ## 🌟 Key Features
 
-- **Zero-Buffering Engine V6:** Rewritten from the ground up to eliminate delays.
-- **Instant Seeking:** Skip through videos without loading loops.
-- **Parallel Prefetching:** Pre-fetches chunks from Telegram while streaming to ensure constant data flow.
-- **External Player Support:** Optimized intents for MX Player, VLC, and PLAYit.
-- **Modular Design:** Independent Web (Streaming/Download) and Bot services.
-- **Mobile First:** Minimalist UI designed for high-speed mobile browsing.
-- **Multi-Cloud Support:** Ready to deploy on Vercel, Render, Koyeb, and Heroku.
+- **Zero-Buffering Engine V6:** High-speed streaming and parallel prefetching.
+- **Dynamic Control Panel:** Toggle shortener, streaming, and delivery settings in real-time via `/panel`.
+- **JWT Security:** All links are signed and expire after use or timeout.
+- **Wrapped URL Masking:** Original mapping logic and shortener links are never exposed to the frontend.
+- **Chrome-Only Enforcement:** Optional security layer for browser-specific access.
 
 ## 🚀 Deployment Guide
 
-### 1. Vercel (Web Service Only)
-To deploy the streaming engine on Vercel:
-1. Fork this repository.
-2. In Vercel, create a new project and select your fork.
-3. Add the following Environment Variables:
-   - `DATABASE_URL`: Your MongoDB Connection String.
-   - `APP_ID`, `API_HASH`, `TG_BOT_TOKEN`.
-   - `RECAPTCHA_SITE_KEY`, `RECAPTCHA_SECRET_KEY`.
-4. Deploy! Vercel will handle the `web/` directory automatically.
+### 1. Render (Recommended)
+1.  **Fork** this repository.
+2.  Create a new **Web Service** on Render.
+3.  **Environment Variables:**
+    - `TG_BOT_TOKEN`: Your Telegram Bot Token.
+    - `APP_ID` & `API_HASH`: From [my.telegram.org](https://my.telegram.org).
+    - `DATABASE_URL`: MongoDB Connection URI.
+    - `WEBSITE_URL`: Your Render app URL (e.g., `myapp.onrender.com`).
+    - `SECURE_SECRET_KEY`: A long, random string for JWT signing.
+    - `WRAPPED_URL_DOMAIN`: The domain for final redirection (e.g., `theimmigrationworld.com`).
+4.  **Build Command:** `pip install -r requirements.txt`
+5.  **Start Command:** `python3 main.py` (This starts both the Bot and the Web Server).
 
-### 2. Koyeb / Render / Railway
-Recommended for the Full Bot + Web service:
-1. Create a new service from your fork.
-2. Use the provided `Procfile` for the run command.
-3. Configure all Environment Variables from `config.py`.
-4. Koyeb/Render will detect the `web` process and expose the streaming port.
+### 2. Heroku
+1.  Click the **Deploy to Heroku** button or use the CLI.
+2.  The `app.json` and `Procfile` are pre-configured.
+3.  Fill in the Config Vars in the Heroku Dashboard.
 
-### 3. Heroku
-1. Click the "Deploy to Heroku" button or use the Heroku CLI.
-2. The `app.json` is pre-configured with all required fields.
+## 🛠 Admin Panel Commands
 
-## 🛠 Repository Structure
+- `/panel` or `/settings`: Open the core control dashboard.
+- `/stream on/off`: Globally toggle streaming buttons.
+- `/download on/off`: Globally toggle download buttons.
+- `/addpremium`: Grant premium (bypass) access to users.
 
-- `/web`: Core high-speed streaming and download engine.
-- `/plugins`: Bot commands and handlers.
-- `/templates`: Ultra-fast minimalist UI templates.
-- `/database`: MongoDB abstraction layer.
-
-## ⚙️ Environment Variables
+## ⚙️ Core Configuration Variables
 
 | Variable | Description |
 | --- | --- |
-| `TG_BOT_TOKEN` | Your Telegram Bot Token. |
-| `DATABASE_URL` | MongoDB Connection URI. |
-| `WEBSITE_URL` | Your deployment domain (without https://). |
-| `CHANNEL_ID` | Telegram Channel ID for file storage. |
-| `RECAPTCHA_SITE_KEY` | Google reCAPTCHA v3 Site Key. |
-
-## ❤️ Credits
-- Developed by [AniZoneFlix](https://t.me/AniZoneFlix)
-- Inspired by FileToLink and TG-FileStreamBot architectures.
+| `SHORTLINK_URL` | Shortener domain (e.g., `arolinks.com`). |
+| `SHORTLINK_API` | API Key for your shortener. |
+| `SECURE_SECRET_KEY`| Key used for JWT encryption. **Keep this private.** |
+| `WRAPPED_URL_DOMAIN`| The domain used for the final conversion step. |
 
 ---
-**Disclaimer:** This bot is for educational purposes only. Always comply with Telegram's Terms of Service.
+**Developed by [AniZoneFlix](https://t.me/AniZoneFlix)**

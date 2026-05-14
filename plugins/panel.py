@@ -86,16 +86,13 @@ async def panel_callback(client: Bot, query: CallbackQuery):
         return await query.answer("˹ ᴀᴄᴄᴇss ᴅᴇɴɪᴇᴅ, ᴍᴏʀᴛᴀʟ! ˼", show_alert=True)
 
     data = query.data
-    settings = await db.get_settings()
 
     if data == "refresh_panel":
         await query.answer("˹ ʀᴇꜰʀᴇsʜɪɴɢ ᴅᴀsʜʙᴏᴀʀᴅ... ˼", show_alert=False)
     elif data == "set_mode_one":
         await db.update_setting('shortener_mode', 'one_per_time')
         await query.answer("Mode set to: ONE PER TIME")
-        settings['shortener_mode'] = 'one_per_time'
     elif data == "set_mode_time":
-        # Interactive flow for time
         await query.answer()
         msg = await client.ask(query.message.chat.id, "<b>🛡 ˹ ᴀᴄᴛɪᴠᴀᴛᴇ ʙᴀsᴇᴅ ᴛɪᴍᴇ ᴍᴏᴅᴇ ˼</b>\n\n💎 ᴘʟᴇᴀsᴇ ᴇɴᴛᴇʀ ᴛʜᴇ ᴠᴀʟɪᴅɪᴛʏ ᴛɪᴍᴇ ɪɴ sᴇᴄᴏɴᴅs (ᴇ.ɢ. 3600 ꜰᴏʀ 1 ʜᴏᴜʀ):")
         try:
@@ -103,8 +100,6 @@ async def panel_callback(client: Bot, query: CallbackQuery):
             await db.update_setting('shortener_mode', 'based_time')
             await db.update_setting('shortener_time', val)
             await msg.reply(f"✅ ʙᴀsᴇᴅ ᴛɪᴍᴇ ᴍᴏᴅᴇ ᴀᴄᴛɪᴠᴀᴛᴇᴅ!\n🚀 Validity: `{val}` seconds.")
-            settings['shortener_mode'] = 'based_time'
-            settings['shortener_time'] = val
         except:
             await msg.reply("❌ Invalid number. Mode not changed.")
             return
@@ -128,13 +123,15 @@ async def panel_callback(client: Bot, query: CallbackQuery):
 
         await db.update_setting(key, new_val)
         await msg.reply(f"✅ {key.replace('_', ' ').title()} updated to: `{new_val}`")
-        settings[key] = new_val
-    else:
+    elif data.startswith("tg_"):
+        settings = await db.get_settings()
         key = data.replace("tg_", "")
         new_val = not settings.get(key, True)
         await db.update_setting(key, new_val)
-        settings[key] = new_val
         await query.answer(f"˹ {key.replace('_', ' ').title()} {'ᴇɴᴀʙʟᴇᴅ' if new_val else 'ᴅɪsᴀʙʟᴇᴅ'} ˼")
+
+    # Fetch fresh settings for UI update
+    settings = await db.get_settings()
 
     caption = (
         "━━━━━━━━━━━━━━━━━━━\n"
@@ -153,8 +150,8 @@ async def panel_callback(client: Bot, query: CallbackQuery):
             caption=caption,
             reply_markup=get_panel_markup(settings)
         )
-    except:
-        pass
+    except Exception as e:
+        print(f"[PANEL ERROR] {e}")
 
 @Bot.on_message(filters.command('stream') & filters.private & admin)
 async def toggle_stream(client: Bot, message: Message):
