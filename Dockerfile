@@ -1,31 +1,41 @@
+# Build stage for Node.js
+FROM node:20-slim AS node-build
+WORKDIR /app/web-node
+COPY web-node/package*.json ./
+RUN npm install
+COPY web-node/ ./
+RUN npm run build
+
+# Final stage
 FROM python:3.10-slim
 
-# Install system dependencies for Node.js
+# Install Node.js runtime
 RUN apt-get update && apt-get install -y \
     curl \
-    gnupg \
     && curl -fsSL https://deb.nodesource.com/setup_20.x | bash - \
     && apt-get install -y nodejs \
     && rm -rf /var/lib/apt/lists/*
 
 WORKDIR /app
 
-# Copy and install Python dependencies
-COPY requirements.txt requirements.txt
+# Install Python dependencies
+COPY requirements.txt .
 RUN pip3 install --no-cache-dir -r requirements.txt
 
-# Copy and install Node.js dependencies
-COPY web-node/package*.json ./web-node/
-RUN cd web-node && npm install
+# Copy node app from build stage
+COPY --from=node-build /app/web-node /app/web-node
 
 # Copy the rest of the application
 COPY . .
 
-# Build Next.js
-RUN cd web-node && npm run build
+# Ensure entrypoint is executable
+RUN chmod +x entrypoint.sh
 
-# Use a shell script to run both processes
-RUN echo "#!/bin/bash\npython3 main.py & (cd web-node && npm run start) & (cd web-node && npm run stream)\nwait -n\nexit \$?" > /app/entrypoint.sh
-RUN chmod +x /app/entrypoint.sh
+# Environment variables
+ENV NEXT_TELEMETRY_DISABLED=1
+ENV NODE_ENV=production
 
-CMD ["/app/entrypoint.sh"]
+# Expose ports (Next.js usually 3000, Stream Engine usually 8080)
+EXPOSE 3000 8080 8001
+
+CMD ["./entrypoint.sh"]
