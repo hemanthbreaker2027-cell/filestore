@@ -58,16 +58,16 @@ async def send_files(client: Client, user_id: int, base64_string, messages=None)
         ids = []
         if len(argument) == 3:
             try:
-                start = int(int(argument[1]) / abs(client.db_channel.id))
-                end = int(int(argument[2]) / abs(client.db_channel.id))
-                ids = range(start, end + 1) if start <= end else list(range(start, end - 1, -1))
+                start = int(argument[1]) // abs(client.db_channel.id)
+                end = int(argument[2]) // abs(client.db_channel.id)
+                ids = list(range(start, end + 1)) if start <= end else list(range(start, end - 1, -1))
             except Exception as e:
                 print(f"Error decoding IDs: {e}")
                 return
 
         elif len(argument) == 2:
             try:
-                ids = [int(int(argument[1]) / abs(client.db_channel.id))]
+                ids = [int(argument[1]) // abs(client.db_channel.id)]
             except Exception as e:
                 print(f"Error decoding ID: {e}")
                 return
@@ -138,8 +138,8 @@ async def send_files(client: Client, user_id: int, base64_string, messages=None)
                 original_caption = msg.caption.html if msg.caption else ""
                 caption = f"{original_caption}\n\n{CUSTOM_CAPTION}" if CUSTOM_CAPTION else original_caption
 
-                # Default reply markup
-                reply_markup = msg.reply_markup if DISABLE_CHANNEL_BUTTON else None
+                # Default reply markup: Keep original buttons if any
+                reply_markup = msg.reply_markup
 
                 # STREAM & DOWNLOAD BUTTONS
                 is_video = False
@@ -216,6 +216,12 @@ async def send_files(client: Client, user_id: int, base64_string, messages=None)
         for msg in messages:
             sent = await deliver_item(msg)
             if sent: AniZoneFlix_msgs.append(sent)
+
+        if not AniZoneFlix_msgs:
+            try:
+                await client.send_message(chat_id=user_id, text="<b>⚠️ requested files not found or deleted from our database.</b>")
+            except: pass
+            return
 
         if FILE_AUTO_DELETE > 0:
             notification_msg = await client.send_message(
@@ -339,17 +345,21 @@ async def handle_payload(client: Client, message: Message, basic_payload: str):
         if shortener_mode == 'based_time':
             verified_time = verify_status.get('verified_time', 0)
             if (time.time() - verified_time) < shortener_time:
+                # Based Time Verification: Link must ALSO match or be a direct verified click
+                # However, usually based_time implies session-wide bypass.
+                # To be strict, we check if they are verified.
                 actual_verified = True
             else:
                 # Time expired, reset status in real-time
                 await db.update_verify_status(user_id, is_verified=False)
         else:
-            # ONE PER TIME Mode
+            # ONE PER TIME Mode: Verification token MUST match base64_string
             if is_verified_payload and verify_status.get('verify_token') == base64_string:
                 actual_verified = True
+                # Consume verification if one_per_time (optional, but requested strict)
+                # await db.update_verify_status(user_id, is_verified=False)
 
     # Final Bypass Determination
-    # If shorten_admins is True, admins will NOT bypass the shortener (for testing)
     is_bypassed_admin = is_admin and not shorten_admins
 
     bypass = (

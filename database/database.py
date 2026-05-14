@@ -92,16 +92,6 @@ class AniZoneFlix:
 
         return settings
 
-        for field, default in fields_to_check.items():
-            if field not in settings:
-                settings[field] = default
-                updated = True
-
-        if updated:
-            await self.settings_data.update_one({'_id': 'bot_settings'}, {'$set': settings})
-
-        return settings
-
     async def update_setting(self, key: str, value: bool):
         await self.settings_data.update_one(
             {'_id': 'bot_settings'},
