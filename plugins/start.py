@@ -237,10 +237,7 @@ async def send_files(client: Client, user_id: int, base64_string, messages=None)
 async def short_url(client: Client, message: Message, base64_string):
     user_id = message.from_user.id
     try:
-        short_link = None
-
         # Base destination link (direct bot link)
-        # We ensure it has prefix/suffix so database stores the full 'verified' version
         destination = f"https://t.me/{client.username}?start=yu3elk{base64_string}7"
 
         # Check if we should use the new protection flow
@@ -248,30 +245,24 @@ async def short_url(client: Client, message: Message, base64_string):
         shortener_enabled = settings.get('shortener_system', True)
 
         if shortener_enabled:
-            # 1. Generate original external shortlink
+            # 1. Generate short code
             if SHORTLINK_URL and SHORTLINK_API:
                 external_shortlink = await get_shortlink(SHORTLINK_URL, SHORTLINK_API, destination)
+                code = external_shortlink.split('/')[-1]
             else:
-                external_shortlink = destination
+                import secrets
+                code = secrets.token_hex(4)
 
-            # 2. Extract code (last part of URL)
-            # Example: https://arolinks.com/7JWPCK -> 7JWPCK
-            code = external_shortlink.split('/')[-1]
-            if not code:
-                 import secrets
-                 code = secrets.token_hex(4)
-
-            # 3. Store in DB for verification tracking (store destination link for redirection)
+            # 2. Store in DB for verification tracking
             await db.store_shortener_verification(str(user_id), code, destination)
 
-            # 4. Create Masked URL as per requirement
-            short_link = f"https://theimmigrationworld.com/eductionssstudiess/?eductionstudiess={code}&uiso=9367"
-        else:
-            # If disabled, we probably shouldn't be in short_url, but just in case:
-            return await send_files(client, user_id, base64_string)
+            # 3. Generate Signed Protected Token
+            token = SecureRedirect.generate_protected_token(code)
 
-        if not short_link:
-            # Fallback to direct send if shortening failed
+            # 4. Construct Protected URL
+            base_url = WEBSITE_URL if WEBSITE_URL.startswith("http") else f"https://{WEBSITE_URL}"
+            short_link = f"{base_url}/protect?data={token}"
+        else:
             return await send_files(client, user_id, base64_string)
 
         buttons = [

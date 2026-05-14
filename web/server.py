@@ -7,7 +7,7 @@ import re
 import os
 import mimetypes
 from urllib.parse import quote, urlparse, parse_qs
-from config import WEBSITE_URL, RECAPTCHA_SITE_KEY
+from config import WEBSITE_URL, WRAPPED_URL_DOMAIN
 from database.database import db
 from services.security import SecurityService, SecureRedirect
 from helper_func import decode, is_subscribed
@@ -63,37 +63,48 @@ async def r2_verify(request):
     except Exception: return json_response(False, "Error", status=500)
 
 @routes.get("/protect")
-@routes.get("/eductionssstudiess/")
 async def protect_landing_page(request):
-    url = request.query.get('url') or request.query.get('eductionstudiess')
+    data_token = request.query.get('data')
     html = await get_template("protect")
     if not html: return web.Response(text="Template Error", status=500)
-    html = html.replace("{{ RECAPTCHA_SITE_KEY }}", RECAPTCHA_SITE_KEY).replace("{{ ENCODED_URL }}", url or "")
     return web.Response(text=html, content_type="text/html")
 
+@routes.get("/eductionssstudiess/")
+async def wrapped_url_handler(request):
+    code = request.query.get('eductionstudiess')
+    if not code: return web.Response(text="Invalid Request", status=400)
+
+    record = await db.verify_shortener_code(code)
+    if not record: return web.Response(text="Link Expired or Invalid", status=403)
+
+    user_id, original_url = int(record.get('user_id')), record.get('original_url')
+    parsed = urlparse(original_url)
+    start_param = parse_qs(parsed.query).get('start', [''])[0]
+    payload = start_param[6:-1] if start_param.startswith("yu3elk") else start_param
+
+    # Update verification status in DB
+    await db.update_verify_status(user_id, verify_token=payload, is_verified=True, verified_time=time.time())
+
+    return web.HTTPFound(location=original_url)
+
 @routes.post("/verify")
-async def verify_shortener(request):
+async def verify_protected_token(request):
     try:
         data = await request.json()
-        code, ip = data.get('url'), SecurityService.get_client_ip(request)
-        success, score = await SecurityService.verify_recaptcha(data.get('recaptchaToken'), ip, request.app['client_session'])
-        if not success or score < 0.3: return json_response(False, "Failed", status=403)
-        record = await db.verify_shortener_code(code)
-        if not record: return json_response(False, "Invalid", status=403)
-        user_id, original_url = int(record.get('user_id')), record.get('original_url')
-        parsed = urlparse(original_url)
-        start_param = parse_qs(parsed.query).get('start', [''])[0]
-        payload = start_param[6:-1] if start_param.startswith("yu3elk") else start_param
+        token = data.get('data')
 
-        # FIX: Set verify_token to prevent verification loop in ONE PER TIME mode
-        await db.update_verify_status(user_id, verify_token=payload, is_verified=True, verified_time=time.time())
+        # 1. Validate JWT
+        payload = SecureRedirect.verify_protected_token(token)
+        if not payload: return json_response(False, "Invalid or Expired Session", status=403)
 
-        # Background delivery removed to prevent Double Delivery bug.
-        # Delivery is handled by the bot when the user is redirected back via final_url.
+        code = payload.get('code')
 
-        final_url = original_url if start_param.startswith("yu3elk") else original_url.replace(f"start={start_param}", f"start=yu3elk{start_param}7")
-        return json_response(True, "Verified", {"redirect": final_url})
-    except Exception: return json_response(False, "Error", status=500)
+        # 2. Return Converted Wrapped URL
+        wrapped_url = f"https://{WRAPPED_URL_DOMAIN}/eductionssstudiess/?eductionstudiess={code}"
+        return json_response(True, "Verified", {"redirect": wrapped_url})
+    except Exception as e:
+        print(f"[VERIFY ERROR] {e}")
+        return json_response(False, "Internal Server Error", status=500)
 
 @routes.get("/watch")
 async def watch_handler(request):
