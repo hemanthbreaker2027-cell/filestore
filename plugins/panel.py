@@ -46,6 +46,10 @@ def get_panel_markup(settings):
             InlineKeyboardButton(get_status("shorten_admins"), callback_data="tg_shorten_admins")
         ],
         [
+            InlineKeyboardButton(f"ꜱᴛɪᴄᴋᴇʀꜱ ꜱʏꜱᴛᴇᴍ {get_badge('stickers_enabled')}", callback_data="none"),
+            InlineKeyboardButton(get_status("stickers_enabled"), callback_data="tg_stickers_enabled")
+        ],
+        [
             InlineKeyboardButton(f"ꜰɪʟᴇ ᴅᴇʟɪᴠᴇʀʏ {get_badge('file_delivery')}", callback_data="none"),
             InlineKeyboardButton(get_status("file_delivery"), callback_data="tg_file_delivery")
         ],

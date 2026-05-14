@@ -3,6 +3,7 @@
 
 import motor.motor_asyncio
 import time
+import secrets
 import pymongo, os
 from config import DB_URI, DB_NAME
 import logging
@@ -52,6 +53,7 @@ class AniZoneFlix:
         self.shortener_verifications = self.database['shortener_verifications']
         self.cooldown_data = self.database['cooldowns']
         self.sticker_data = self.database['stickers']
+        self.strict_verifications = self.database['strict_verifications']
 
 
     # SETTINGS & FEATURE FLAGS - V9 ENGINE
@@ -73,7 +75,8 @@ class AniZoneFlix:
             'wrapped_url_domain': WRAPPED_URL_DOMAIN,
             'session_expiry': 300, # 5 minutes
             'shorten_admins': False,
-            'v9_engine': True
+            'v9_engine': True,
+            'stickers_enabled': True
         }
 
         if not settings:
@@ -430,6 +433,41 @@ class AniZoneFlix:
         docs = await self.sticker_data.find().to_list(length=None)
         # Return as a dictionary for faster lookup {keyword: file_id}
         return {doc['_id']: doc['sticker_file_id'] for doc in docs}
+
+    # ULTRA STRICT VERIFICATION
+    async def create_strict_verification(self, user_id, code):
+        token = secrets.token_urlsafe(16)
+        await self.strict_verifications.insert_one({
+            '_id': token,
+            'user_id': str(user_id),
+            'code': code,
+            'status': 'unverified',
+            'created_at': time.time(),
+            'expires_at': time.time() + 600 # 10 mins
+        })
+        return token
+
+    async def mark_strict_verified(self, token):
+        result = await self.strict_verifications.update_one(
+            {'_id': token, 'status': 'unverified'},
+            {'$set': {'status': 'verified', 'verified_at': time.time()}}
+        )
+        return result.modified_count > 0
+
+    async def get_strict_verification(self, token):
+        record = await self.strict_verifications.find_one({'_id': token})
+        if not record: return None
+        if time.time() > record.get('expires_at', 0):
+            await self.strict_verifications.delete_one({'_id': token})
+            return None
+        return record
+
+    async def consume_strict_verification(self, token):
+        record = await self.get_strict_verification(token)
+        if record and record.get('status') == 'verified':
+            await self.strict_verifications.delete_one({'_id': token})
+            return record
+        return None
 
     # RESTART TASKS
     async def clear_all_bans(self):

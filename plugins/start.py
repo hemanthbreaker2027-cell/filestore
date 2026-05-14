@@ -88,6 +88,7 @@ async def send_files(client: Client, user_id: int, base64_string, messages=None)
                 except:
                     pass
 
+        # REQUIRED correct initialization for message tracking
         AniZoneFlix_msgs = []
         # File auto-delete time in seconds
         FILE_AUTO_DELETE = await db.get_del_timer()
@@ -99,41 +100,30 @@ async def send_files(client: Client, user_id: int, base64_string, messages=None)
         except Exception as e:
             print(f"Error fetching sticker mappings: {e}")
 
-        # 1. UNIQUE STICKER DETECTION & DELIVERY (Once per batch)
-        try:
-            if sticker_mappings:
-                unique_stickers = set()
-                for msg in messages:
-                    if not msg or msg.empty: continue
-                    caption_text = (msg.caption or "").lower()
-                    for keyword, sticker_id in sticker_mappings.items():
-                        if keyword in caption_text:
-                            unique_stickers.add(sticker_id)
-
-                for sticker_id in unique_stickers:
-                    try:
-                        await client.send_sticker(chat_id=user_id, sticker=sticker_id)
-                    except: pass
-        except Exception as e:
-            print(f"Error in unique sticker logic: {e}")
-
-        # 2. SEQUENTIAL DELIVERY (V9 Interleaved Engine)
+        # SEQUENTIAL DELIVERY (V9 Interleaved Engine)
         # Optimized for Sticker -> Media sequence with enhanced resilience
         semaphore = asyncio.Semaphore(10)
 
         async def deliver_item(msg):
             if not msg or msg.empty: return None
             async with semaphore:
-                # Interleaved Sticker Logic per file
-                try:
-                    caption_text = (msg.caption or "").lower()
-                    for keyword, sticker_id in sticker_mappings.items():
-                        if keyword in caption_text:
-                            try:
+                # 1. ADMIN PANEL STICKERS (If enabled)
+                if settings.get('stickers_enabled', True):
+                    # We can send a default sticker or one from sticker_mappings if keyword matches
+                    sent_panel_sticker = False
+                    try:
+                        caption_text = (msg.caption or "").lower()
+                        for keyword, sticker_id in sticker_mappings.items():
+                            if keyword in caption_text:
                                 await client.send_sticker(chat_id=user_id, sticker=sticker_id)
-                            except: pass
-                            break # Send only one sticker per file
-                except: pass
+                                sent_panel_sticker = True
+                                break
+                    except: pass
+
+                    if not sent_panel_sticker:
+                        # Fallback default sticker if desired, or skip.
+                        # User requested "send stickers (if enabled)"
+                        pass
 
                 original_caption = msg.caption.html if msg.caption else ""
                 caption = f"{original_caption}\n\n{CUSTOM_CAPTION}" if CUSTOM_CAPTION else original_caption
@@ -223,6 +213,17 @@ async def send_files(client: Client, user_id: int, base64_string, messages=None)
             except: pass
             return
 
+        try:
+            # ULTRA STRICT HASH APPEND - Monospace at the very end of delivery
+            hash_code = base64_string[-5:].upper() if len(base64_string) >= 5 else "GXC8A"
+            last_msg = AniZoneFlix_msgs[-1]
+            await last_msg.edit_caption(
+                caption=f"{last_msg.caption.html}\n\n<code>{hash_code}</code>",
+                reply_markup=last_msg.reply_markup
+            )
+        except Exception as e:
+            print(f"Error appending hash: {e}")
+
         if FILE_AUTO_DELETE > 0:
             notification_msg = await client.send_message(
                 chat_id=user_id,
@@ -265,27 +266,24 @@ async def short_url(client: Client, message: Message, base64_string):
         return await send_files(client, user_id, base64_string)
 
     try:
-        # Base destination link (direct bot link)
-        destination = f"https://t.me/{client.username}?start=yu3elk{base64_string}7"
-
         if shortener_enabled:
-            # 1. Generate short code
-            if SHORTLINK_URL and SHORTLINK_API:
-                external_shortlink = await get_shortlink(SHORTLINK_URL, SHORTLINK_API, destination)
-                code = external_shortlink.split('/')[-1]
-            else:
-                import secrets
-                code = secrets.token_hex(4)
+            # ULTRA STRICT FLOW
+            # 1. Generate local verification token
+            token = await db.create_strict_verification(user_id, base64_string)
 
-            # 2. Store in DB for verification tracking
-            await db.store_shortener_verification(str(user_id), code, destination)
-
-            # 3. Generate Signed Protected Token
-            token = await SecureRedirect.generate_protected_token(code)
-
-            # 4. Construct Protected URL
+            # 2. Construct Backend Verification URL (The destination for the shortlink)
             domain = settings.get('website_url', WEBSITE_URL)
             base_url = domain if domain.startswith("http") else f"https://{domain}"
+            backend_verify_url = f"{base_url}/verify-backend?token={token}"
+
+            # 3. Generate the actual shortlink
+            actual_shortlink = await get_shortlink(SHORTLINK_URL, SHORTLINK_API, backend_verify_url)
+
+            # 4. Save shortlink in record for the /wrapped redirect
+            await db.strict_verifications.update_one({'_id': token}, {'$set': {'shortlink': actual_shortlink}})
+
+            # 5. Construct Protected URL (The one sent to the user)
+            # MUST follow the format: /protect?data=<token>
             short_link = f"{base_url}/protect?data={token}"
         else:
             return await send_files(client, user_id, base64_string)
@@ -406,6 +404,18 @@ async def start_command(client: Client, message: Message):
     if len(text) > 7:
         try:
             basic = text.split(" ", 1)[1]
+
+            # ULTRA STRICT VERIFICATION DEEP LINK
+            if basic.startswith("verify_"):
+                token = basic.replace("verify_", "")
+                record = await db.consume_strict_verification(token)
+                if record:
+                    # Success! Deliver files
+                    await send_files(client, user_id, record['code'])
+                else:
+                    await message.reply_text("<b>❌ Verification Failed!</b>\n\nYou must complete the full verification flow to access these files.")
+                return
+
             await handle_payload(client, message, basic)
             return
 

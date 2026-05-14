@@ -19,18 +19,18 @@ from logging.handlers import RotatingFileHandler
 #OTAKULUX on Tg
 #--------------------------------------------
 #Bot token @OTAKULUX
-TG_BOT_TOKEN = os.environ.get("TG_BOT_TOKEN", "8749013448:AAHX9dj-EEI5-LfEX2RNW_kzOt9pVM2x1Uc")
-APP_ID = int(os.environ.get("APP_ID", "22266643")) #Your API ID from my.telegram.org
-API_HASH = os.environ.get("API_HASH", "7d0b85b4146034511b8776ed7ff99de4") #Your API Hash from my.telegram.org
+TG_BOT_TOKEN = os.environ.get("TG_BOT_TOKEN", "")
+APP_ID = int(os.environ.get("APP_ID", "0"))
+API_HASH = os.environ.get("API_HASH", "")
 #--------------------------------------------
 
-CHANNEL_ID = int(os.environ.get("CHANNEL_ID", "-1003748914288")) #Your db channel Id
-OWNER = os.environ.get("OWNER", "alonekingstarback") # Owner username without @OTAKULUX
-OWNER_ID = int(os.environ.get("OWNER_ID", "8646416973")) # Owner id
+CHANNEL_ID = int(os.environ.get("CHANNEL_ID", "-100"))
+OWNER = os.environ.get("OWNER", "")
+OWNER_ID = int(os.environ.get("OWNER_ID", "0"))
 #--------------------------------------------
-PORT = os.environ.get("PORT", "8001")
+PORT = int(os.environ.get("PORT", "8080"))
 #--------------------------------------------
-DB_URI = os.environ.get("DATABASE_URL", "mongodb+srv://hemanthbreaker2027:9550399779htr@cluster0.haybbxg.mongodb.net/?appName=Cluster0")
+DB_URI = os.environ.get("DATABASE_URL", "")
 DB_NAME = os.environ.get("DATABASE_NAME", "Cluster0")
 #--------------------------------------------
 FSUB_LINK_EXPIRY = int(os.getenv("FSUB_LINK_EXPIRY", "10"))  # 0 means no expiry
@@ -54,7 +54,7 @@ SHORTLINK_URL = os.environ.get("SHORTLINK_URL", "arolinks.com")
 SHORTLINK_API = os.environ.get("SHORTLINK_API", "e49643875c2fa34dd6087254e58283d65ffc7748")
 RECAPTCHA_SITE_KEY = os.environ.get("RECAPTCHA_SITE_KEY", "6Ld3BdUsAAAAADGzZPd8n_skxd_vUvdRazUS831m")
 RECAPTCHA_SECRET_KEY = os.environ.get("RECAPTCHA_SECRET_KEY", "6Ld3BdUsAAAAAF7fgJ67n0HO5YIaR3_SPOdElh06")
-SECURE_SECRET_KEY = os.environ.get("SECURE_SECRET_KEY", "ani")
+SECURE_SECRET_KEY = os.environ.get("SECURE_SECRET_KEY", "anizoneflix_very_secure_secret_key_v9")
 WEBSITE_URL = os.environ.get("WEBSITE_URL", "filestore-7-7hdj.onrender.com") # e.g. https://yourdomain.com
 JWT_SECRET = os.environ.get("JWT_SECRET", "anizoneflix_secret_key")
 TUT_VID = os.environ.get("TUT_VID","https://t.me/anizoneflix")
