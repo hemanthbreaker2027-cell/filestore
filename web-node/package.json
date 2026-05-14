@@ -10,30 +10,29 @@
     "lint": "next lint"
   },
   "dependencies": {
+    "big-integer": "^1.6.52",
+    "clsx": "^2.1.1",
+    "fastify": "^4.26.2",
+    "jose": "^5.2.4",
+    "lucide-react": "^0.378.0",
+    "mime-types": "^2.1.35",
+    "mongodb": "^6.5.0",
     "next": "14.2.3",
     "react": "^18",
     "react-dom": "^18",
-    "jose": "^5.2.4",
-    "ioredis": "^5.4.1",
-    "mongodb": "^6.5.0",
-    "fastify": "^4.26.2",
-    "telegram": "^2.22.10",
-    "lucide-react": "^0.378.0",
-    "clsx": "^2.1.1",
     "tailwind-merge": "^2.3.0",
-    "mime-types": "^2.1.35",
-    "big-integer": "^1.6.52"
+    "telegram": "^2.22.10"
   },
   "devDependencies": {
-    "typescript": "^5",
+    "@types/mime-types": "^2.1.4",
     "@types/node": "^20",
     "@types/react": "^18",
     "@types/react-dom": "^18",
-    "postcss": "^8",
-    "tailwindcss": "^3.4.1",
     "eslint": "^8",
     "eslint-config-next": "14.2.3",
-    "@types/mime-types": "^2.1.4",
-    "ts-node": "^10.9.2"
+    "postcss": "^8",
+    "tailwindcss": "^3.4.1",
+    "ts-node": "^10.9.2",
+    "typescript": "^5"
   }
 }

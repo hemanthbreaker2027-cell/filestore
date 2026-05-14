@@ -1,8 +1,6 @@
 import { MongoClient } from "mongodb";
-import Redis from "ioredis";
 
 const uri = process.env.DATABASE_URL || "";
-const redisUrl = process.env.REDIS_URL;
 
 let client: MongoClient;
 let clientPromise: Promise<MongoClient> | null = null;
@@ -22,8 +20,6 @@ if (uri) {
     clientPromise = client.connect();
   }
 }
-
-export const redis = redisUrl ? new Redis(redisUrl) : null;
 
 export default async function getClientPromise() {
   if (!clientPromise) {

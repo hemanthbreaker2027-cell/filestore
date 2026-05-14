@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { jwtVerify } from "jose";
-import getClientPromise, { redis } from "@/lib/db";
+import getClientPromise from "@/lib/db";
 
 const SECURE_SECRET_KEY = process.env.SECURE_SECRET_KEY || "HJjdgddjdodkdbdbdmdksksiwkwoahsbdndododjdndndmdkdjdbdmdosjsbsbwkwkwjsbdbdndkdkdkdjdbdbdndndndndna amalapapaksbsbsn";
 
@@ -30,16 +30,9 @@ export async function POST(req: NextRequest) {
          return NextResponse.json({ success: false, message: "Security Violation: Browser inconsistency detected." }, { status: 403 });
     }
 
-    // 3. Redis Session / Same-tab Lock
-    if (redis) {
-        const sessionKey = `verify_session:${payload.user_id}:${payload.payload}`;
-        const activeTab = await redis.get(sessionKey);
-
-        if (activeTab && activeTab !== tabId) {
-            return NextResponse.json({ success: false, message: "Security Violation: Multi-tab session detected." }, { status: 403 });
-        }
-        await redis.set(sessionKey, tabId, "EX", 60);
-    }
+    // 3. Same-tab verification (In-memory/DB approach if Redis is removed)
+    // Note: Same-tab lock via Redis is removed as requested.
+    // Frontend still uses BroadcastChannel and localStorage for basic protection.
 
     // 4. Link Conversion Logic
     const code = payload.payload;
