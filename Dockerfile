@@ -1,5 +1,5 @@
 # Build stage for Node.js
-FROM node:20-slim AS node-build
+FROM node:20 AS node-build
 WORKDIR /app/web-node
 COPY web-node/package*.json ./
 RUN npm install
@@ -35,7 +35,7 @@ RUN chmod +x entrypoint.sh
 ENV NEXT_TELEMETRY_DISABLED=1
 ENV NODE_ENV=production
 
-# Expose ports (Next.js usually 3000, Stream Engine usually 8080)
+# Expose ports
 EXPOSE 3000 8080 8001
 
 CMD ["./entrypoint.sh"]

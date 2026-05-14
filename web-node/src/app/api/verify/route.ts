@@ -30,7 +30,7 @@ export async function POST(req: NextRequest) {
          return NextResponse.json({ success: false, message: "Security Violation: Browser inconsistency detected." }, { status: 403 });
     }
 
-    // 3. Redis Session / Same-tab Lock (if Redis available)
+    // 3. Redis Session / Same-tab Lock
     if (redis) {
         const sessionKey = `verify_session:${payload.user_id}:${payload.payload}`;
         const activeTab = await redis.get(sessionKey);
@@ -38,7 +38,7 @@ export async function POST(req: NextRequest) {
         if (activeTab && activeTab !== tabId) {
             return NextResponse.json({ success: false, message: "Security Violation: Multi-tab session detected." }, { status: 403 });
         }
-        await redis.set(sessionKey, tabId, 'EX', 60); // 1 minute lock
+        await redis.set(sessionKey, tabId, "EX", 60);
     }
 
     // 4. Link Conversion Logic
