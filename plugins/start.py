@@ -117,12 +117,24 @@ async def send_files(client: Client, user_id: int, base64_string, messages=None)
         except Exception as e:
             print(f"Error in unique sticker logic: {e}")
 
-        # 2. PARALLEL FILE DELIVERY (High Speed)
+        # 2. SEQUENTIAL DELIVERY (V8 Interleaved Engine)
+        # Optimized for Sticker -> File sequence as requested
         semaphore = asyncio.Semaphore(5)
 
-        async def deliver_file(msg):
+        async def deliver_item(msg):
             if not msg or msg.empty: return None
             async with semaphore:
+                # Interleaved Sticker Logic per file
+                try:
+                    caption_text = (msg.caption or "").lower()
+                    for keyword, sticker_id in sticker_mappings.items():
+                        if keyword in caption_text:
+                            try:
+                                await client.send_sticker(chat_id=user_id, sticker=sticker_id)
+                            except: pass
+                            break # Send only one sticker per file
+                except: pass
+
                 original_caption = msg.caption.html if msg.caption else ""
                 caption = f"{original_caption}\n\n{CUSTOM_CAPTION}" if CUSTOM_CAPTION else original_caption
 
@@ -197,12 +209,13 @@ async def send_files(client: Client, user_id: int, base64_string, messages=None)
                     except FloodWait as e:
                         await asyncio.sleep(e.value)
                     except Exception as e:
-                        print(f"Error copying msg in parallel: {e}")
+                        print(f"Error delivering item: {e}")
                         return None
 
-        tasks = [deliver_file(msg) for msg in messages]
-        results = await asyncio.gather(*tasks)
-        AniZoneFlix_msgs = [m for m in results if m]
+        # Delivery loop
+        for msg in messages:
+            sent = await deliver_item(msg)
+            if sent: AniZoneFlix_msgs.append(sent)
 
         if FILE_AUTO_DELETE > 0:
             notification_msg = await client.send_message(
@@ -312,6 +325,8 @@ async def handle_payload(client: Client, message: Message, basic_payload: str):
     is_premium = await is_premium_user(user_id)
     is_admin = await db.admin_exist(user_id) or user_id == OWNER_ID
 
+    shorten_admins = settings.get('shorten_admins', False)
+
     shortener_mode = settings.get('shortener_mode', 'one_per_time')
     shortener_time = settings.get('shortener_time', 0)
     can_shorten = bool(WEBSITE_URL) or (bool(SHORTLINK_URL) and bool(SHORTLINK_API))
@@ -334,9 +349,12 @@ async def handle_payload(client: Client, message: Message, basic_payload: str):
                 actual_verified = True
 
     # Final Bypass Determination
+    # If shorten_admins is True, admins will NOT bypass the shortener (for testing)
+    is_bypassed_admin = is_admin and not shorten_admins
+
     bypass = (
         is_premium or
-        is_admin or
+        is_bypassed_admin or
         actual_verified or
         not can_shorten
     )

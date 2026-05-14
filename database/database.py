@@ -71,7 +71,8 @@ class AniZoneFlix:
                 'verify_timer': 10,
                 'website_url': WEBSITE_URL,
                 'wrapped_url_domain': WRAPPED_URL_DOMAIN,
-                'session_expiry': 300 # 5 minutes
+                'session_expiry': 300, # 5 minutes
+                'shorten_admins': False
             }
             await self.settings_data.insert_one(default_settings)
             return default_settings
@@ -87,7 +88,8 @@ class AniZoneFlix:
             'verify_timer': 10,
             'website_url': WEBSITE_URL,
             'wrapped_url_domain': WRAPPED_URL_DOMAIN,
-            'session_expiry': 300
+            'session_expiry': 300,
+            'shorten_admins': False
         }
 
         for field, default in fields_to_check.items():

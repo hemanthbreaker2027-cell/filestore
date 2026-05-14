@@ -189,21 +189,21 @@ async def stream_file_handler(request, is_download=False):
             'X-Accel-Buffering': 'no',
             'Connection': 'keep-alive',
             'Cache-Control': 'no-cache, no-store, must-revalidate',
-            'X-Content-Type-Options': 'nosniff'
+            'X-Content-Type-Options': 'nosniff',
+            'X-Robots-Tag': 'noindex, nofollow'
         })
 
         if is_download:
             resp.headers['Content-Disposition'] = f'attachment; filename="{quote(file_obj.file_name or "file")}"'
-            # Speed headers for downloads
             resp.headers['Content-Transfer-Encoding'] = 'binary'
 
         await resp.prepare(request)
 
-        # ENGINE V6: High-Speed Parallel Pipe
-        chunk_size = 1024 * 1024 if is_download else 512 * 1024
+        # ENGINE V7: Ultra-Speed Parallel Pipe
+        chunk_size = 2 * 1024 * 1024 if is_download else 1024 * 1024
 
         # We increase the prefetch queue size for downloads to maximize bandwidth
-        prefetch_limit = 5 if is_download else 2
+        prefetch_limit = 8 if is_download else 4
         queue = asyncio.Queue(maxsize=prefetch_limit)
         stop_event = asyncio.Event()
 

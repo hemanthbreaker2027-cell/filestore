@@ -68,6 +68,24 @@
             background: linear-gradient(135deg, var(--primary), var(--accent));
             box-shadow: 0 10px 20px -5px rgba(56, 189, 248, 0.4);
             transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            position: relative;
+            z-index: 1;
+        }
+
+        .btn-primary::after {
+            content: '';
+            position: absolute;
+            top: -2px; left: -2px; right: -2px; bottom: -2px;
+            background: linear-gradient(135deg, var(--primary), var(--accent));
+            z-index: -1;
+            filter: blur(15px);
+            opacity: 0;
+            transition: opacity 0.3s;
+            border-radius: inherit;
+        }
+
+        .btn-primary:hover:not(:disabled)::after {
+            opacity: 0.6;
         }
 
         .btn-primary:hover:not(:disabled) {

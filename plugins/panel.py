@@ -42,6 +42,10 @@ def get_panel_markup(settings):
             InlineKeyboardButton(get_status("download_enabled"), callback_data="tg_download_enabled")
         ],
         [
+            InlineKeyboardButton(f"ꜱʜᴏʀᴛᴇɴ ᴀᴅᴍɪɴꜱ {get_badge('shorten_admins')}", callback_data="none"),
+            InlineKeyboardButton(get_status("shorten_admins"), callback_data="tg_shorten_admins")
+        ],
+        [
             InlineKeyboardButton(f"ꜰɪʟᴇ ᴅᴇʟɪᴠᴇʀʏ {get_badge('file_delivery')}", callback_data="none"),
             InlineKeyboardButton(get_status("file_delivery"), callback_data="tg_file_delivery")
         ],
