@@ -2,8 +2,8 @@ import Fastify from 'fastify';
 import { TelegramClient } from 'telegram';
 import { StringSession } from 'telegram/sessions';
 import { MongoClient } from 'mongodb';
-import { quote } from 'querystring';
 import mimetypes from 'mime-types';
+import bigInt from 'big-integer';
 
 const PORT = process.env.STREAM_PORT || 8080;
 const API_ID = parseInt(process.env.APP_ID || "0");
@@ -22,8 +22,9 @@ async function startServer() {
   client = new TelegramClient(new StringSession(""), API_ID, API_HASH, {
     connectionRetries: 5,
   });
+
   await client.start({
-    botAuthToken: async () => BOT_TOKEN,
+    botAuthToken: BOT_TOKEN,
   });
 
   // 2. Setup MongoDB
@@ -37,13 +38,13 @@ async function startServer() {
     const { code } = request.params as { code: string };
 
     const db = mongoClient.db();
-    const record = await db.collection('shortener_verifications').findOne({ _id: code });
+    const record = await db.collection('shortener_verifications').findOne({ _id: code as any });
 
     if (!record) {
       return reply.code(403).send('Forbidden');
     }
 
-    const msgId = extractMsgId(record.original_url);
+    const msgId = extractMsgId(record.original_url as string);
     if (!msgId) return reply.code(404).send('Media Not Found');
 
     try {
@@ -81,16 +82,18 @@ async function startServer() {
       };
 
       if (isDownload) {
-          headers['Content-Disposition'] = `attachment; filename="${quote(media.name || 'file.mp4')}"`;
+          const fileName = encodeURIComponent(media.name || 'file.mp4');
+          headers['Content-Disposition'] = `attachment; filename="${fileName}"`;
       }
 
       reply.raw.writeHead(range ? 206 : 200, headers);
 
       const stream = client.iterDownload({
         file: media,
-        offset: BigInt(start),
-        limit: BigInt(end - start + 1),
-        chunkSize: chunkSize
+        offset: bigInt(start) as any,
+        limit: bigInt(end - start + 1) as any,
+        chunkSize: chunkSize,
+        requestSize: chunkSize
       });
 
       for await (const chunk of stream) {

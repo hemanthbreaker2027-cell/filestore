@@ -4,10 +4,10 @@
   "private": true,
   "scripts": {
     "dev": "next dev",
-    "build": "next build",
+    "build": "next build && npx tsc src/server/stream.ts --outDir dist --module esnext --moduleResolution node --esModuleInterop --target es2020 --skipLibCheck",
     "start": "next start",
-    "lint": "next lint",
-    "stream": "ts-node src/server/stream.ts"
+    "stream": "node dist/stream.js",
+    "lint": "next lint"
   },
   "dependencies": {
     "next": "14.2.3",
@@ -21,7 +21,8 @@
     "lucide-react": "^0.378.0",
     "clsx": "^2.1.1",
     "tailwind-merge": "^2.3.0",
-    "mime-types": "^2.1.35"
+    "mime-types": "^2.1.35",
+    "big-integer": "^1.6.52"
   },
   "devDependencies": {
     "typescript": "^5",

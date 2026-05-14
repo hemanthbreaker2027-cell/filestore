@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { jwtVerify } from "jose";
-import clientPromise, { redis } from "@/lib/db";
+import getClientPromise, { redis } from "@/lib/db";
 
 const SECURE_SECRET_KEY = process.env.SECURE_SECRET_KEY || "HJjdgddjdodkdbdbdmdksksiwkwoahsbdndododjdndndmdkdjdbdmdosjsbsbwkwkwjsbdbdndkdkdkdjdbdbdndndndndna amalapapaksbsbsn";
 
@@ -47,13 +47,15 @@ export async function POST(req: NextRequest) {
     const finalUrl = `https://${wrappedDomain}/eductionssstudiess/?eductionstudiess=${code}&uiso=9367`;
 
     // 5. Database update
-    const client = await clientPromise;
-    const db = client.db();
-
-    await db.collection("settings").updateOne(
-        { user_id: payload.user_id },
-        { $set: { verify_token: payload.payload, is_verified: true, verified_time: Date.now() / 1000 } }
-    );
+    const clientPromise = await getClientPromise();
+    if (clientPromise) {
+        const client = await clientPromise;
+        const db = client.db();
+        await db.collection("settings").updateOne(
+            { user_id: payload.user_id },
+            { $set: { verify_token: payload.payload, is_verified: true, verified_time: Date.now() / 1000 } }
+        );
+    }
 
     return NextResponse.json({
       success: true,
