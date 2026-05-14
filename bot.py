@@ -11,8 +11,6 @@
 # All rights reserved.
 #
 
-from aiohttp import web
-from plugins import web_server
 import asyncio
 import pyromod.listen
 from pyrogram import Client
@@ -128,12 +126,6 @@ class Bot(Client):
         self.set_parse_mode(ParseMode.HTML)
         self.username = usr_bot_me.username
         self.LOGGER(__name__).info(f"Bot Running..! Made by @AniZoneFlix")
-
-        # Start Web Server
-        app = web.AppRunner(await web_server(self))
-        await app.setup()
-        await web.TCPSite(app, "0.0.0.0", PORT).start()
-
 
         try: await self.send_message(OWNER_ID, text = f"<b><blockquote> Bᴏᴛ Rᴇsᴛᴀʀᴛᴇᴅ by @AniZoneFlix</blockquote></b>")
         except: pass
