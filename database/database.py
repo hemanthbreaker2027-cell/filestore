@@ -58,6 +58,7 @@ class AniZoneFlix:
     async def get_settings(self):
         settings = await self.settings_data.find_one({'_id': 'bot_settings'})
         if not settings:
+            from config import WEBSITE_URL, WRAPPED_URL_DOMAIN
             default_settings = {
                 '_id': 'bot_settings',
                 'shortener_system': True,
@@ -66,25 +67,33 @@ class AniZoneFlix:
                 'shortener_mode': 'one_per_time', # one_per_time or based_time
                 'shortener_time': 0, # Time in seconds for based_time mode
                 'stream_enabled': False,
-                'download_enabled': False
+                'download_enabled': False,
+                'verify_timer': 10,
+                'website_url': WEBSITE_URL,
+                'wrapped_url_domain': WRAPPED_URL_DOMAIN,
+                'session_expiry': 300 # 5 minutes
             }
             await self.settings_data.insert_one(default_settings)
             return default_settings
 
         # Ensure new fields exist for existing users
         updated = False
-        if 'shortener_mode' not in settings:
-            settings['shortener_mode'] = 'one_per_time'
-            updated = True
-        if 'shortener_time' not in settings:
-            settings['shortener_time'] = 0
-            updated = True
-        if 'stream_enabled' not in settings:
-            settings['stream_enabled'] = False
-            updated = True
-        if 'download_enabled' not in settings:
-            settings['download_enabled'] = False
-            updated = True
+        from config import WEBSITE_URL, WRAPPED_URL_DOMAIN
+        fields_to_check = {
+            'shortener_mode': 'one_per_time',
+            'shortener_time': 0,
+            'stream_enabled': False,
+            'download_enabled': False,
+            'verify_timer': 10,
+            'website_url': WEBSITE_URL,
+            'wrapped_url_domain': WRAPPED_URL_DOMAIN,
+            'session_expiry': 300
+        }
+
+        for field, default in fields_to_check.items():
+            if field not in settings:
+                settings[field] = default
+                updated = True
 
         if updated:
             await self.settings_data.update_one({'_id': 'bot_settings'}, {'$set': settings})

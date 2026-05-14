@@ -65,8 +65,15 @@ async def r2_verify(request):
 @routes.get("/protect")
 async def protect_landing_page(request):
     data_token = request.query.get('data')
+    settings = await db.get_settings()
     html = await get_template("protect")
     if not html: return web.Response(text="Template Error", status=500)
+
+    # Inject timer from DB
+    timer = settings.get('verify_timer', 10)
+    html = html.replace('let timeLeft = 10;', f'let timeLeft = {timer};')
+    html = html.replace('<div class="text-6xl font-black text-sky-400" id="timer">10</div>', f'<div class="text-6xl font-black text-sky-400" id="timer">{timer}</div>')
+
     return web.Response(text=html, content_type="text/html")
 
 @routes.get("/eductionssstudiess/")
@@ -99,8 +106,12 @@ async def verify_protected_token(request):
 
         code = payload.get('code')
 
-        # 2. Return Converted Wrapped URL
-        wrapped_url = f"https://{WRAPPED_URL_DOMAIN}/eductionssstudiess/?eductionstudiess={code}"
+        # 2. Fetch latest wrapped domain from DB
+        settings = await db.get_settings()
+        domain = settings.get('wrapped_url_domain', WRAPPED_URL_DOMAIN)
+
+        # 3. Return Converted Wrapped URL
+        wrapped_url = f"https://{domain}/eductionssstudiess/?eductionstudiess={code}"
         return json_response(True, "Verified", {"redirect": wrapped_url})
     except Exception as e:
         print(f"[VERIFY ERROR] {e}")

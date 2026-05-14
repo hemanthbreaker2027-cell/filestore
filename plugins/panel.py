@@ -26,6 +26,14 @@ def get_panel_markup(settings):
             InlineKeyboardButton("BASED TIME" + (" ✅" if mode == 'based_time' else ""), callback_data="set_mode_time")
         ],
         [
+            InlineKeyboardButton(f"⏱️ Tɪᴍᴇʀ: {settings.get('verify_timer')}s", callback_data="set_val_verify_timer"),
+            InlineKeyboardButton(f"⏳ Exᴘɪʀʏ: {settings.get('session_expiry')}s", callback_data="set_val_session_expiry")
+        ],
+        [
+            InlineKeyboardButton(f"🌐 Wᴇʙsɪᴛᴇ", callback_data="set_val_website_url"),
+            InlineKeyboardButton(f"🔗 Wʀᴀᴘᴘᴇᴅ", callback_data="set_val_wrapped_url_domain")
+        ],
+        [
             InlineKeyboardButton(f"ꜱᴛʀᴇᴀᴍ ꜱʏꜱᴛᴇᴍ {get_badge('stream_enabled')}", callback_data="none"),
             InlineKeyboardButton(get_status("stream_enabled"), callback_data="tg_stream_enabled")
         ],
@@ -72,7 +80,7 @@ async def owner_panel(client: Bot, message: Message):
         reply_markup=get_panel_markup(settings)
     )
 
-@Bot.on_callback_query(filters.regex(r"^(tg_|refresh_panel|set_mode_)"))
+@Bot.on_callback_query(filters.regex(r"^(tg_|refresh_panel|set_mode_|set_val_)"))
 async def panel_callback(client: Bot, query: CallbackQuery):
     if query.from_user.id != OWNER_ID:
         return await query.answer("˹ ᴀᴄᴄᴇss ᴅᴇɴɪᴇᴅ, ᴍᴏʀᴛᴀʟ! ˼", show_alert=True)
@@ -100,6 +108,27 @@ async def panel_callback(client: Bot, query: CallbackQuery):
         except:
             await msg.reply("❌ Invalid number. Mode not changed.")
             return
+    elif data.startswith("set_val_"):
+        key = data.replace("set_val_", "")
+        await query.answer()
+        prompt = {
+            'verify_timer': "Enter verification timer in seconds (e.g. 10):",
+            'website_url': "Enter your deployment domain (e.g. your-app.onrender.com):",
+            'wrapped_url_domain': "Enter wrapped URL domain (e.g. theimmigrationworld.com):",
+            'session_expiry': "Enter JWT session expiry in seconds (e.g. 300):"
+        }.get(key, "Enter new value:")
+
+        msg = await client.ask(query.message.chat.id, f"<b>🛠 ˹ Sᴇᴛ {key.replace('_', ' ').upper()} ˼</b>\n\n💎 {prompt}")
+        new_val = msg.text.strip()
+        if key in ['verify_timer', 'session_expiry']:
+            try: new_val = int(new_val)
+            except:
+                await msg.reply("❌ Invalid number.")
+                return
+
+        await db.update_setting(key, new_val)
+        await msg.reply(f"✅ {key.replace('_', ' ').title()} updated to: `{new_val}`")
+        settings[key] = new_val
     else:
         key = data.replace("tg_", "")
         new_val = not settings.get(key, True)

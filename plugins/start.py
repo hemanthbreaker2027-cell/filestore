@@ -261,10 +261,11 @@ async def short_url(client: Client, message: Message, base64_string):
             await db.store_shortener_verification(str(user_id), code, destination)
 
             # 3. Generate Signed Protected Token
-            token = SecureRedirect.generate_protected_token(code)
+            token = await SecureRedirect.generate_protected_token(code)
 
             # 4. Construct Protected URL
-            base_url = WEBSITE_URL if WEBSITE_URL.startswith("http") else f"https://{WEBSITE_URL}"
+            domain = settings.get('website_url', WEBSITE_URL)
+            base_url = domain if domain.startswith("http") else f"https://{domain}"
             short_link = f"{base_url}/protect?data={token}"
         else:
             return await send_files(client, user_id, base64_string)
