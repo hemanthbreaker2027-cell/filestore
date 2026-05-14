@@ -58,8 +58,17 @@ SECURE_SECRET_KEY = os.environ.get("SECURE_SECRET_KEY", "ani")
 WEBSITE_URL = os.environ.get("WEBSITE_URL", "filestore-7-7hdj.onrender.com") # e.g. https://yourdomain.com
 JWT_SECRET = os.environ.get("JWT_SECRET", "anizoneflix_secret_key")
 TUT_VID = os.environ.get("TUT_VID","https://t.me/anizoneflix")
-WRAPPED_URL_DOMAIN = os.environ.get("WRAPPED_URL_DOMAIN", "theimmigrationworld.com")
-WHITELISTED_DOMAINS = ["arolinks.com", "vshort.in", "gplinks.in"] # Add more as needed
+WRAPPED_URL_DOMAIN = os.environ.get(
+    "WRAPPED_URL_DOMAIN",
+    "darkguruji.com"
+)
+
+WHITELISTED_DOMAINS = [
+    "arolinks.com",
+    "vshort.in",
+    "gplinks.in",
+    "darkguruji.com"
+]  # Add more as needed
 
 SHORT_MSG = "<b>⚡️ <blockquote>˹ ʜᴇʀᴇ ɪs ʏᴏᴜʀ sᴇᴄᴜʀᴇ ʟɪɴᴋ ˼\n\n🛡 sᴏʟᴠᴇ ᴛʜᴇ sʜᴏʀᴛɴᴇʀ ᴘʀᴏᴛᴇᴄᴛɪᴏɴ ᴛᴏ ᴜɴʟᴏᴄᴋ ʏᴏᴜʀ ꜰɪʟᴇs. ᴍᴜsᴛ ᴡᴀᴛᴄʜ ᴛᴜᴛᴏʀɪᴀʟ ɪꜰ ʏᴏᴜ ᴀʀᴇ sᴛᴜᴄᴋ! 💫</blockquote></b>"
 
