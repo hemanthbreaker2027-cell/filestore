@@ -19,18 +19,18 @@ from logging.handlers import RotatingFileHandler
 #OTAKULUX on Tg
 #--------------------------------------------
 #Bot token @OTAKULUX
-TG_BOT_TOKEN = os.environ.get("TG_BOT_TOKEN", "8749013448:AAHX9dj-EEI5-LfEX2RNW_kzOt9pVM2x1Uc")
-APP_ID = int(os.environ.get("APP_ID", "22266643"))
-API_HASH = os.environ.get("API_HASH", "7d0b85b4146034511b8776ed7ff99de4")
+TG_BOT_TOKEN = os.environ.get("TG_BOT_TOKEN", "")
+APP_ID = int(os.environ.get("APP_ID", "0"))
+API_HASH = os.environ.get("API_HASH", "")
 #--------------------------------------------
 
-CHANNEL_ID = int(os.environ.get("CHANNEL_ID", "-1003748914288"))
-OWNER = os.environ.get("OWNER", "alonekingstarback")
-OWNER_ID = int(os.environ.get("OWNER_ID", "8646416973"))
+CHANNEL_ID = int(os.environ.get("CHANNEL_ID", "0"))
+OWNER = os.environ.get("OWNER", "AniZoneFlix")
+OWNER_ID = int(os.environ.get("OWNER_ID", "0"))
 #--------------------------------------------
 PORT = int(os.environ.get("PORT", "8080"))
 #--------------------------------------------
-DB_URI = os.environ.get("DATABASE_URL", "mongodb+srv://hemanthbreaker2027:9550399779htr@cluster0.haybbxg.mongodb.net/?appName=Cluster0")
+DB_URI = os.environ.get("DATABASE_URL", "")
 DB_NAME = os.environ.get("DATABASE_NAME", "Cluster0")
 #--------------------------------------------
 FSUB_LINK_EXPIRY = int(os.getenv("FSUB_LINK_EXPIRY", "10"))  # 0 means no expiry
@@ -60,9 +60,18 @@ TUT_VID = os.environ.get("TUT_VID","https://t.me/anizoneflix")
 
 # STRICT CONFIG RULES
 WHITELISTED_DOMAIN = "arolinks.com"
-WRAP_URL = "https://darkguruji.com/universtiesstudiess/?studiessinsurancess="
+WRAP_URL = "https://theimmigrationworld.com/eductionssstudiess/?eductionstudiess="
 
-SHORT_MSG = "━━━━━━━━━━━━━━━━━━━\n✨ <b>˹ ꜱᴇᴄᴜʀᴇ ʟɪɴᴋ ɢᴇɴᴇʀᴀᴛᴇᴅ ˼</b> ✨\n\n🛡 ʜᴇʏ {mention}, ʏᴏᴜʀ ꜰɪʟᴇ ɪꜱ ᴘʀᴏᴛᴇᴄᴛᴇᴅ. ᴘʟᴇᴀꜱᴇ ꜱᴏʟᴠᴇ ᴛʜᴇ ꜱʜᴏʀᴛɴᴇʀ ᴘʀᴏᴛᴇᴄᴛɪᴏɴ ᴛᴏ ᴜɴʟᴏᴄᴋ ɪᴛ. ⚡️\n\n💎 <b>˹ ʜᴏᴡ ᴛᴏ ᴜɴʟᴏᴄᴋ ˼</b>\n<blockquote>1. ᴄʟɪᴄᴋ ᴏɴ ᴛʜᴇ ᴅᴏᴡɴʟᴏᴀᴅ ʙᴜᴛᴛᴏɴ ʙᴇʟᴏᴡ.\n2. ᴡᴀɪᴛ ꜰᴏʀ ᴛʜᴇ ꜱᴇᴄᴜʀᴇ ᴛɪᴍᴇʀ.\n3. ᴄᴏᴍᴘʟᴇᴛᴇ ᴛʜᴇ ꜰɪɴᴀʟ ᴠᴇʀɪꜰɪᴄᴀᴛɪᴏɴ.</blockquote>\n━━━━━━━━━━━━━━━━━━━"
+SHORT_MSG = (
+    "━━━━━━━━━━━━━━━━━━━\n"
+    "✨ <b>˹ ꜱᴇᴄᴜʀᴇ ʟɪɴᴋ ɢᴇɴᴇʀᴀᴛᴇᴅ ˼</b> ✨\n\n"
+    "🛡 ʜᴇʏ {mention}, ʏᴏᴜʀ ꜰɪʟᴇ ɪꜱ ᴘʀᴏᴛᴇᴄᴛᴇᴅ ᴡɪᴛʜ ᴜʟᴛʀᴀ-ꜱᴇᴄᴜʀᴇ ᴇɴᴄʀʏᴘᴛɪᴏɴ. ⚡️\n\n"
+    "💎 <b>˹ ᴜɴʟᴏᴄᴋ ɪɴꜱᴛʀᴜᴄᴛɪᴏɴꜱ ˼</b>\n"
+    "<blockquote>1. ᴄʟɪᴄᴋ ᴛʜᴇ ꜱᴇᴄᴜʀᴇ ʟɪɴᴋ ʙᴇʟᴏᴡ.\n"
+    "2. ᴡᴀɪᴛ 10 ꜱᴇᴄᴏɴᴅꜱ ꜰᴏʀ ᴛʜᴇ ᴛɪᴍᴇʀ.\n"
+    "3. ᴄᴏᴍᴘʟᴇᴛᴇ ᴛʜᴇ ꜰɪɴᴀʟ ᴠᴇʀɪꜰɪᴄᴀᴛɪᴏɴ ꜱᴛᴇᴘ.</blockquote>\n"
+    "━━━━━━━━━━━━━━━━━━━"
+)
 
 SHORTENER_PIC = random.choice(ANIME_BANNERS)
 #--------------------------------------------

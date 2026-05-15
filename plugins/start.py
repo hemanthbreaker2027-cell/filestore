@@ -268,21 +268,20 @@ async def short_url(client: Client, message: Message, base64_string):
         return await send_files(client, user_id, base64_string)
 
     try:
-        # STRICT URL SHORTENER FLOW
-        # 1. Generate CODE (GXC8A format)
+        # UNIVERSAL FILESTORE V9 FLOW
+        # 1. Create a strict verification entry and get a short CODE (GXC8A)
         code = await db.create_strict_verification(user_id, base64_string)
 
-        # 2. Construct Internal Protected URL
+        # 2. Sign a token containing the code
+        from services.security import SecureRedirect
+        token = SecureRedirect.encrypt({"code": code, "user_id": user_id})
+
+        # 3. Construct Protected Link: Bot Layer
         web_domain = settings.get('website_url', WEBSITE_URL)
         base_url = web_domain if web_domain.startswith("http") else f"https://{web_domain}"
-        internal_url = f"{base_url}/protect?code={code}"
 
-        # 3. Generate External Short Link (Bot only sends this)
-        # Using the whitelist domain from config and the code as alias
-        short_link = await get_shortlink(WHITELISTED_DOMAIN, SHORTLINK_API, internal_url, alias=code)
-        if not short_link:
-            # Fallback if alias fails
-            short_link = await get_shortlink(WHITELISTED_DOMAIN, SHORTLINK_API, internal_url)
+        # Format: https://yourdomain.com/protect?data=<signed_token>
+        short_link = f"{base_url}/protect?data={token}"
 
         buttons = [
             [

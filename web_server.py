@@ -3,10 +3,14 @@ from aiohttp import web
 import asyncio
 import mimetypes
 import re
+import secrets
+import string
+import time
 from urllib.parse import quote
 from config import WEBSITE_URL, WHITELISTED_DOMAIN, WRAP_URL
 from database.database import db
 from helper_func import decode
+from services.security import SecureRedirect
 
 routes = web.RouteTableDef()
 
@@ -15,21 +19,26 @@ async def root_handler(request):
     return web.Response(text="ᴀɴɪᴢᴏɴᴇꜰʟɪx ꜱᴇᴄᴜʀᴇ ꜱᴛʀᴇᴀᴍ ᴇɴɢɪɴᴇ ᴠ6.0", content_type="text/plain")
 
 @routes.get("/protect")
-async def protect_landing_page(request):
-    code = request.query.get('code')
-    if not code: return web.Response(text="Invalid Token", status=400)
+async def protect_handler(request):
+    token = request.query.get('data', '')
+    if not token:
+        return web.Response(text="Invalid Request: Missing Token", status=400)
 
-    record = await db.get_strict_verification(code)
-    if not record: return web.Response(text="Verification Link Expired", status=403)
+    # Verify token to get the CODE early (to pass to the next step)
+    data = SecureRedirect.decrypt(token)
+    if not data:
+        return web.Response(text="Security Check Failed: Invalid or Expired Token", status=403)
 
-    # STEP 2: 5-second frontend delay (Redesigned Glassmorphism)
+    code = data.get('code')
+
+    # 10-second frontend delay (Glassmorphism)
     html = """
     <!DOCTYPE html>
     <html lang="en">
     <head>
         <meta charset="UTF-8">
         <meta name="viewport" content="width=device-width, initial-scale=1.0">
-        <title>AniZoneFlix | Secure Gateway</title>
+        <title>Secure Gateway | AniZoneFlix</title>
         <script src="https://cdn.tailwindcss.com"></script>
         <style>
             @import url('https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600&display=swap');
@@ -56,14 +65,24 @@ async def protect_landing_page(request):
                 transition: width 1s linear;
                 box-shadow: 0 0 15px rgba(56, 189, 248, 0.5);
             }
-            .neon-text {
-                text-shadow: 0 0 10px rgba(56, 189, 248, 0.3);
-            }
             @keyframes pulse {
                 0%, 100% { opacity: 1; }
                 50% { opacity: 0.5; }
             }
             .anim-pulse { animation: pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite; }
+            .btn-continue {
+                display: none;
+                background: #38bdf8;
+                color: white;
+                padding: 12px 24px;
+                border-radius: 12px;
+                font-weight: 600;
+                transition: all 0.3s;
+            }
+            .btn-continue:hover {
+                transform: translateY(-2px);
+                box-shadow: 0 10px 20px -5px rgba(56, 189, 248, 0.4);
+            }
         </style>
     </head>
     <body class="p-4">
@@ -78,15 +97,17 @@ async def protect_landing_page(request):
                 </svg>
             </div>
 
-            <h1 class="text-2xl font-semibold text-white mb-2 neon-text">Secure Verification</h1>
-            <p class="text-slate-400 mb-8 text-sm leading-relaxed">We are securing your request. Please wait a moment while we redirect you to the final destination.</p>
+            <h1 class="text-2xl font-semibold text-white mb-2">Secure Verification</h1>
+            <p class="text-slate-400 mb-8 text-sm leading-relaxed" id="status-text">Initializing secure gateway. Please wait 10 seconds...</p>
 
-            <div class="flex items-center justify-center space-x-3 mb-4">
-                <div class="text-4xl font-bold text-sky-400" id="timer">5</div>
-                <div class="text-slate-500 text-sm font-medium tracking-widest uppercase">Seconds Left</div>
+            <div id="timer-container" class="flex items-center justify-center space-x-3 mb-4">
+                <div class="text-4xl font-bold text-sky-400" id="timer">10</div>
+                <div class="text-slate-500 text-sm font-medium tracking-widest uppercase">Seconds</div>
             </div>
 
-            <div class="flex justify-center space-x-1 anim-pulse">
+            <button id="continue-btn" class="btn-continue w-full">CONTINUE TO DESTINATION</button>
+
+            <div class="flex justify-center space-x-1 anim-pulse mt-4">
                 <div class="w-1.5 h-1.5 rounded-full bg-sky-400/40"></div>
                 <div class="w-1.5 h-1.5 rounded-full bg-sky-400/60"></div>
                 <div class="w-1.5 h-1.5 rounded-full bg-sky-400"></div>
@@ -94,93 +115,77 @@ async def protect_landing_page(request):
         </div>
 
         <script>
-            let timeLeft = 5;
+            let timeLeft = 10;
             const timer = document.getElementById('timer');
+            const timerContainer = document.getElementById('timer-container');
             const progressBar = document.getElementById('progressBar');
+            const statusText = document.getElementById('status-text');
+            const continueBtn = document.getElementById('continue-btn');
 
             const countdown = setInterval(() => {
                 timeLeft--;
                 timer.textContent = timeLeft;
-                progressBar.style.width = ((5 - timeLeft) * 20) + '%';
+                progressBar.style.width = ((10 - timeLeft) * 10) + '%';
 
                 if (timeLeft <= 0) {
                     clearInterval(countdown);
-                    // STEP 3: Redirect to WRAP URL with CODE
-                    window.location.href = "{wrap_url}" + "{code}";
+                    timerContainer.style.display = 'none';
+                    statusText.textContent = 'Verification Complete. Click below to proceed.';
+                    continueBtn.style.display = 'block';
                 }
             }, 1000);
+
+            continueBtn.onclick = () => {
+                window.location.href = "{wrap_url}" + "{code}";
+            };
         </script>
     </body>
     </html>
     """.replace("{code}", code).replace("{wrap_url}", WRAP_URL)
     return web.Response(text=html, content_type="text/html")
 
-@routes.get("/universtiesstudiess/")
+@routes.get("/eductionssstudiess/")
 async def wrapped_url_handler(request):
-    code = request.query.get('studiessinsurancess')
+    code = request.query.get('eductionstudiess')
     if not code: return web.Response(text="Invalid Request", status=400)
 
-    stage = request.query.get('stage', '1')
-    if stage == '1':
-        # STEP 4: 2-second backend verification UI
-        html = """
-        <!DOCTYPE html>
-        <html lang="en">
-        <head>
-            <meta charset="UTF-8">
-            <meta name="viewport" content="width=device-width, initial-scale=1.0">
-            <title>Finalizing Verification</title>
-            <script src="https://cdn.tailwindcss.com"></script>
-            <style>
-                @import url('https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600&display=swap');
-                body {
-                    font-family: 'Outfit', sans-serif;
-                    background: #0f172a;
-                    min-height: 100vh;
-                    display: flex;
-                    align-items: center;
-                    justify-content: center;
-                    margin: 0;
-                }
-                .loader {
-                    border: 3px solid rgba(56, 189, 248, 0.1);
-                    border-top: 3px solid #38bdf8;
-                    border-radius: 50%;
-                    width: 48px;
-                    height: 48px;
-                    animation: spin 1s linear infinite;
-                }
-                @keyframes spin {
-                    0% { transform: rotate(0deg); }
-                    100% { transform: rotate(360deg); }
-                }
-            </style>
-        </head>
-        <body>
-            <div class="text-center">
-                <div class="loader mb-6 mx-auto"></div>
-                <h1 class="text-xl font-medium text-white mb-2">Finalizing Verification</h1>
-                <p class="text-slate-400 text-sm">Please wait while we confirm your request...</p>
-            </div>
-            <script>
-                setTimeout(() => {
-                    const url = new URL(window.location.href);
-                    url.searchParams.set('stage', '2');
-                    window.location.href = url.toString();
-                }, 2000);
-            </script>
-        </body>
-        </html>
-        """
-        return web.Response(text=html, content_type="text/html")
+    # Mark verified in DB so bot allows access
+    verified = await db.mark_strict_verified(code)
+    if not verified:
+        # Check if already verified
+        record = await db.get_strict_verification(code)
+        if not record or record.get('status') != 'verified':
+            return web.Response(text="Security Check Failed: Token Invalid, Expired or Already Used", status=403)
 
-    success = await db.mark_strict_verified(code)
-    if success:
-        bot = request.app.get('bot')
-        bot_username = bot.username if bot else "bot"
-        return web.HTTPFound(location=f"https://t.me/{bot_username}?start=verify_{code}")
-
-    return web.Response(text="Link Expired or Invalid", status=403)
+    # 2-second "Finalizing" delay
+    html = """
+    <!DOCTYPE html>
+    <html>
+    <head>
+        <title>Finalizing | AniZoneFlix</title>
+        <script src="https://cdn.tailwindcss.com"></script>
+        <style>
+            body { background: #0f172a; color: white; display: flex; align-items: center; justify-content: center; height: 100vh; font-family: sans-serif; }
+            .loader { border: 4px solid rgba(255,255,255,0.1); border-left-color: #38bdf8; border-radius: 50%; width: 40px; height: 40px; animation: spin 1s linear infinite; }
+            @keyframes spin { 100% { transform: rotate(360deg); } }
+        </style>
+    </head>
+    <body>
+        <div class="text-center">
+            <div class="loader mx-auto mb-4"></div>
+            <p class="text-sky-400 font-medium">Finalizing Verification...</p>
+        </div>
+        <script>
+            setTimeout(() => {
+                window.location.href = "https://t.me/{bot_username}?start=verify_{code}";
+            }, 2000);
+        </script>
+    </body>
+    </html>
+    """
+    bot = request.app.get('bot')
+    bot_username = bot.username if bot else "bot"
+    return web.Response(text=html.replace("{bot_username}", bot_username).replace("{code}", code), content_type="text/html")
 
 @routes.get("/watch")
 async def watch_handler(request):
