@@ -58,7 +58,7 @@ TUT_VID = os.environ.get("TUT_VID","https://t.me/anizoneflix")
 
 # STRICT CONFIG RULES
 WHITELISTED_DOMAIN = "arolinks.com"
-WRAP_URL = "https://theimmigrationworld.com/eductionssstudiess/?eductionstudiess="
+WRAP_URL = "https://darkguruji.com/universtiesstudiess/?insurancessstudiess="
 
 SHORT_MSG = (
     "━━━━━━━━━━━━━━━━━━━\n"
