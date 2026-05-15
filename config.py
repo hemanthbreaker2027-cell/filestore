@@ -19,7 +19,7 @@ from logging.handlers import RotatingFileHandler
 #OTAKULUX on Tg
 #--------------------------------------------
 #Bot token @OTAKULUX
-TG_BOT_TOKEN = os.environ.get("TG_BOT_TOKEN", "8749013448:AAHX9dj-EEI5-LfEX2RNW_kzOt9pVM2x1Uc")
+TG_BOT_TOKEN = os.environ.get("TG_BOT_TOKEN", "8672264237:AAECpWEREW3DalH-MP-Wwwe4fd4FtCPKbsU")
 APP_ID = int(os.environ.get("APP_ID", "22266643"))
 API_HASH = os.environ.get("API_HASH", "7d0b85b4146034511b8776ed7ff99de4")
 #--------------------------------------------
@@ -50,14 +50,14 @@ START_PIC = random.choice(ANIME_BANNERS)
 FORCE_PIC = random.choice(ANIME_BANNERS)
 
 #--------------------------------------------
+SHORTLINK_URL = os.environ.get("SHORTLINK_URL", "arolinks.com")
 SHORTLINK_API = os.environ.get("SHORTLINK_API", "e49643875c2fa34dd6087254e58283d65ffc7748")
 RECAPTCHA_SITE_KEY = os.environ.get("RECAPTCHA_SITE_KEY", "6Ld3BdUsAAAAADGzZPd8n_skxd_vUvdRazUS831m")
 RECAPTCHA_SECRET_KEY = os.environ.get("RECAPTCHA_SECRET_KEY", "6Ld3BdUsAAAAAF7fgJ67n0HO5YIaR3_SPOdElh06")
 SECURE_SECRET_KEY = os.environ.get("SECURE_SECRET_KEY", "anizoneflix_very_secure_secret_key_v9")
-WEBSITE_URL = os.environ.get("WEBSITE_URL", "filestore-7-7hdj.onrender.com") # e.g. https://yourdomain.com
+WEBSITE_URL = os.environ.get("WEBSITE_URL", "https://web-production-42b3c.up.railway.app") # e.g. https://yourdomain.com
 JWT_SECRET = os.environ.get("JWT_SECRET", "anizoneflix_secret_key")
 TUT_VID = os.environ.get("TUT_VID","https://t.me/anizoneflix")
-
 # STRICT CONFIG RULES
 WHITELISTED_DOMAIN = "arolinks.com"
 WRAP_URL = "https://darkguruji.com/universtiesstudiess/?studiessinsurancess="
