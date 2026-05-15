@@ -1,249 +1,186 @@
 
 from aiohttp import web
-import time
-import hashlib
 import asyncio
-import re
-import os
 import mimetypes
-from urllib.parse import quote, urlparse, parse_qs
-from config import WEBSITE_URL, WRAPPED_URL_DOMAIN, WRAPPED_URL_PATH, WRAPPED_QUERY_PARAM, RECAPTCHA_SITE_KEY, RECAPTCHA_SECRET_KEY
+import re
+from urllib.parse import quote
+from config import WEBSITE_URL, WHITELISTED_DOMAIN, WRAP_URL
 from database.database import db
-from services.security import SecurityService, SecureRedirect
-from helper_func import decode, is_subscribed
+from helper_func import decode
 
 routes = web.RouteTableDef()
 
-# Template Cache
-template_cache = {}
-
-async def get_template(name):
-    if name not in template_cache:
-        try:
-            with open(f"templates/{name}.html", "r") as f:
-                template_cache[name] = f.read()
-        except FileNotFoundError:
-            return None
-    return template_cache[name]
-
-def json_response(success=True, message="", data=None, status=200):
-    return web.json_response({
-        "success": success,
-        "message": message,
-        "data": data or {}
-    }, status=status)
-
 @routes.get("/", allow_head=True)
 async def root_handler(request):
-    return web.Response(text="ᴀɴɪᴢᴏɴᴇꜰʟɪx ꜱᴇᴄᴜʀᴇ ꜱᴛʀᴇᴀᴍ ᴇɴɢɪɴᴇ ᴠ6.0 - High Speed Active", content_type="text/plain")
-
-@routes.get("/r2/{userId}/{token}")
-async def r2_landing_page(request):
-    user_id = request.match_info['userId']
-    token = request.match_info['token']
-    html = await get_template("safe")
-    if not html: return web.Response(text="Template Error", status=500)
-    html = html.replace("{{ RECAPTCHA_SITE_KEY }}", RECAPTCHA_SITE_KEY).replace("{{ USER_ID }}", user_id).replace("{{ TOKEN }}", token)
-    return web.Response(text=html, content_type="text/html")
-
-@routes.post("/r2/verify")
-async def r2_verify(request):
-    try:
-        data = await request.json()
-        ip = SecurityService.get_client_ip(request)
-        success, score = await SecurityService.verify_recaptcha(data.get('recaptchaToken'), ip, request.app['client_session'])
-        if not success or score < 0.3: return json_response(False, "Security check failed", status=403)
-        token_data = SecureRedirect.decrypt(data.get('linkToken'))
-        if not token_data: return json_response(False, "Invalid Token", status=403)
-        bot = request.app['bot']
-        final_redirect = f"https://t.me/{bot.username}?start=yu3elk{token_data.get('payload')}7"
-        user_id = request.match_info.get('userId')
-        if user_id: await db.update_verify_status(int(user_id), is_verified=True, verified_time=time.time())
-        return json_response(True, "Verified", {"redirect": final_redirect})
-    except Exception: return json_response(False, "Error", status=500)
+    return web.Response(text="ᴀɴɪᴢᴏɴᴇꜰʟɪx ꜱᴇᴄᴜʀᴇ ꜱᴛʀᴇᴀᴍ ᴇɴɢɪɴᴇ ᴠ6.0", content_type="text/plain")
 
 @routes.get("/protect")
 async def protect_landing_page(request):
-    token = request.query.get('data')
-    if not token: return web.Response(text="Invalid Token", status=400)
+    code = request.query.get('code')
+    if not code: return web.Response(text="Invalid Token", status=400)
 
-    record = await db.get_strict_verification(token)
+    record = await db.get_strict_verification(code)
     if not record: return web.Response(text="Verification Link Expired", status=403)
 
-    # 10-second verification page
+    # STEP 2: 5-second frontend delay (Redesigned Glassmorphism)
     html = """
     <!DOCTYPE html>
-    <html>
+    <html lang="en">
     <head>
-        <title>AniZoneFlix Secure Verification</title>
-        <meta name="viewport" content="width=device-width, initial-scale=1">
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <title>AniZoneFlix | Secure Gateway</title>
+        <script src="https://cdn.tailwindcss.com"></script>
         <style>
-            body { font-family: sans-serif; background: #0f172a; color: white; display: flex; align-items: center; justify-content: center; height: 100vh; margin: 0; text-align: center; }
-            .container { background: #1e293b; padding: 2.5rem; border-radius: 1.5rem; box-shadow: 0 10px 15px -3px rgb(0 0 0 / 0.1); max-width: 400px; width: 90%; }
-            .timer { font-size: 3.5rem; font-weight: bold; color: #38bdf8; margin: 1.5rem 0; }
-            .btn { background: #38bdf8; color: #0f172a; padding: 1rem 2rem; border-radius: 0.75rem; font-weight: bold; text-decoration: none; display: none; cursor: pointer; border: none; font-size: 1.1rem; width: 100%; transition: transform 0.2s; }
-            .btn:active { transform: scale(0.98); }
-            p { color: #94a3b8; line-height: 1.5; }
+            @import url('https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600&display=swap');
+            body {
+                font-family: 'Outfit', sans-serif;
+                background: radial-gradient(circle at top right, #1e1b4b, #0f172a);
+                min-height: 100vh;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                margin: 0;
+                overflow: hidden;
+            }
+            .glass {
+                background: rgba(255, 255, 255, 0.03);
+                backdrop-filter: blur(12px);
+                border: 1px solid rgba(255, 255, 255, 0.1);
+                box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
+            }
+            .progress-bar {
+                height: 4px;
+                background: #38bdf8;
+                width: 0%;
+                transition: width 1s linear;
+                box-shadow: 0 0 15px rgba(56, 189, 248, 0.5);
+            }
+            .neon-text {
+                text-shadow: 0 0 10px rgba(56, 189, 248, 0.3);
+            }
+            @keyframes pulse {
+                0%, 100% { opacity: 1; }
+                50% { opacity: 0.5; }
+            }
+            .anim-pulse { animation: pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite; }
         </style>
     </head>
-    <body>
-        <div class="container">
-            <h1>Secure Verification</h1>
-            <p>Please wait for the secure gateway to initialize.</p>
-            <div class="timer" id="timer">10</div>
-            <button id="verifyBtn" class="btn">CONTINUE TO FILE</button>
+    <body class="p-4">
+        <div class="glass max-w-md w-full p-8 rounded-3xl text-center relative overflow-hidden">
+            <div class="absolute top-0 left-0 w-full h-1 bg-white/5">
+                <div class="progress-bar" id="progressBar"></div>
+            </div>
+
+            <div class="mb-6 inline-flex p-4 rounded-2xl bg-sky-500/10 text-sky-400">
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-10 w-10" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
+                </svg>
+            </div>
+
+            <h1 class="text-2xl font-semibold text-white mb-2 neon-text">Secure Verification</h1>
+            <p class="text-slate-400 mb-8 text-sm leading-relaxed">We are securing your request. Please wait a moment while we redirect you to the final destination.</p>
+
+            <div class="flex items-center justify-center space-x-3 mb-4">
+                <div class="text-4xl font-bold text-sky-400" id="timer">5</div>
+                <div class="text-slate-500 text-sm font-medium tracking-widest uppercase">Seconds Left</div>
+            </div>
+
+            <div class="flex justify-center space-x-1 anim-pulse">
+                <div class="w-1.5 h-1.5 rounded-full bg-sky-400/40"></div>
+                <div class="w-1.5 h-1.5 rounded-full bg-sky-400/60"></div>
+                <div class="w-1.5 h-1.5 rounded-full bg-sky-400"></div>
+            </div>
         </div>
+
         <script>
-            let timeLeft = 10;
+            let timeLeft = 5;
             const timer = document.getElementById('timer');
-            const btn = document.getElementById('verifyBtn');
+            const progressBar = document.getElementById('progressBar');
+
             const countdown = setInterval(() => {
                 timeLeft--;
                 timer.textContent = timeLeft;
+                progressBar.style.width = ((5 - timeLeft) * 20) + '%';
+
                 if (timeLeft <= 0) {
                     clearInterval(countdown);
-                    timer.style.display = 'none';
-                    btn.style.display = 'block';
+                    // STEP 3: Redirect to WRAP URL with CODE
+                    window.location.href = "{wrap_url}" + "{code}";
                 }
             }, 1000);
-
-            btn.onclick = async () => {
-                btn.disabled = true;
-                btn.textContent = "GENERATING LINK...";
-                try {
-                    const res = await fetch('/api/verify_gate', {
-                        method: 'POST',
-                        headers: { 'Content-Type': 'application/json' },
-                        body: JSON.stringify({ token: "{token}" })
-                    });
-                    const data = await res.json();
-                    if (data.success) {
-                        window.location.href = data.data.redirect;
-                    } else {
-                        alert(data.message || "Verification failed");
-                        btn.disabled = false;
-                        btn.textContent = "CONTINUE TO FILE";
-                    }
-                } catch (e) {
-                    alert("Connection error");
-                    btn.disabled = false;
-                    btn.textContent = "CONTINUE TO FILE";
-                }
-            };
         </script>
     </body>
     </html>
-    """.replace("{token}", token)
+    """.replace("{code}", code).replace("{wrap_url}", WRAP_URL)
     return web.Response(text=html, content_type="text/html")
 
-@routes.post("/api/verify_gate")
-async def api_verify_gate(request):
-    try:
-        data = await request.json()
-        token = data.get('token')
-        record = await db.get_strict_verification(token)
-        if not record: return json_response(False, "Session Expired", status=403)
-
-        settings = await db.get_settings()
-        from config import SHORTLINK_URL, SHORTLINK_API
-        from helper_func import get_shortlink
-
-        # Construct Backend Verification URL (The Wrapped URL)
-        domain = settings.get('wrapped_url_domain', WRAPPED_URL_DOMAIN)
-        path = settings.get('wrapped_url_path', WRAPPED_URL_PATH)
-        param = settings.get('wrapped_query_param', WRAPPED_QUERY_PARAM)
-
-        if not path.startswith("/"): path = "/" + path
-        if not path.endswith("/"): path = path + "/"
-
-        backend_verify_url = f"https://{domain}{path}?{param}={token}"
-
-        # Convert short code into final wrapped URL ONLY after verification (Shortener Step)
-        actual_shortlink = await get_shortlink(SHORTLINK_URL, SHORTLINK_API, backend_verify_url)
-        if not actual_shortlink:
-            return json_response(False, "Link Generation Failed")
-
-        return json_response(True, "Success", {"redirect": actual_shortlink})
-    except Exception as e:
-        print(f"API Gate Error: {e}")
-        return json_response(False, "Server Error", status=500)
-
-@routes.get("/eductionssstudiess/")
 @routes.get("/universtiesstudiess/")
-@routes.get("/{path:.*}studiess/") # Flexible matching for paths ending in studiess/
 async def wrapped_url_handler(request):
-    settings = await db.get_settings()
-    param_name = settings.get('wrapped_query_param', WRAPPED_QUERY_PARAM)
-    token = request.query.get(param_name)
-    if not token: return web.Response(text="Invalid Request", status=400)
+    code = request.query.get('studiessinsurancess')
+    if not code: return web.Response(text="Invalid Request", status=400)
 
-    # BACKEND VERIFICATION LAYER: Validates token and authenticity
-    # This is the "Converted Wrapped URL" landing after shortener
-    success = await db.mark_strict_verified(token)
-    if success:
-        bot = request.app['bot']
-        # 1-second verification page before returning to bot
+    stage = request.query.get('stage', '1')
+    if stage == '1':
+        # STEP 4: 2-second backend verification UI
         html = """
         <!DOCTYPE html>
-        <html>
+        <html lang="en">
         <head>
-            <title>Verifying...</title>
-            <meta http-equiv="refresh" content="1;url=https://t.me/{bot_username}?start=verify_{token}">
+            <meta charset="UTF-8">
+            <meta name="viewport" content="width=device-width, initial-scale=1.0">
+            <title>Finalizing Verification</title>
+            <script src="https://cdn.tailwindcss.com"></script>
             <style>
-                body { font-family: sans-serif; background: #0f172a; color: white; display: flex; align-items: center; justify-content: center; height: 100vh; margin: 0; }
-                .dot { animation: pulse 1s infinite; }
-                @keyframes pulse { 0% { opacity: 0.2; } 50% { opacity: 1; } 100% { opacity: 0.2; } }
+                @import url('https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600&display=swap');
+                body {
+                    font-family: 'Outfit', sans-serif;
+                    background: #0f172a;
+                    min-height: 100vh;
+                    display: flex;
+                    align-items: center;
+                    justify-content: center;
+                    margin: 0;
+                }
+                .loader {
+                    border: 3px solid rgba(56, 189, 248, 0.1);
+                    border-top: 3px solid #38bdf8;
+                    border-radius: 50%;
+                    width: 48px;
+                    height: 48px;
+                    animation: spin 1s linear infinite;
+                }
+                @keyframes spin {
+                    0% { transform: rotate(0deg); }
+                    100% { transform: rotate(360deg); }
+                }
             </style>
         </head>
         <body>
-            <h1>Verifying Request<span class="dot">...</span></h1>
+            <div class="text-center">
+                <div class="loader mb-6 mx-auto"></div>
+                <h1 class="text-xl font-medium text-white mb-2">Finalizing Verification</h1>
+                <p class="text-slate-400 text-sm">Please wait while we confirm your request...</p>
+            </div>
+            <script>
+                setTimeout(() => {
+                    const url = new URL(window.location.href);
+                    url.searchParams.set('stage', '2');
+                    window.location.href = url.toString();
+                }, 2000);
+            </script>
         </body>
         </html>
-        """.replace("{bot_username}", bot.username).replace("{token}", token)
+        """
         return web.Response(text=html, content_type="text/html")
 
-    # 2. Check if it's a Universal Flow code (legacy/fallback)
-    record = await db.verify_shortener_code(token)
-    if not record: return web.Response(text="Link Expired or Invalid", status=403)
+    success = await db.mark_strict_verified(code)
+    if success:
+        bot = request.app.get('bot')
+        bot_username = bot.username if bot else "bot"
+        return web.HTTPFound(location=f"https://t.me/{bot_username}?start=verify_{code}")
 
-    user_id, original_url = int(record.get('user_id')), record.get('original_url')
-    parsed = urlparse(original_url)
-    start_param = parse_qs(parsed.query).get('start', [''])[0]
-    payload = start_param[6:-1] if start_param.startswith("yu3elk") else start_param
-
-    # Update verification status in DB
-    await db.update_verify_status(user_id, verify_token=payload, is_verified=True, verified_time=time.time())
-
-    return web.HTTPFound(location=original_url)
-
-@routes.post("/verify")
-async def verify_protected_token(request):
-    try:
-        data = await request.json()
-        token = data.get('data')
-
-        # 1. Validate JWT
-        payload = SecureRedirect.verify_protected_token(token)
-        if not payload: return json_response(False, "Invalid or Expired Session", status=403)
-
-        code = payload.get('code')
-
-        # 2. Fetch latest wrapped domain and path from DB
-        settings = await db.get_settings()
-        domain = settings.get('wrapped_url_domain', WRAPPED_URL_DOMAIN)
-        path = settings.get('wrapped_url_path', WRAPPED_URL_PATH)
-        param = settings.get('wrapped_query_param', WRAPPED_QUERY_PARAM)
-
-        # Ensure path format
-        if not path.startswith("/"): path = "/" + path
-        if not path.endswith("/"): path = path + "/"
-
-        # 3. Return Converted Wrapped URL
-        wrapped_url = f"https://{domain}{path}?{param}={code}"
-        return json_response(True, "Verified", {"redirect": wrapped_url})
-    except Exception as e:
-        print(f"[VERIFY ERROR] {e}")
-        return json_response(False, "Internal Server Error", status=500)
+    return web.Response(text="Link Expired or Invalid", status=403)
 
 @routes.get("/watch")
 async def watch_handler(request):
@@ -252,118 +189,37 @@ async def watch_handler(request):
     if not record: return web.Response(text="Invalid Link", status=403)
     file_name = record.get('file_name', 'video.mp4')
     stream_url = f"https://{request.host}/stream/file/{code}/{quote(file_name)}"
-    html = await get_template("watch")
-    if not html: return web.Response(text="Template Error", status=500)
-    html = html.replace("{{ STREAM_URL }}", stream_url).replace("{{ FILE_NAME }}", file_name)
-    return web.Response(text=html, content_type="text/html")
+    return web.Response(text=f"Stream URL: {stream_url}")
 
 @routes.get("/download/{code}")
 async def download_handler(request):
     return await stream_file_handler(request, is_download=True)
 
-# Optimized Streaming/Download Engine with Parallel Delivery Logic
 @routes.get("/stream/file/{code}")
 @routes.get("/stream/file/{code}/{filename}")
 async def stream_file_handler(request, is_download=False):
     code = request.match_info.get('code')
     record = await db.verify_shortener_code(code)
     if not record: return web.Response(text="Forbidden", status=403)
-
-    bot = request.app['bot']
+    bot = request.app.get('bot')
+    if not bot: return web.Response(text="Bot Not Found", status=500)
     original_url = record.get('original_url', '')
-    msg_id = None
-
     match = re.search(r"get-(\d+)", original_url)
-    if match: msg_id = int(int(match.group(1)) / abs(bot.db_channel.id))
-    else:
-        match = re.search(r"start=(?:yu3elk)?([a-zA-Z0-9_-]+)7?", original_url)
-        if match:
-            try:
-                decoded = await decode(match.group(1))
-                inner = re.search(r"(?:get-)?(\d+)", decoded)
-                if inner: msg_id = int(int(inner.group(1)) / abs(bot.db_channel.id))
-            except: pass
-
-    if not msg_id: return web.Response(text="Media Not Found", status=404)
-
+    if not match: return web.Response(text="Media Not Found", status=404)
+    msg_id = int(int(match.group(1)) / abs(bot.db_channel.id))
     try:
         msg = await bot.get_messages(bot.db_channel.id, msg_id)
         file_obj = msg.video or msg.document
         if not file_obj: return web.Response(text="No Streamable Media", status=404)
-
         file_size = file_obj.file_size
-        range_header = request.headers.get('Range', 'bytes=0-')
-
-        start, end = 0, file_size - 1
-        if range_header:
-            try:
-                ranges = re.findall(r'(\d+)', range_header)
-                start = int(ranges[0])
-                if len(ranges) > 1: end = int(ranges[1])
-            except: pass
-
-        if start >= file_size: return web.Response(status=416, headers={'Content-Range': f'bytes */{file_size}'})
-
-        mime_type = file_obj.mime_type or mimetypes.guess_type(file_obj.file_name or "")[0] or 'video/mp4'
-
-        status = 206 if range_header else 200
-        resp = web.StreamResponse(status=status)
-        resp.headers.update({
-            'Content-Type': mime_type,
-            'Content-Length': str(end - start + 1),
-            'Accept-Ranges': 'bytes',
-            'Content-Range': f'bytes {start}-{end}/{file_size}',
-            'Access-Control-Allow-Origin': '*',
-            'X-Accel-Buffering': 'no',
-            'Connection': 'keep-alive',
-            'Cache-Control': 'no-cache, no-store, must-revalidate',
-            'X-Content-Type-Options': 'nosniff',
-            'X-Robots-Tag': 'noindex, nofollow'
-        })
-
-        if is_download:
-            resp.headers['Content-Disposition'] = f'attachment; filename="{quote(file_obj.file_name or "file")}"'
-            resp.headers['Content-Transfer-Encoding'] = 'binary'
-
+        resp = web.StreamResponse(status=200)
+        resp.headers.update({'Content-Type': file_obj.mime_type or 'video/mp4', 'Content-Length': str(file_size)})
+        if is_download: resp.headers['Content-Disposition'] = f'attachment; filename="{quote(file_obj.file_name)}"'
         await resp.prepare(request)
-
-        # ENGINE V9: Dynamic High-Throughput Pipe
-        # We use larger chunks for high-speed delivery
-        chunk_size = 3 * 1024 * 1024 if is_download else 1.5 * 1024 * 1024
-
-        # Parallel Prefetch Optimization
-        prefetch_limit = 10 if is_download else 5
-        queue = asyncio.Queue(maxsize=prefetch_limit)
-        stop_event = asyncio.Event()
-
-        async def prefetcher():
-            try:
-                async for chunk in bot.stream_media(file_obj, offset=start, limit=end-start+1):
-                    if stop_event.is_set(): break
-                    await queue.put(chunk)
-                await queue.put(None)
-            except: await queue.put(None)
-
-        prefetch_task = asyncio.create_task(prefetcher())
-
-        try:
-            while True:
-                chunk = await queue.get()
-                if chunk is None: break
-                await resp.write(chunk)
-                queue.task_done()
-                if not is_download: await resp.drain()
-        finally:
-            stop_event.set()
-            prefetch_task.cancel()
-            try: await prefetch_task
-            except: pass
-
-        await resp.write_eof()
+        async for chunk in bot.stream_media(file_obj):
+            await resp.write(chunk)
         return resp
-    except Exception as e:
-        print(f"Download Error: {e}")
-        return web.Response(text="Error", status=500)
+    except: return web.Response(text="Error", status=500)
 
 @routes.get("/health")
 async def health(request): return web.Response(text="OK")

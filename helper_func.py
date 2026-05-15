@@ -266,9 +266,9 @@ def get_exp_time(seconds):
 #
 
 
-async def get_shortlink(url, api, link):
+async def get_shortlink(url, api, link, alias=None):
     shortzy = Shortzy(api_key=api, base_site=url)
-    link = await shortzy.convert(link)
+    link = await shortzy.convert(link, alias=alias)
     return link
 
 

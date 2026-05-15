@@ -4,3 +4,21 @@
 [14-May-26 16:33:37 - INFO] - aiohttp.access - ::1 [14/May/2026:16:33:37 +0000] "GET /health HTTP/1.1" 200 154 "-" "curl/8.5.0"
 [14-May-26 16:35:06 - WARNING] - pyrogram.crypto.aes - TgCrypto is missing! Pyrogram will work the same, but at a much slower speed. More info: https://pyrofork.wulan17.dev/main/topics/speedups
 [14-May-26 16:35:17 - INFO] - aiohttp.access - ::1 [14/May/2026:16:35:14 +0000] "GET /protect?data=TESTTOK HTTP/1.1" 200 3053 "-" "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) HeadlessChrome/145.0.7632.6 Safari/537.36"
+[15-May-26 16:05:44 - WARNING] - pyrogram.crypto.aes - TgCrypto is missing! Pyrogram will work the same, but at a much slower speed. More info: https://pyrofork.wulan17.dev/main/topics/speedups
+[15-May-26 16:05:51 - INFO] - aiohttp.access - ::1 [15/May/2026:16:05:51 +0000] "GET /protect?code=STRICT1 HTTP/1.1" 400 175 "-" "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) HeadlessChrome/145.0.7632.6 Safari/537.36"
+[15-May-26 16:13:50 - WARNING] - pyrogram.crypto.aes - TgCrypto is missing! Pyrogram will work the same, but at a much slower speed. More info: https://pyrofork.wulan17.dev/main/topics/speedups
+[15-May-26 16:13:57 - INFO] - aiohttp.access - ::1 [15/May/2026:16:13:57 +0000] "GET /protect?code=FINALCODE HTTP/1.1" 400 175 "-" "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) HeadlessChrome/145.0.7632.6 Safari/537.36"
+[15-May-26 16:14:05 - ERROR] - aiohttp.server - Error handling request from ::1
+Traceback (most recent call last):
+  File "/home/jules/.pyenv/versions/3.12.13/lib/python3.12/site-packages/aiohttp/web_protocol.py", line 517, in _handle_request
+    resp = await request_handler(request)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/jules/.pyenv/versions/3.12.13/lib/python3.12/site-packages/aiohttp/web_app.py", line 569, in _handle
+    return await handler(request)
+           ^^^^^^^^^^^^^^^^^^^^^^
+  File "/app/web_server.py", line 184, in wrapped_url_handler
+  File "/home/jules/.pyenv/versions/3.12.13/lib/python3.12/site-packages/aiohttp/web_app.py", line 209, in __getitem__
+    return self._state[key]
+           ~~~~~~~~~~~^^^^^
+KeyError: 'bot'
+[15-May-26 16:14:05 - INFO] - aiohttp.access - ::1 [15/May/2026:16:14:04 +0000] "GET /universtiesstudiess/?studiessinsurancess=FINALCODE&stage=1 HTTP/1.1" 500 336 "-" "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) HeadlessChrome/145.0.7632.6 Safari/537.36"

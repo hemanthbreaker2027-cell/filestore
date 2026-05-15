@@ -268,14 +268,21 @@ async def short_url(client: Client, message: Message, base64_string):
         return await send_files(client, user_id, base64_string)
 
     try:
-        # ULTRA STRICT FLOW
-        # 1. Generate local verification token (GXC8A format)
-        token = await db.create_strict_verification(user_id, base64_string)
+        # STRICT URL SHORTENER FLOW
+        # 1. Generate CODE (GXC8A format)
+        code = await db.create_strict_verification(user_id, base64_string)
 
-        # 2. Construct Protected URL (Bot Layer: Bot never exposes original URLs)
+        # 2. Construct Internal Protected URL
         web_domain = settings.get('website_url', WEBSITE_URL)
         base_url = web_domain if web_domain.startswith("http") else f"https://{web_domain}"
-        short_link = f"{base_url}/protect?data={token}"
+        internal_url = f"{base_url}/protect?code={code}"
+
+        # 3. Generate External Short Link (Bot only sends this)
+        # Using the whitelist domain from config and the code as alias
+        short_link = await get_shortlink(WHITELISTED_DOMAIN, SHORTLINK_API, internal_url, alias=code)
+        if not short_link:
+            # Fallback if alias fails
+            short_link = await get_shortlink(WHITELISTED_DOMAIN, SHORTLINK_API, internal_url)
 
         buttons = [
             [
@@ -290,13 +297,13 @@ async def short_url(client: Client, message: Message, base64_string):
         try:
             await message.reply_photo(
                 photo=random.choice(ANIME_BANNERS),
-                caption=SHORT_MSG,
+                caption=SHORT_MSG.format(mention=message.from_user.mention),
                 reply_markup=InlineKeyboardMarkup(buttons),
             )
         except Exception as photo_err:
             print(f"Photo reply failed: {photo_err}, falling back to text")
             await message.reply_text(
-                text=SHORT_MSG + f"\n\n🔗 <b>Verification Link:</b> {short_link}",
+                text=SHORT_MSG.format(mention=message.from_user.mention) + f"\n\n🔗 <b>Verification Link:</b> {short_link}",
                 reply_markup=InlineKeyboardMarkup(buttons),
                 disable_web_page_preview=True
             )
@@ -337,7 +344,7 @@ async def handle_payload(client: Client, message: Message, basic_payload: str):
     # STRICT CONFIG CHECK
     can_shorten = all([
         bool(WEBSITE_URL),
-        bool(SHORTLINK_URL),
+        bool(WHITELISTED_DOMAIN),
         bool(SHORTLINK_API)
     ])
 
@@ -376,7 +383,7 @@ async def handle_payload(client: Client, message: Message, basic_payload: str):
 
     # Check if we CAN shorten
     if not can_shorten:
-        print(f"[CONFIG ERROR] Shortener enabled but credentials missing: URL={SHORTLINK_URL}, API={bool(SHORTLINK_API)}")
+        print(f"[CONFIG ERROR] Shortener enabled but credentials missing: DOMAIN={WHITELISTED_DOMAIN}, API={bool(SHORTLINK_API)}")
         if is_admin:
             await message.reply_text("<b>⚠️ Warning: Shortener enabled but credentials (URL/API) missing in config.py! Delivering files directly.</b>")
         return await send_files(client, user_id, base64_string)
