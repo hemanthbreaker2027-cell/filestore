@@ -8,7 +8,7 @@ import json
 import jwt
 from cryptography.hazmat.primitives.ciphers.aead import AESGCM
 from urllib.parse import urlparse
-from config import JWT_SECRET, SECURE_SECRET_KEY, SHORTLINK_URL, SHORTLINK_API, WEBSITE_URL, WHITELISTED_DOMAINS
+from config import JWT_SECRET, SECURE_SECRET_KEY, SHORTLINK_API, WEBSITE_URL, WHITELISTED_DOMAIN
 from database.database import db
 
 
@@ -50,8 +50,8 @@ class SecurityService:
         padded_id = f"__________{user_id}__________"
         target_url = f"{WEBSITE_URL}/r2/{padded_id}/{token}"
 
-        if SHORTLINK_URL and SHORTLINK_API:
-            return await get_shortlink(SHORTLINK_URL, SHORTLINK_API, target_url)
+        if WHITELISTED_DOMAIN and SHORTLINK_API:
+            return await get_shortlink(WHITELISTED_DOMAIN, SHORTLINK_API, target_url)
 
         return target_url
 
@@ -91,7 +91,7 @@ class SecurityService:
             if domain == "t.me" or domain == "telegram.me":
                 return True
 
-            return domain in WHITELISTED_DOMAINS
+            return domain == WHITELISTED_DOMAIN
         except:
             return False
 

@@ -31,11 +31,10 @@ def get_panel_markup(settings):
         ],
         [
             InlineKeyboardButton(f"🌐 Wᴇʙsɪᴛᴇ", callback_data="set_val_website_url"),
-            InlineKeyboardButton(f"🔗 Dᴏᴍᴀɪɴ", callback_data="set_val_wrapped_url_domain")
+            InlineKeyboardButton(f"🔗 Dᴏᴍᴀɪɴ", callback_data="set_val_shortener_domain")
         ],
         [
-            InlineKeyboardButton(f"📁 Pᴀᴛʜ", callback_data="set_val_wrapped_url_path"),
-            InlineKeyboardButton(f"🆔 Pᴀʀᴀᴍ", callback_data="set_val_wrapped_query_param")
+            InlineKeyboardButton(f"📁 WRAP URL", callback_data="set_val_wrap_url")
         ],
         [
             InlineKeyboardButton(f"ꜱᴛʀᴇᴀᴍ ꜱʏꜱᴛᴇᴍ {get_badge('stream_enabled')}", callback_data="none"),
@@ -121,9 +120,8 @@ async def panel_callback(client: Bot, query: CallbackQuery):
         prompt = {
             'verify_timer': "Enter verification timer in seconds (e.g. 10):",
             'website_url': "Enter your deployment domain (e.g. your-app.onrender.com):",
-            'wrapped_url_domain': "Enter wrapped URL domain (e.g. darkguruji.com):",
-            'wrapped_url_path': "Enter wrapped URL path (e.g. /universtiesstudiess/):",
-            'wrapped_query_param': "Enter wrapped query parameter (e.g. insurancessstudiess):",
+            'shortener_domain': "Enter whitelist domain (e.g. arolinks.com):",
+            'wrap_url': "Enter wrap URL template (e.g. https://darkguruji.com/universtiesstudiess/?studiessinsurancess=):",
             'session_expiry': "Enter JWT session expiry in seconds (e.g. 300):"
         }.get(key, "Enter new value:")
 
