@@ -45,7 +45,7 @@ ANIME_BANNERS = [
 ]
 
 START_PIC = random.choice(ANIME_BANNERS)
-FORCE_PIC = random.choice(ANIME_BANNERS
+FORCE_PIC = random.choice(ANIME_BANNERS)
 
 #--------------------------------------------
 SHORTLINK_API = os.environ.get("SHORTLINK_API", "e49643875c2fa34dd6087254e58283d65ffc7748")
