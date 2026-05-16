@@ -18,6 +18,7 @@ import re
 import string 
 import string
 import time
+import traceback
 from datetime import datetime, timedelta
 from pyrogram import Client, filters, __version__
 from pyrogram.enums import ParseMode, ChatAction
@@ -190,6 +191,7 @@ async def short_url(client: Client, message: Message, base64_string):
         # UNIVERSAL FILESTORE V9 FLOW
         # 1. Create a strict verification entry and get a short CODE (GXC8A)
         code = await db.create_strict_verification(user_id, base64_string)
+        print(f"[DEBUG] Generated verification code: {code}")
 
         # 2. Get Expiry
         expiry = settings.get('session_expiry', 300)
@@ -201,10 +203,25 @@ async def short_url(client: Client, message: Message, base64_string):
         # The target for the shortener should be our final verification endpoint
         target_path = "/eductionssstudiess/?eductionstudiess="
         final_target = f"{base_url}{target_path}{code}"
+        print(f"[DEBUG] Shortener Target URL: {final_target}")
 
-        # Call shortener API
-        shortener_link = await get_shortlink(WHITELISTED_DOMAIN, SHORTLINK_API, final_target)
+        # Call shortener API with simple retry
+        shortener_link = None
+        for attempt in range(3):
+            try:
+                shortener_link = await get_shortlink(WHITELISTED_DOMAIN, SHORTLINK_API, final_target)
+                print(f"[DEBUG] Shortened Link (Attempt {attempt+1}): {shortener_link}")
+                if shortener_link: break
+            except Exception as e:
+                print(f"[DEBUG] Shortener Attempt {attempt+1} Failed: {e}")
+                if attempt == 2: raise Exception(f"Shortener API Error: {str(e)}")
+                await asyncio.sleep(2)
+
         slug = SecurityService.extract_slug(shortener_link)
+        print(f"[DEBUG] Extracted Slug: {slug}")
+
+        if not slug:
+            raise Exception("Failed to extract slug from shortened link")
 
         # 4. Sign a NEW token containing both code AND slug
         token_data = {"code": code, "slug": slug}
@@ -239,9 +256,10 @@ async def short_url(client: Client, message: Message, base64_string):
 
     except Exception as e:
         print(f"CRITICAL ERROR in short_url: {e}")
+        traceback.print_exc()
         # If shortener fails, we MUST NOT bypass if it's supposed to be verified.
         # Inform the user instead.
-        await message.reply_text("<b>⚠️ Security Error: Failed to generate protected link. Please try again or contact support.</b>")
+        await message.reply_text(f"<b>⚠️ Security Error: Failed to generate protected link. Please try again or contact support.</b>\n\n<code>Error: {str(e)}</code>")
 
 
 async def handle_payload(client: Client, message: Message, basic_payload: str):
