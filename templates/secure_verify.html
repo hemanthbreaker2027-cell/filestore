@@ -192,6 +192,13 @@
         localStorage.setItem(SESSION_KEY, TAB_ID);
         BC.postMessage({ type: 'NEW_TAB', id: TAB_ID });
 
+        // TAB SWITCH DETECTION
+        document.addEventListener('visibilitychange', () => {
+            if (document.hidden && !window.verified) {
+                blockAccess("Tab switching detected. Verification must stay active in the foreground.");
+            }
+        });
+
         // DEVTOOLS DETECTION
         setInterval(() => {
             const start = performance.now();

@@ -5,6 +5,7 @@ import mimetypes
 import re
 import secrets
 import string
+import base64
 import time
 from urllib.parse import quote
 import os
@@ -336,8 +337,6 @@ async def api_verify_handler(request):
              return web.json_response({"success": False, "error": "Session cookie missing"}, status=403)
 
         try:
-            decoded_raw = decode(encrypted_payload) # Using helper_func.decode if it's base64, or just base64.b64decode
-            import base64
             raw_bytes = base64.b64decode(encrypted_payload)
             decrypted = "".join([chr(raw_bytes[i] ^ ord(session_id[i % len(session_id)])) for i in range(len(raw_bytes))])
             data = json.loads(decrypted)
