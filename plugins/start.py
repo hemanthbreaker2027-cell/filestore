@@ -239,10 +239,9 @@ async def short_url(client: Client, message: Message, base64_string):
 
     except Exception as e:
         print(f"CRITICAL ERROR in short_url: {e}")
-        # If shortener fails, we MUST decide: bypass or tell user?
-        # User said "fix it", so if it fails, maybe tell them why or fallback.
-        # Fallback to direct delivery to ensure "sending anything"
-        await send_files(client, user_id, base64_string)
+        # If shortener fails, we MUST NOT bypass if it's supposed to be verified.
+        # Inform the user instead.
+        await message.reply_text("<b>⚠️ Security Error: Failed to generate protected link. Please try again or contact support.</b>")
 
 
 async def handle_payload(client: Client, message: Message, basic_payload: str):
@@ -307,7 +306,13 @@ async def handle_payload(client: Client, message: Message, basic_payload: str):
         return await send_files(client, user_id, base64_string)
 
     # If ON, check other bypasses
-    if is_premium or is_bypassed_admin or actual_verified:
+    if is_premium:
+        return await send_files(client, user_id, base64_string)
+
+    if is_bypassed_admin:
+        return await send_files(client, user_id, base64_string)
+
+    if actual_verified:
         return await send_files(client, user_id, base64_string)
 
     # Check if we CAN shorten
@@ -315,7 +320,9 @@ async def handle_payload(client: Client, message: Message, basic_payload: str):
         print(f"[CONFIG ERROR] Shortener enabled but credentials missing: DOMAIN={WHITELISTED_DOMAIN}, API={bool(SHORTLINK_API)}")
         if is_admin:
             await message.reply_text("<b>⚠️ Warning: Shortener enabled but credentials (URL/API) missing in config.py! Delivering files directly.</b>")
-        return await send_files(client, user_id, base64_string)
+        else:
+            await message.reply_text("<b>⚠️ System Error: Shortener configuration is incomplete. Please contact admin.</b>")
+        return # STOP HERE. Don't send files if it's supposed to be verified.
 
     # Proceed to shortener
     await short_url(client, message, base64_string)

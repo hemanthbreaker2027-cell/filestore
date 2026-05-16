@@ -67,7 +67,8 @@ async def r2_handler(request):
     response.headers['Content-Security-Policy'] = "frame-ancestors 'none';"
 
     # HttpOnly Session Cookie
-    response.set_cookie('verify_session', session_id, httponly=True, secure=True, samesite='Strict')
+    # Lax is required for the cross-site redirect from the shortener domain
+    response.set_cookie('verify_session', session_id, httponly=True, secure=True, samesite='Lax')
 
     return response
 
