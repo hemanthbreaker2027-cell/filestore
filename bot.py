@@ -77,7 +77,9 @@ class Bot(Client):
         self.LOGGER = LOGGER
 
     async def start(self):
+        print("[STARTUP] Initializing Bot...")
         await super().start()
+        print("[STARTUP] Pyrogram super().start() successful.")
         scheduler.start()
         # Automatically unblock all users on restart
         try:
@@ -121,10 +123,8 @@ class Bot(Client):
             test = await self.send_message(chat_id = db_channel.id, text = "Test Message")
             await test.delete()
         except Exception as e:
-            self.LOGGER(__name__).warning(e)
-            self.LOGGER(__name__).warning(f"Make Sure bot is Admin in DB Channel, and Double check the CHANNEL_ID Value, Current Value {CHANNEL_ID}")
-            self.LOGGER(__name__).info("\nBot Stopped. Join https://t.me/AniZoneFlix for support")
-            sys.exit()
+            self.LOGGER(__name__).error(f"CRITICAL: Failed to access DB Channel: {e}")
+            self.LOGGER(__name__).warning(f"Bot will continue to run, but file storage features may fail. Ensure bot is Admin in {CHANNEL_ID}")
 
         self.set_parse_mode(ParseMode.HTML)
         self.LOGGER(__name__).info(f"Bot Running..!\n\nCreated by \nhttps://t.me/AniZoneFlix")
@@ -144,10 +144,12 @@ class Bot(Client):
         self.LOGGER(__name__).info(f"Bot Running..! Made by @AniZoneFlix")
 
         # Start Web Server (Late Import to avoid circular dependency)
+        print("[STARTUP] Initializing Web Server...")
         from plugins import web_server
         app = web.AppRunner(await web_server(self))
         await app.setup()
         await web.TCPSite(app, "0.0.0.0", PORT).start()
+        print(f"[STARTUP] Web Server running on port {PORT}")
 
 
         try: await self.send_message(OWNER_ID, text = f"<b><blockquote> Bᴏᴛ Rᴇsᴛᴀʀᴛᴇᴅ by @AniZoneFlix</blockquote></b>")
@@ -159,9 +161,11 @@ class Bot(Client):
 
     def run(self):
         """Run the bot."""
+        print("[STARTUP] Entering loop.run_forever()...")
         loop = asyncio.get_event_loop()
         loop.run_until_complete(self.start())
         self.LOGGER(__name__).info("Bot is now running. Thanks to @AniZoneFlix")
+        print("[STARTUP] Bot is fully operational.")
         try:
             loop.run_forever()
         except KeyboardInterrupt:

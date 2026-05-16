@@ -25,7 +25,6 @@ from pyrogram.enums import ParseMode, ChatAction
 from pyrogram.types import Message, InlineKeyboardMarkup, InlineKeyboardButton, CallbackQuery, ReplyKeyboardMarkup, ChatInviteLink, ChatPrivileges
 from pyrogram.errors.exceptions.bad_request_400 import UserNotParticipant
 from pyrogram.errors import FloodWait, UserIsBlocked, InputUserDeactivated, UserNotParticipant, MessageNotModified
-from bot import Bot
 from config import *
 from pytz import timezone
 from helper_func import *
@@ -322,16 +321,20 @@ async def handle_payload(client: Client, message: Message, basic_payload: str):
 
     # Logic: If Shortener is OFF, bypass immediately.
     if not shortener_enabled:
+        print(f"[DEBUG] handle_payload: Shortener disabled. Delivering {base64_string}")
         return await send_files(client, user_id, base64_string)
 
     # If ON, check other bypasses
     if is_premium:
+        print(f"[DEBUG] handle_payload: Premium bypass for {user_id}")
         return await send_files(client, user_id, base64_string)
 
     if is_bypassed_admin:
+        print(f"[DEBUG] handle_payload: Admin bypass for {user_id}")
         return await send_files(client, user_id, base64_string)
 
     if actual_verified:
+        print(f"[DEBUG] handle_payload: User {user_id} verified. Delivering {base64_string}")
         return await send_files(client, user_id, base64_string)
 
     # Check if we CAN shorten
@@ -660,3 +663,8 @@ async def test_shortener(client: Client, message: Message):
     # Test payload for demonstration
     sample_payload = "W3siaWQiOiAxLCAibmFtZSI6ICJUZXN0In1d"
     await short_url(client, message, sample_payload)
+
+@Client.on_message(filters.private, group=-1)
+async def monitor_all(client: Client, message: Message):
+    # Print every message received for debugging
+    print(f"[MONITOR] user={message.from_user.id}, text={message.text or 'MEDIA'}")

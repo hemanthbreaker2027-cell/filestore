@@ -17,7 +17,7 @@ import logging
 from logging.handlers import RotatingFileHandler
 
 #OTAKULUX on Tg
-TG_BOT_TOKEN = os.environ.get("TG_BOT_TOKEN", "8749013448:AAEJA_j084HvoxSgv6gmrkSEsN1BbHIEdaQ")
+TG_BOT_TOKEN = os.environ.get("TG_BOT_TOKEN", "8672264237:AAECpWEREW3DalH-MP-Wwwe4fd4FtCPKbsU")
 APP_ID = int(os.environ.get("APP_ID", "22266643"))
 API_HASH = os.environ.get("API_HASH", "7d0b85b4146034511b8776ed7ff99de4")
 #--------------------------------------------

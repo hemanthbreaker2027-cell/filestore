@@ -1,7 +1,6 @@
 
 from pyrogram import Client, filters
 from pyrogram.types import Message, InlineKeyboardMarkup, InlineKeyboardButton, CallbackQuery
-from bot import Bot
 from config import OWNER_ID, ANIME_BANNERS
 from database.database import db
 from helper_func import admin
