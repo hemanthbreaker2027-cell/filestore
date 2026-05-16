@@ -190,17 +190,15 @@ async def short_url(client: Client, message: Message, base64_string):
             reply_markup=InlineKeyboardMarkup([[InlineKeyboardButton("💎 Gᴇᴛ Pʀᴇᴍɪᴜᴍ 💎", callback_data="premium")]])
         )
 
-    # 2. Create a strict verification entry and get a short CODE (GXC8A)
-    # Token incorporates the user's username for identity-based redirection
-    username = message.from_user.username or "Anon"
-    code = await db.create_strict_verification(user_id, base64_string)
+    # 2. Create CODEFLIX Network Session
+    session_id = await db.create_verification_session(user_id, base64_string, client.username)
 
-    # 3. Build Redirect Link
-    # Redirect Link incorporates the username-based token
-    final_target = f"https://t.me/{VERIFY_BOT_USERNAME}?start={code}_{username}"
+    # 3. Redirect Link: BASE_URL/r/{session_id}
+    # This URL will handle the redirect to the Verification Bot
+    redirect_link = f"{BASE_URL}/r/{session_id}"
 
-    # Call shortener API
-    shortener_link = await get_shortlink(WHITELISTED_DOMAIN, SHORTLINK_API, final_target)
+    # 4. Wrap with Shortener for revenue/masking
+    shortener_link = await get_shortlink(WHITELISTED_DOMAIN, SHORTLINK_API, redirect_link)
 
     if not shortener_link:
         raise Exception("Failed to generate shortlink")
@@ -301,18 +299,23 @@ async def start_command(client: Client, message: Message):
         try:
             basic = text.split(" ", 1)[1]
 
-            # ULTRA STRICT VERIFICATION DEEP LINK (Returning from Verification Bot/Frontend)
+            # CODEFLIX NETWORK DEEP LINK
             if basic.startswith("verify_"):
                 token = basic.replace("verify_", "")
-                record = await db.consume_strict_verification(token)
-                if record:
-                    # Increment verify count
+                session = await db.get_session_by_token(token)
+
+                if session and session['user_id'] == str(user_id):
+                    # Increment verify count (Deal used)
                     count = await db.get_verify_count(user_id)
                     await db.set_verify_count(user_id, count + 1)
-                    # Success! Deliver files
-                    await send_files(client, user_id, record['code'])
+
+                    # Success! Deliver content
+                    await send_files(client, user_id, session['content_id'])
+
+                    # Mark session as used
+                    await db.mark_session_used(session['session_id'])
                 else:
-                    await message.reply_text("<b>❌ Verification Failed!</b>\n\nYou must complete the full verification flow to access these files.")
+                    await message.reply_text("<b>❌ Verification Failed!</b>\n\nSecurity Error: Session invalid, expired, or belongs to another user.")
                 return
 
             await handle_payload(client, message, basic)

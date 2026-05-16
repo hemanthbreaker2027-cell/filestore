@@ -4,6 +4,7 @@
 import motor.motor_asyncio
 import time
 import secrets
+import uuid
 import pymongo, os
 from config import DB_URI, DB_NAME
 import logging
@@ -50,14 +51,13 @@ class AniZoneFlix:
         self.bypass_data = self.database['bypass_attempts']
         self.settings_data = self.database['settings']
         self.cooldown_data = self.database['cooldowns']
-        self.strict_verifications = self.database['strict_verifications']
-        self.secure_sessions = self.database['secure_sessions']
+        self.sessions = self.database['sessions'] # Codeflix Network Collection
 
 
     # SETTINGS & FEATURE FLAGS
     async def get_settings(self):
         settings = await self.settings_data.find_one({'_id': 'bot_settings'})
-        from config import WEBSITE_URL, WHITELISTED_DOMAIN, WRAP_URL
+        from config import WHITELISTED_DOMAIN
 
         default_settings = {
             '_id': 'bot_settings',
@@ -66,11 +66,6 @@ class AniZoneFlix:
             'core_features': True,
             'shortener_mode': 'one_per_time',
             'shortener_time': 0,
-            'verify_timer': 10,
-            'website_url': WEBSITE_URL,
-            'shortener_domain': WHITELISTED_DOMAIN,
-            'wrap_url': WRAP_URL,
-            'session_expiry': 300,
             'shorten_admins': True,
             'daily_verify_limit': 5
         }
@@ -333,86 +328,33 @@ class AniZoneFlix:
         return True, limit
 
 
-    # ULTRA STRICT VERIFICATION
-    async def create_strict_verification(self, user_id, code):
-        import string
-        import random
-        token = ''.join(random.choices(string.ascii_uppercase + string.digits, k=8))
-        while await self.strict_verifications.find_one({'_id': token}):
-            token = ''.join(random.choices(string.ascii_uppercase + string.digits, k=8))
-
-        await self.strict_verifications.insert_one({
-            '_id': token,
-            'user_id': str(user_id),
-            'code': code,
-            'status': 'unverified',
-            'created_at': time.time(),
-            'expires_at': time.time() + 600
+    # CODEFLIX NETWORK - SESSION MANAGEMENT
+    async def create_verification_session(self, user_id, content_id, bot_username):
+        session_id = str(uuid.uuid4())
+        await self.sessions.insert_one({
+            "session_id": session_id,
+            "user_id": str(user_id),
+            "content_id": content_id,
+            "bot_username": bot_username,
+            "status": "pending",
+            "expiry": int(time.time() + 300), # 5 minutes
+            "secure_token": None
         })
-        return token
+        return session_id
 
-    async def mark_strict_verified(self, token):
-        result = await self.strict_verifications.update_one(
-            {'_id': token, 'status': 'unverified'},
-            {'$set': {'status': 'verified', 'verified_at': time.time()}}
+    async def get_session_by_token(self, token):
+        # In Codeflix Network, the main bot receives verify_{TOKEN}
+        # We need to find the session where secure_token matches
+        return await self.sessions.find_one({"secure_token": token, "status": "verified"})
+
+    async def mark_session_used(self, session_id):
+        await self.sessions.update_one(
+            {"session_id": session_id},
+            {"$set": {"status": "used"}}
         )
-        return result.modified_count > 0
 
-    async def get_strict_verification(self, token):
-        record = await self.strict_verifications.find_one({'_id': token})
-        if not record: return None
-        if time.time() > record.get('expires_at', 0):
-            await self.strict_verifications.delete_one({'_id': token})
-            return None
-        return record
-
-    async def consume_strict_verification(self, token):
-        record = await self.get_strict_verification(token)
-        if record and record.get('status') == 'verified':
-            await self.strict_verifications.delete_one({'_id': token})
-            return record
-        return None
-
-    async def cleanup_strict_verifications(self):
-        await self.strict_verifications.delete_many({'expires_at': {'$lt': time.time()}})
-
-    # SECURE SESSION MANAGEMENT
-    async def create_secure_session(self, session_id, data):
-        await self.secure_sessions.insert_one({
-            '_id': session_id,
-            'ip': data.get('ip'),
-            'ua': data.get('ua'),
-            'fingerprint': data.get('fingerprint', ''),
-            'tab_id': data.get('tab_id', ''),
-            'status': 'pending',
-            'created_at': time.time(),
-            'expires_at': time.time() + 600,
-            'code': data.get('code'),
-            'slug': data.get('slug'),
-            'initial_ip': data.get('ip'),
-            'initial_ua': data.get('ua')
-        })
-
-    async def get_secure_session(self, session_id):
-        record = await self.secure_sessions.find_one({'_id': session_id})
-        if record and time.time() > record.get('expires_at', 0):
-            await self.secure_sessions.delete_one({'_id': session_id})
-            return None
-        return record
-
-    async def update_secure_session(self, session_id, update_data):
-        await self.secure_sessions.update_one({'_id': session_id}, {'$set': update_data})
-
-    async def verify_secure_session(self, session_id, ip, ua, fingerprint=None, tab_id=None):
-        session = await self.get_secure_session(session_id)
-        if not session: return False, "Session expired"
-        if session['ip'] != ip: return False, "IP mismatch"
-        if session['ua'] != ua: return False, "Browser mismatch"
-        if fingerprint and session.get('fingerprint') and session['fingerprint'] != fingerprint:
-            return False, "Fingerprint mismatch"
-        if tab_id and session.get('tab_id') and session['tab_id'] != tab_id:
-            return False, "Tab mismatch"
-        return True, session
+    async def cleanup_sessions(self):
+        await self.sessions.delete_many({"expiry": {"$lt": time.time()}})
 
 
     # RESTART TASKS
