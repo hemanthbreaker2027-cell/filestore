@@ -15,7 +15,7 @@ from database.database import *
 
 
 # Commands for adding admins by owner
-@Bot.on_message(filters.command('add_admin') & filters.private & filters.user(OWNER_ID))
+@Client.on_message(filters.command('add_admin') & filters.private & filters.user(OWNER_ID))
 async def add_admins(client: Client, message: Message):
     pro = await message.reply("<b><i>ᴘʟᴇᴀsᴇ ᴡᴀɪᴛ..</i></b>", quote=True)
     check = 0
@@ -65,7 +65,7 @@ async def add_admins(client: Client, message: Message):
         )
 
 
-@Bot.on_message(filters.command('deladmin') & filters.private & filters.user(OWNER_ID))
+@Client.on_message(filters.command('deladmin') & filters.private & filters.user(OWNER_ID))
 async def delete_admins(client: Client, message: Message):
     pro = await message.reply("<b><i>ᴘʟᴇᴀsᴇ ᴡᴀɪᴛ..</i></b>", quote=True)
     admin_ids = await db.get_all_admins()
@@ -111,7 +111,7 @@ async def delete_admins(client: Client, message: Message):
         await pro.edit("<b><blockquote>No admin IDs available to delete.</blockquote></b>", reply_markup=reply_markup)
 
 
-@Bot.on_message(filters.command('admins') & filters.private & admin)
+@Client.on_message(filters.command('admins') & filters.private & admin)
 async def get_admins(client: Client, message: Message):
     pro = await message.reply("<b><i>ᴘʟᴇᴀsᴇ ᴡᴀɪᴛ..</i></b>", quote=True)
     admin_ids = await db.get_all_admins()
@@ -124,8 +124,8 @@ async def get_admins(client: Client, message: Message):
     reply_markup = InlineKeyboardMarkup([[InlineKeyboardButton("ᴄʟᴏsᴇ", callback_data="close")]])
     await pro.edit(f"<b>⚡ Current Admin List:</b>\n\n{admin_list}", reply_markup=reply_markup)
 
-@Bot.on_message(filters.command('stats') & filters.private & admin)
-async def stats(bot: Bot, message: Message):
+@Client.on_message(filters.command('stats') & filters.private & admin)
+async def stats(client: Client, message: Message):
     from datetime import datetime
     import pytz
     ist = pytz.timezone("Asia/Kolkata")
@@ -134,8 +134,8 @@ async def stats(bot: Bot, message: Message):
     uptime = get_readable_time(delta.total_seconds())
     await message.reply(BOT_STATS_TEXT.format(uptime=uptime), quote=True)
 
-@Bot.on_message(filters.command('users') & filters.private & admin)
-async def get_users(client: Bot, message: Message):
+@Client.on_message(filters.command('users') & filters.private & admin)
+async def get_users(client: Client, message: Message):
     msg = await message.reply("<b>🔍 Fᴇᴛᴄʜɪɴɢ Usᴇʀ Sᴛᴀᴛɪsᴛɪᴄs...</b>", quote=True)
     users = await db.full_userbase()
     await msg.edit(f"<b>📊 Tᴏᴛᴀʟ Usᴇʀs:</b> <code>{len(users)}</code>")

@@ -57,8 +57,8 @@ def get_panel_markup(settings):
     ]
     return InlineKeyboardMarkup(buttons)
 
-@Bot.on_message(filters.command(['panel', 'settings']) & filters.private & filters.user(OWNER_ID))
-async def owner_panel(client: Bot, message: Message):
+@Client.on_message(filters.command(['panel', 'settings']) & filters.private & filters.user(OWNER_ID))
+async def owner_panel(client: Client, message: Message):
     settings = await db.get_settings()
 
     caption = (
@@ -79,8 +79,8 @@ async def owner_panel(client: Bot, message: Message):
         reply_markup=get_panel_markup(settings)
     )
 
-@Bot.on_callback_query(filters.regex(r"^(tg_|refresh_panel|set_mode_|set_val_)"))
-async def panel_callback(client: Bot, query: CallbackQuery):
+@Client.on_callback_query(filters.regex(r"^(tg_|refresh_panel|set_mode_|set_val_)"))
+async def panel_callback(client: Client, query: CallbackQuery):
     if query.from_user.id != OWNER_ID:
         return await query.answer("˹ ᴀᴄᴄᴇss ᴅᴇɴɪᴇᴅ, ᴍᴏʀᴛᴀʟ! ˼", show_alert=True)
 

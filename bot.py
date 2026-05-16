@@ -12,7 +12,6 @@
 #
 
 from aiohttp import web
-from plugins import web_server
 import asyncio
 import pyromod.listen
 from pyrogram import Client
@@ -90,27 +89,31 @@ class Bot(Client):
         self.uptime = get_indian_time()
 
         # Set Bot Commands Automatically
-        await self.set_bot_commands([
-            BotCommand("start", "🚀 Start the bot"),
-            BotCommand("myplan", "🎖️ Check your premium status"),
-            BotCommand("about", "⚠️ About the bot"),
-            BotCommand("help", "❓ Help and commands"),
-            BotCommand("commands", "⚙️ Admin commands list"),
-            BotCommand("auto_delete", "🕒 Set file auto-delete timer (Admin)"),
-            BotCommand("check_auto_delete", "🔍 Check auto-delete timer (Admin)"),
-            BotCommand("batch", "📦 Create a batch link (Admin)"),
-            BotCommand("genlink", "🔗 Generate a single link (Admin)"),
-            BotCommand("panel", "🛠️ Owner Control Panel"),
-            BotCommand("stats", "📊 Bot Statistics (Admin)"),
-            BotCommand("users", "👥 Total Users (Admin)"),
-            BotCommand("admins", "👥 List Admins (Admin)"),
-            BotCommand("add_admin", "👑 Add Admin (Owner)"),
-            BotCommand("deladmin", "📉 Remove Admin (Owner)"),
-            BotCommand("addpremium", "💎 Add Premium User (Admin)"),
-            BotCommand("remove_premium", "📉 Remove Premium User (Admin)"),
-            BotCommand("premium_users", "⭐ List Premium Users (Admin)"),
-            BotCommand("count", "📊 Total Verified Tokens Today (Admin)")
-        ])
+        try:
+            await self.set_bot_commands([
+                BotCommand("start", "🚀 Start the bot"),
+                BotCommand("ping", "🏓 Check responsiveness"),
+                BotCommand("myplan", "🎖️ Check your premium status"),
+                BotCommand("about", "⚠️ About the bot"),
+                BotCommand("help", "❓ Help and commands"),
+                BotCommand("commands", "⚙️ Admin commands list"),
+                BotCommand("auto_delete", "🕒 Set file auto-delete timer (Admin)"),
+                BotCommand("check_auto_delete", "🔍 Check auto-delete timer (Admin)"),
+                BotCommand("batch", "📦 Create a batch link (Admin)"),
+                BotCommand("genlink", "🔗 Generate a single link (Admin)"),
+                BotCommand("panel", "🛠️ Owner Control Panel"),
+                BotCommand("stats", "📊 Bot Statistics (Admin)"),
+                BotCommand("users", "👥 Total Users (Admin)"),
+                BotCommand("admins", "👥 List Admins (Admin)"),
+                BotCommand("add_admin", "👑 Add Admin (Owner)"),
+                BotCommand("deladmin", "📉 Remove Admin (Owner)"),
+                BotCommand("addpremium", "💎 Add Premium User (Admin)"),
+                BotCommand("remove_premium", "📉 Remove Premium User (Admin)"),
+                BotCommand("premium_users", "⭐ List Premium Users (Admin)"),
+                BotCommand("count", "📊 Total Verified Tokens Today (Admin)")
+            ])
+        except Exception as e:
+            self.LOGGER(__name__).error(f"Failed to set bot commands: {e}")
 
         try:
             db_channel = await self.get_chat(CHANNEL_ID)
@@ -140,7 +143,8 @@ class Bot(Client):
         self.username = usr_bot_me.username
         self.LOGGER(__name__).info(f"Bot Running..! Made by @AniZoneFlix")
 
-        # Start Web Server
+        # Start Web Server (Late Import to avoid circular dependency)
+        from plugins import web_server
         app = web.AppRunner(await web_server(self))
         await app.setup()
         await web.TCPSite(app, "0.0.0.0", PORT).start()

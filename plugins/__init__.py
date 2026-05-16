@@ -9,7 +9,7 @@ import aiohttp
 import aiohttp_jinja2
 import jinja2
 from aiohttp import web
-from web_server import routes
+from web_server import routes as web_routes
 
 
 async def on_cleanup(app):
@@ -22,5 +22,5 @@ async def web_server(bot):
     web_app['bot'] = bot
     web_app['client_session'] = aiohttp.ClientSession()
     web_app.on_cleanup.append(on_cleanup)
-    web_app.add_routes(routes)
+    web_app.add_routes(web_routes)
     return web_app

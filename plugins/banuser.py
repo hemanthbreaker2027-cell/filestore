@@ -21,7 +21,6 @@ from pyrogram.enums import ParseMode, ChatAction
 from pyrogram.types import Message, InlineKeyboardMarkup, InlineKeyboardButton, CallbackQuery, ReplyKeyboardMarkup, ChatInviteLink, ChatPrivileges
 from pyrogram.errors.exceptions.bad_request_400 import UserNotParticipant
 from pyrogram.errors import FloodWait, UserIsBlocked, InputUserDeactivated, UserNotParticipant
-from bot import Bot
 from config import *
 from helper_func import *
 from database.database import *
@@ -29,8 +28,8 @@ from database.database import *
 
 
 #BAN-USER-SYSTEM
-@Bot.on_message(filters.private & filters.command('ban') & admin)
-async def add_banuser(client: Client, message: Message):        
+@Client.on_message(filters.command('ban') & filters.private & admin)
+async def ban_user_cmd(client: Client, message: Message):
     pro = await message.reply("⏳ <i>Pʀᴏᴄᴇssɪɴɢ ʀᴇǫᴜᴇsᴛ...</i>", quote=True)
     banuser_ids = await db.get_ban_users()
     banusers = message.text.split()[1:]
@@ -73,8 +72,8 @@ async def add_banuser(client: Client, message: Message):
     else:
         await pro.edit(f"<b>❌ Nᴏ ᴜsᴇʀs ᴡᴇʀᴇ ʙᴀɴɴᴇᴅ.</b>\n\n{report}", reply_markup=reply_markup)
 
-@Bot.on_message(filters.private & filters.command('unban') & admin)
-async def delete_banuser(client: Client, message: Message):        
+@Client.on_message(filters.command('unban') & filters.private & admin)
+async def unban_user_cmd(client: Client, message: Message):
     pro = await message.reply("⏳ <i>Pʀᴏᴄᴇssɪɴɢ ʀᴇǫᴜᴇsᴛ...</i>", quote=True)
     banuser_ids = await db.get_ban_users()
     banusers = message.text.split()[1:]
@@ -103,7 +102,7 @@ async def delete_banuser(client: Client, message: Message):
         try:
             uid_int = int(uid)
         except:
-            report += f"⚠️ Iɴᴀᴠʟɪᴅ ID: <code>{uid}</code>\n"
+            report += f"⚠️ Iɴᴠᴀʟɪᴅ ID: <code>{uid}</code>\n"
             continue
 
         if uid_int in banuser_ids:
@@ -114,8 +113,8 @@ async def delete_banuser(client: Client, message: Message):
 
     await pro.edit(f"<b>🚫 Uɴʙᴀɴ Rᴇᴘᴏʀᴛ:</b>\n\n{report}", reply_markup=reply_markup)
 
-@Bot.on_message(filters.private & filters.command('banlist') & admin)
-async def get_banuser_list(client: Client, message: Message):        
+@Client.on_message(filters.command('banlist') & filters.private & admin)
+async def ban_list_cmd(client: Client, message: Message):
     pro = await message.reply("⏳ <i>Fᴇᴛᴄʜɪɴɢ Bᴀɴ Lɪsᴛ...</i>", quote=True)
     banuser_ids = await db.get_ban_users()
 

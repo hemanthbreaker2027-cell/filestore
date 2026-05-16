@@ -346,7 +346,15 @@ async def handle_payload(client: Client, message: Message, basic_payload: str):
     # Proceed to shortener
     await short_url(client, message, base64_string)
 
-@Bot.on_message(filters.command('help') & filters.private)
+@Client.on_message(filters.command('ping') & filters.private)
+async def ping_command(client: Client, message: Message):
+    start_time = time.time()
+    reply = await message.reply_text("<b>⚡ ᴘɪɴɢɪɴɢ...</b>")
+    end_time = time.time()
+    ping_time = round((end_time - start_time) * 1000, 2)
+    await reply.edit_text(f"<b>🏓 ᴘᴏɴɢ!</b>\n\n⏱️ <code>{ping_time} ms</code>")
+
+@Client.on_message(filters.command('help') & filters.private)
 async def help_command(client: Client, message: Message):
     # help_command logic
     buttons = [
@@ -359,7 +367,7 @@ async def help_command(client: Client, message: Message):
         reply_markup=InlineKeyboardMarkup(buttons)
     )
 
-@Bot.on_message(filters.command('start') & filters.private)
+@Client.on_message(filters.command('start') & filters.private)
 async def start_command(client: Client, message: Message):
     user_id = message.from_user.id
 
@@ -495,7 +503,7 @@ async def not_joined(client: Client, message: Message):
 
 #=====================================================================================##
 
-@Bot.on_message(filters.command('myplan') & filters.private)
+@Client.on_message(filters.command('myplan') & filters.private)
 async def check_plan(client: Client, message: Message):
     user_id = message.from_user.id  # Get user ID from the message
 
@@ -507,7 +515,7 @@ async def check_plan(client: Client, message: Message):
 
 #=====================================================================================##
 # Command to add premium user
-@Bot.on_message(filters.command('addpremium') & filters.private & admin)
+@Client.on_message(filters.command('addpremium') & filters.private & admin)
 async def add_premium_user_command(client, msg):
     if len(msg.command) != 4:
         await msg.reply_text(
@@ -557,7 +565,7 @@ async def add_premium_user_command(client, msg):
 
 
 # Command to remove premium user
-@Bot.on_message(filters.command('remove_premium') & filters.private & admin)
+@Client.on_message(filters.command('remove_premium') & filters.private & admin)
 async def pre_remove_user(client: Client, msg: Message):
     if len(msg.command) != 2:
         await msg.reply_text("useage: /remove_premium user_id ")
@@ -571,7 +579,7 @@ async def pre_remove_user(client: Client, msg: Message):
 
 
 # Command to list active premium users
-@Bot.on_message(filters.command('premium_users') & filters.private & admin)
+@Client.on_message(filters.command('premium_users') & filters.private & admin)
 async def list_premium_users_command(client, message):
     # Define IST timezone
     ist = timezone("Asia/Kolkata")
@@ -634,7 +642,7 @@ async def list_premium_users_command(client, message):
 
 #=====================================================================================##
 
-@Bot.on_message(filters.command("count") & filters.private & admin)
+@Client.on_message(filters.command("count") & filters.private & admin)
 async def total_verify_count_cmd(client, message: Message):
     total = await db.get_total_verify_count()
     await message.reply_text(f"Tᴏᴛᴀʟ ᴠᴇʀɪғɪᴇᴅ ᴛᴏᴋᴇɴs ᴛᴏᴅᴀʏ: <b>{total}</b>")
@@ -642,12 +650,12 @@ async def total_verify_count_cmd(client, message: Message):
 
 #=====================================================================================##
 
-@Bot.on_message(filters.command('commands') & filters.private & admin)
-async def bcmd(bot: Bot, message: Message):        
+@Client.on_message(filters.command('commands') & filters.private & admin)
+async def bcmd(client: Client, message: Message):
     reply_markup = InlineKeyboardMarkup([[InlineKeyboardButton("• ᴄʟᴏsᴇ •", callback_data = "close")]])
     await message.reply(text=CMD_TXT, reply_markup = reply_markup, quote= True)
 
-@Bot.on_message(filters.command('test') & filters.private & filters.user(OWNER_ID))
+@Client.on_message(filters.command('test') & filters.private & filters.user(OWNER_ID))
 async def test_shortener(client: Client, message: Message):
     # Test payload for demonstration
     sample_payload = "W3siaWQiOiAxLCAibmFtZSI6ICJUZXN0In1d"

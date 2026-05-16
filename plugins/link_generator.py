@@ -3,14 +3,13 @@
 import re
 from pyrogram import Client, filters
 from pyrogram.types import Message, InlineKeyboardMarkup, InlineKeyboardButton
-from bot import Bot
 from pyrogram.types import ReplyKeyboardMarkup, ReplyKeyboardRemove
 import asyncio
 from asyncio import TimeoutError
 from config import OWNER_ID
 from helper_func import encode, get_message_id, admin, get_messages
 
-@Bot.on_message(filters.private & admin & filters.command('batch'))
+@Client.on_message(filters.private & admin & filters.command('batch'))
 async def batch(client: Client, message: Message):
     # Support for range link format: /batch https://t.me/c/3967760305/274-299
     if len(message.command) > 1:
@@ -139,7 +138,7 @@ async def batch(client: Client, message: Message):
     await second_message.reply_text(f"<b>Here is your link</b>\n\n<code>{link}</code>", quote=True, reply_markup=reply_markup)
 
 
-@Bot.on_message(filters.private & admin & filters.command('genlink'))
+@Client.on_message(filters.private & admin & filters.command('genlink'))
 async def link_generator(client: Client, message: Message):
     while True:
         try:
@@ -159,7 +158,7 @@ async def link_generator(client: Client, message: Message):
     await channel_message.reply_text(f"<b>Here is your link</b>\n\n<code>{link}</code>", quote=True, reply_markup=reply_markup)
 
 
-@Bot.on_message(filters.private & admin & filters.command("custom_batch"))
+@Client.on_message(filters.private & admin & filters.command("custom_batch"))
 async def custom_batch(client: Client, message: Message):
     collected = []
     STOP_KEYBOARD = ReplyKeyboardMarkup([["STOP"]], resize_keyboard=True)

@@ -21,7 +21,6 @@ from pyrogram.enums import ParseMode, ChatAction
 from pyrogram.types import Message, InlineKeyboardMarkup, InlineKeyboardButton, CallbackQuery, ReplyKeyboardMarkup, ChatInviteLink, ChatPrivileges
 from pyrogram.errors.exceptions.bad_request_400 import UserNotParticipant
 from pyrogram.errors import FloodWait, UserIsBlocked, InputUserDeactivated, UserNotParticipant
-from bot import Bot
 from config import *
 from helper_func import *
 from database.database import *
@@ -34,8 +33,8 @@ REPLY_ERROR = "<code>Use this command as a reply to any telegram message without
 #=====================================================================================##
 
 
-@Bot.on_message(filters.private & filters.command('pbroadcast') & admin)
-async def send_pin_text(client: Bot, message: Message):
+@Client.on_message(filters.private & filters.command('pbroadcast') & admin)
+async def pbroadcast_handler(client: Client, message: Message):
     if message.reply_to_message:
         query = await db.full_userbase()
         broadcast_msg = message.reply_to_message
@@ -86,8 +85,8 @@ Unsuccessful: <code>{unsuccessful}</code>"""
 #=====================================================================================##
 
 
-@Bot.on_message(filters.private & filters.command('broadcast') & admin)
-async def send_text(client: Bot, message: Message):
+@Client.on_message(filters.private & filters.command('broadcast') & admin)
+async def broadcast_handler(client: Client, message: Message):
     if message.reply_to_message:
         query = await db.full_userbase()
         broadcast_msg = message.reply_to_message
@@ -133,22 +132,11 @@ Unsuccessful: <code>{unsuccessful}</code></b>"""
         await msg.delete()
 
 #=====================================================================================##
-# Don't Remove Credit @AniZoneFlix, @AniZoneFlix
-# Ask Doubt on telegram @AniZoneFlix
-#
-# Copyright (C) 2025 by AniZoneFlix@AniZoneFlix, < https://github.com/AniZoneFlix >.
-#
-# This file is part of < https://t.me/AniZoneFlix > project,
-# and is released under the MIT License.
-# Please see < https://t.me/AniZoneFlix/blob/master/LICENSE >
-#
-# All rights reserved.
-#
 
 # broadcast with auto-del
 
-@Bot.on_message(filters.private & filters.command('dbroadcast') & admin)
-async def delete_broadcast(client: Bot, message: Message):
+@Client.on_message(filters.command("dbroadcast") & admin & filters.private)
+async def dbroadcast_handler(client: Client, message: Message):
     if message.reply_to_message:
         try:
             duration = int(message.command[1])  # Get the duration in seconds
@@ -202,16 +190,3 @@ Unsuccessful: <code>{unsuccessful}</code></b>"""
         msg = await message.reply("Pʟᴇᴀsᴇ ʀᴇᴘʟʏ ᴛᴏ ᴀ ᴍᴇssᴀɢᴇ ᴛᴏ ʙʀᴏᴀᴅᴄᴀsᴛ ɪᴛ ᴡɪᴛʜ Aᴜᴛᴏ-Dᴇʟᴇᴛᴇ.")
         await asyncio.sleep(8)
         await msg.delete()
-
-
-# Don't Remove Credit @AniZoneFlix, @AniZoneFlix
-# Ask Doubt on telegram @AniZoneFlix
-#
-# Copyright (C) 2025 by AniZoneFlix@AniZoneFlix, < https://github.com/AniZoneFlix >.
-#
-# This file is part of < https://t.me/AniZoneFlix > project,
-# and is released under the MIT License.
-# Please see < https://t.me/AniZoneFlix/blob/master/LICENSE >
-#
-# All rights reserved.
-#

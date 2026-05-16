@@ -22,7 +22,7 @@ routes = web.RouteTableDef()
 
 @routes.get("/", allow_head=True)
 async def root_handler(request):
-    return web.Response(text="ᴀɴɪᴢᴏɴᴇꜰʟɪx ꜱᴇᴄᴜʀᴇ ꜱᴛʀᴇᴀᴍ ᴇɴɢɪɴᴇ ᴠ11.0", content_type="text/plain")
+    return web.Response(text="ᴀɴɪᴢᴏɴᴇꜰʟɪx ꜱᴇᴄᴜʀᴇ ꜱᴛʀᴇᴀᴍ ᴇɴɢɪɴᴇ ᴠ11.0 [STABLE]", content_type="text/plain")
 
 @routes.get("/r2/{token}")
 async def r2_handler(request):
