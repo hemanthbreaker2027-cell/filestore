@@ -49,8 +49,8 @@ FORCE_PIC = random.choice(ANIME_BANNERS)
 
 #--------------------------------------------
 SHORTLINK_API = os.environ.get("SHORTLINK_API", "e49643875c2fa34dd6087254e58283d65ffc7748")
-RECAPTCHA_SITE_KEY = os.environ.get("RECAPTCHA_SITE_KEY", "6Ld3BdUsAAAAADGzZPd8n_skxd_vUvdRazUS831m")
-RECAPTCHA_SECRET_KEY = os.environ.get("RECAPTCHA_SECRET_KEY", "6Ld3BdUsAAAAAF7fgJ67n0HO5YIaR3_SPOdElh06")
+RECAPTCHA_SITE_KEY = os.environ.get("RECAPTCHA_SITE_KEY", "6LfFi-wsAAAAAF8oFGJ0-d-tD_pV_lGAJ8orbXmJ")
+RECAPTCHA_SECRET_KEY = os.environ.get("RECAPTCHA_SECRET_KEY", "6LfFi-wsAAAAAD3Y2MGrs0mSc5Y_EDjbSeoLOAAs")
 SECURE_SECRET_KEY = os.environ.get("SECURE_SECRET_KEY", "anizoneflix_very_secure_secret_key_v9")
 WEBSITE_URL = os.environ.get("WEBSITE_URL", "filestore-7-7hdj.onrender.com") # e.g. https://yourdomain.com
 JWT_SECRET = os.environ.get("JWT_SECRET", "anizoneflix_secret_key")
