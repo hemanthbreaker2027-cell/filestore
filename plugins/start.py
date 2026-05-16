@@ -27,6 +27,7 @@ from pyrogram.errors.exceptions.bad_request_400 import UserNotParticipant
 from pyrogram.errors import FloodWait, UserIsBlocked, InputUserDeactivated, UserNotParticipant, MessageNotModified
 from bot import Bot
 from config import *
+from pytz import timezone
 from helper_func import *
 from database.database import *
 from database.db_premium import *
@@ -344,6 +345,19 @@ async def handle_payload(client: Client, message: Message, basic_payload: str):
 
     # Proceed to shortener
     await short_url(client, message, base64_string)
+
+@Bot.on_message(filters.command('help') & filters.private)
+async def help_command(client: Client, message: Message):
+    # help_command logic
+    buttons = [
+        [InlineKeyboardButton('ʜᴏᴍᴇ', callback_data='start'),
+         InlineKeyboardButton("ᴄʟᴏꜱᴇ", callback_data='close')]
+    ]
+    await message.reply_text(
+        text=HELP_TXT.format(first=message.from_user.first_name),
+        disable_web_page_preview=True,
+        reply_markup=InlineKeyboardMarkup(buttons)
+    )
 
 @Bot.on_message(filters.command('start') & filters.private)
 async def start_command(client: Client, message: Message):

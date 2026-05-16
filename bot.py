@@ -99,7 +99,17 @@ class Bot(Client):
             BotCommand("auto_delete", "🕒 Set file auto-delete timer (Admin)"),
             BotCommand("check_auto_delete", "🔍 Check auto-delete timer (Admin)"),
             BotCommand("batch", "📦 Create a batch link (Admin)"),
-            BotCommand("genlink", "🔗 Generate a single link (Admin)")
+            BotCommand("genlink", "🔗 Generate a single link (Admin)"),
+            BotCommand("panel", "🛠️ Owner Control Panel"),
+            BotCommand("stats", "📊 Bot Statistics (Admin)"),
+            BotCommand("users", "👥 Total Users (Admin)"),
+            BotCommand("admins", "👥 List Admins (Admin)"),
+            BotCommand("add_admin", "👑 Add Admin (Owner)"),
+            BotCommand("deladmin", "📉 Remove Admin (Owner)"),
+            BotCommand("addpremium", "💎 Add Premium User (Admin)"),
+            BotCommand("remove_premium", "📉 Remove Premium User (Admin)"),
+            BotCommand("premium_users", "⭐ List Premium Users (Admin)"),
+            BotCommand("count", "📊 Total Verified Tokens Today (Admin)")
         ])
 
         try:

@@ -126,9 +126,12 @@ async def get_admins(client: Client, message: Message):
 
 @Bot.on_message(filters.command('stats') & filters.private & admin)
 async def stats(bot: Bot, message: Message):
-    now = datetime.now()
+    from datetime import datetime
+    import pytz
+    ist = pytz.timezone("Asia/Kolkata")
+    now = datetime.now(ist)
     delta = now - bot.uptime
-    uptime = get_readable_time(delta.seconds)
+    uptime = get_readable_time(delta.total_seconds())
     await message.reply(BOT_STATS_TEXT.format(uptime=uptime), quote=True)
 
 @Bot.on_message(filters.command('users') & filters.private & admin)
