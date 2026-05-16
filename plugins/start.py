@@ -30,7 +30,6 @@ from pytz import timezone
 from helper_func import *
 from database.database import *
 from database.db_premium import *
-from services.security import SecurityService, SecureRedirect
 
 
 BAN_SUPPORT = f"{BAN_SUPPORT}"
@@ -179,94 +178,8 @@ async def send_files(client: Client, user_id: int, base64_string, messages=None)
     except Exception as e:
         print(f"Final Error in send_files: {e}")
 
-async def short_url(client: Client, message: Message, base64_string):
-    user_id = message.from_user.id
-    settings = await db.get_settings()
-    shortener_enabled = settings.get('shortener_system', True)
-
-    if not shortener_enabled:
-        return await send_files(client, user_id, base64_string)
-
-    try:
-        # UNIVERSAL FILESTORE V9 FLOW
-        # 1. Create a strict verification entry and get a short CODE (GXC8A)
-        code = await db.create_strict_verification(user_id, base64_string)
-        print(f"[DEBUG] Generated verification code: {code}")
-
-        # 2. Get Expiry
-        expiry = settings.get('session_expiry', 300)
-
-        # 3. Create Shortener Link to extract Slug
-        web_domain = settings.get('website_url', WEBSITE_URL)
-        base_url = web_domain if web_domain.startswith("http") else f"https://{web_domain}"
-
-        # The target for the shortener should be our final verification endpoint
-        target_path = "/eductionssstudiess/?eductionstudiess="
-        final_target = f"{base_url}{target_path}{code}"
-        print(f"[DEBUG] Shortener Target URL: {final_target}")
-
-        # Call shortener API with simple retry
-        shortener_link = None
-        for attempt in range(3):
-            try:
-                shortener_link = await get_shortlink(WHITELISTED_DOMAIN, SHORTLINK_API, final_target)
-                print(f"[DEBUG] Shortened Link (Attempt {attempt+1}): {shortener_link}")
-                if shortener_link: break
-            except Exception as e:
-                print(f"[DEBUG] Shortener Attempt {attempt+1} Failed: {e}")
-                if attempt == 2: raise Exception(f"Shortener API Error: {str(e)}")
-                await asyncio.sleep(2)
-
-        slug = SecurityService.extract_slug(shortener_link)
-        print(f"[DEBUG] Extracted Slug: {slug}")
-
-        if not slug:
-            raise Exception("Failed to extract slug from shortened link")
-
-        # 4. Sign a NEW token containing both code AND slug
-        token_data = {"code": code, "slug": slug}
-        secure_token = SecureRedirect.generate_protected_token(token_data, expiry=expiry)
-
-        # 5. Construct Protected Link: Bot Layer (Initial /r2/ entry)
-        initial_link = f"{base_url}/r2/{secure_token}"
-
-        buttons = [
-            [
-                InlineKeyboardButton(text="⚡️ ˹ ᴅᴏᴡɴʟᴏᴀᴅ ˼ ⚡️", url=initial_link),
-                InlineKeyboardButton(text="🛡 ˹ ᴛᴜᴛᴏʀɪᴀʟ ˼ 🛡", url=TUT_VID)
-            ],
-            [
-                InlineKeyboardButton(text="💎 ˹ ᴘʀᴇᴍɪᴜᴍ ˼ 💎", callback_data="premium")
-            ]
-        ]
-
-        try:
-            await message.reply_photo(
-                photo=random.choice(ANIME_BANNERS),
-                caption=SHORT_MSG.format(mention=message.from_user.mention),
-                reply_markup=InlineKeyboardMarkup(buttons),
-            )
-        except Exception as photo_err:
-            print(f"Photo reply failed: {photo_err}, falling back to text")
-            await message.reply_text(
-                text=SHORT_MSG.format(mention=message.from_user.mention) + f"\n\n🔗 <b>Verification Link:</b> {initial_link}",
-                reply_markup=InlineKeyboardMarkup(buttons),
-                disable_web_page_preview=True
-            )
-
-    except Exception as e:
-        print(f"CRITICAL ERROR in short_url: {e}")
-        traceback.print_exc()
-        # If shortener fails, we MUST NOT bypass if it's supposed to be verified.
-        # Inform the user instead.
-        await message.reply_text(f"<b>⚠️ Security Error: Failed to generate protected link. Please try again or contact support.</b>\n\n<code>Error: {str(e)}</code>")
-
-
 async def handle_payload(client: Client, message: Message, basic_payload: str):
     user_id = message.from_user.id
-    settings = await db.get_settings()
-    shortener_enabled = settings.get('shortener_system', True)
-
     # Clean payload and get base64 string
     is_verified_payload = basic_payload.startswith("yu3elk")
     if is_verified_payload:
@@ -274,80 +187,8 @@ async def handle_payload(client: Client, message: Message, basic_payload: str):
     else:
         base64_string = basic_payload
 
-    # REQUIRED CORRECT BEHAVIOR: WHEN SHORTNER_ENABLED = false
-    if not shortener_enabled:
-        return await send_files(client, user_id, base64_string)
-
-    # REQUIRED CORRECT BEHAVIOR: WHEN SHORTNER_ENABLED = true
-    is_premium = await is_premium_user(user_id)
-    is_admin = await db.admin_exist(user_id) or user_id == OWNER_ID
-
-    shorten_admins = settings.get('shorten_admins', True)
-
-    shortener_mode = settings.get('shortener_mode', 'one_per_time')
-    shortener_time = settings.get('shortener_time', 0)
-
-    # STRICT CONFIG CHECK
-    can_shorten = all([
-        bool(WEBSITE_URL),
-        bool(WHITELISTED_DOMAIN),
-        bool(SHORTLINK_API)
-    ])
-
-    # Check actual verification state from database
-    actual_verified = False
-    verify_status = await db.get_verify_status(user_id)
-
-    if verify_status.get('is_verified'):
-        if shortener_mode == 'based_time':
-            verified_time = verify_status.get('verified_time', 0)
-            if (time.time() - verified_time) < shortener_time:
-                # Based Time Verification: Link must ALSO match or be a direct verified click
-                # However, usually based_time implies session-wide bypass.
-                # To be strict, we check if they are verified.
-                actual_verified = True
-            else:
-                # Time expired, reset status in real-time
-                await db.update_verify_status(user_id, is_verified=False)
-        else:
-            # ONE PER TIME Mode: Verification token MUST match base64_string
-            if is_verified_payload and verify_status.get('verify_token') == base64_string:
-                actual_verified = True
-                # Consume verification if one_per_time (optional, but requested strict)
-                # await db.update_verify_status(user_id, is_verified=False)
-
-    # Final Bypass Determination
-    is_bypassed_admin = is_admin and not shorten_admins
-
-    # Logic: If Shortener is OFF, bypass immediately.
-    if not shortener_enabled:
-        print(f"[DEBUG] handle_payload: Shortener disabled. Delivering {base64_string}")
-        return await send_files(client, user_id, base64_string)
-
-    # If ON, check other bypasses
-    if is_premium:
-        print(f"[DEBUG] handle_payload: Premium bypass for {user_id}")
-        return await send_files(client, user_id, base64_string)
-
-    if is_bypassed_admin:
-        print(f"[DEBUG] handle_payload: Admin bypass for {user_id}")
-        return await send_files(client, user_id, base64_string)
-
-    if actual_verified:
-        print(f"[DEBUG] handle_payload: User {user_id} verified. Delivering {base64_string}")
-        return await send_files(client, user_id, base64_string)
-
-    # Check if we CAN shorten
-    if not can_shorten:
-        print(f"[CONFIG ERROR] Shortener enabled but credentials missing: DOMAIN={WHITELISTED_DOMAIN}, API={bool(SHORTLINK_API)}")
-        if is_admin:
-            await message.reply_text("<b>⚠️ Warning: Shortener enabled but credentials (URL/API) missing in config.py! Delivering files directly.</b>")
-        else:
-            await message.reply_text("<b>⚠️ System Error: Shortener configuration is incomplete. Please contact admin.</b>")
-        return # STOP HERE. Don't send files if it's supposed to be verified.
-
-    # Proceed to shortener
-    await short_url(client, message, base64_string)
+    print(f"[DEBUG] handle_payload: Delivering {base64_string} directly (verification system removed)")
+    return await send_files(client, user_id, base64_string)
 
 @Client.on_message(filters.command('ping') & filters.private)
 async def ping_command(client: Client, message: Message):
@@ -402,18 +243,6 @@ async def start_command(client: Client, message: Message):
     if len(text) > 7:
         try:
             basic = text.split(" ", 1)[1]
-
-            # ULTRA STRICT VERIFICATION DEEP LINK
-            if basic.startswith("verify_"):
-                token = basic.replace("verify_", "")
-                record = await db.consume_strict_verification(token)
-                if record:
-                    # Success! Deliver files
-                    await send_files(client, user_id, record['code'])
-                else:
-                    await message.reply_text("<b>❌ Verification Failed!</b>\n\nYou must complete the full verification flow to access these files.")
-                return
-
             await handle_payload(client, message, basic)
             return
 
@@ -645,10 +474,6 @@ async def list_premium_users_command(client, message):
 
 #=====================================================================================##
 
-@Client.on_message(filters.command("count") & filters.private & admin)
-async def total_verify_count_cmd(client, message: Message):
-    total = await db.get_total_verify_count()
-    await message.reply_text(f"Tᴏᴛᴀʟ ᴠᴇʀɪғɪᴇᴅ ᴛᴏᴋᴇɴs ᴛᴏᴅᴀʏ: <b>{total}</b>")
 
 
 #=====================================================================================##
@@ -658,11 +483,6 @@ async def bcmd(client: Client, message: Message):
     reply_markup = InlineKeyboardMarkup([[InlineKeyboardButton("• ᴄʟᴏsᴇ •", callback_data = "close")]])
     await message.reply(text=CMD_TXT, reply_markup = reply_markup, quote= True)
 
-@Client.on_message(filters.command('test') & filters.private & filters.user(OWNER_ID))
-async def test_shortener(client: Client, message: Message):
-    # Test payload for demonstration
-    sample_payload = "W3siaWQiOiAxLCAibmFtZSI6ICJUZXN0In1d"
-    await short_url(client, message, sample_payload)
 
 @Client.on_message(filters.private, group=-1)
 async def monitor_all(client: Client, message: Message):

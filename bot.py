@@ -33,22 +33,6 @@ logging.getLogger("apscheduler").setLevel(logging.WARNING)
 scheduler = AsyncIOScheduler(timezone="Asia/Kolkata")
 scheduler.add_job(remove_expired_users, "interval", seconds=10)
 
-# Reset verify count for all users daily at 00:00 IST
-async def daily_reset_task():
-    try:
-        await db.reset_all_verify_counts()
-    except Exception:
-        pass  
-
-async def token_cleanup_task():
-    try:
-        await db.cleanup_tokens()
-        await db.cleanup_strict_verifications()
-    except Exception:
-        pass
-
-scheduler.add_job(daily_reset_task, "cron", hour=0, minute=0)
-scheduler.add_job(token_cleanup_task, "interval", hours=1)
 # scheduler.start() is called inside Bot.start() to ensure an active event loop
 
 
@@ -111,8 +95,7 @@ class Bot(Client):
                 BotCommand("deladmin", "📉 Remove Admin (Owner)"),
                 BotCommand("addpremium", "💎 Add Premium User (Admin)"),
                 BotCommand("remove_premium", "📉 Remove Premium User (Admin)"),
-                BotCommand("premium_users", "⭐ List Premium Users (Admin)"),
-                BotCommand("count", "📊 Total Verified Tokens Today (Admin)")
+                BotCommand("premium_users", "⭐ List Premium Users (Admin)")
             ])
         except Exception as e:
             self.LOGGER(__name__).error(f"Failed to set bot commands: {e}")

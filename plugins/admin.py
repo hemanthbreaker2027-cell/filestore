@@ -129,7 +129,7 @@ async def stats(client: Client, message: Message):
     import pytz
     ist = pytz.timezone("Asia/Kolkata")
     now = datetime.now(ist)
-    delta = now - bot.uptime
+    delta = now - client.uptime
     uptime = get_readable_time(delta.total_seconds())
     await message.reply(BOT_STATS_TEXT.format(uptime=uptime), quote=True)
 

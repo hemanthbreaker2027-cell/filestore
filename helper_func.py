@@ -9,7 +9,6 @@ from pyrogram import filters
 from pyrogram.enums import ChatMemberStatus
 from config import *
 from pyrogram.errors.exceptions.bad_request_400 import UserNotParticipant
-from shortzy import Shortzy
 from pyrogram.errors import FloodWait
 from database.database import *
 
@@ -266,10 +265,6 @@ def get_exp_time(seconds):
 #
 
 
-async def get_shortlink(url, api, link, alias=None):
-    shortzy = Shortzy(api_key=api, base_site=url)
-    link = await shortzy.convert(link, alias=alias)
-    return link
 
 
 subscribed = filters.create(is_subscribed)
