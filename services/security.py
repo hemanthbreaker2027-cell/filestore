@@ -95,14 +95,24 @@ class SecurityService:
         except:
             return False
 
+    @staticmethod
+    def extract_slug(url: str):
+        try:
+            parsed = urlparse(url)
+            path = parsed.path.strip("/")
+            # Usually the last part of the path is the slug
+            return path.split("/")[-1] if path else ""
+        except:
+            return ""
+
 
 class SecureRedirect:
 
     @staticmethod
-    def generate_protected_token(code: str, expiry: int = 300):
-        # Synchronous JWT generation for easier usage in bot handlers
+    def generate_protected_token(data: dict, expiry: int = 300):
+        # Now accepts a dict instead of just code
         payload = {
-            "code": code,
+            **data,
             "exp": int(time.time()) + expiry,
             "iat": int(time.time())
         }

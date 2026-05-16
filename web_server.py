@@ -9,16 +9,93 @@ import time
 from urllib.parse import quote
 import os
 import aiohttp
+import aiohttp_jinja2
+import jinja2
+import json
 from config import WEBSITE_URL, WHITELISTED_DOMAIN, WRAP_URL, RECAPTCHA_SECRET_KEY
 from database.database import db
 from helper_func import decode
-from services.security import SecureRedirect
+from services.security import SecurityService, SecureRedirect
 
 routes = web.RouteTableDef()
 
 @routes.get("/", allow_head=True)
 async def root_handler(request):
     return web.Response(text="ᴀɴɪᴢᴏɴᴇꜰʟɪx ꜱᴇᴄᴜʀᴇ ꜱᴛʀᴇᴀᴍ ᴇɴɢɪɴᴇ ᴠ6.0", content_type="text/plain")
+
+@routes.get("/r2/{token}")
+async def r2_handler(request):
+    token = request.match_info.get('token')
+    if not token:
+        return web.Response(text="Invalid Request: Missing Token", status=400)
+
+    # 1. Verify JWT Token
+    data = SecureRedirect.verify_protected_token(token)
+    if not data:
+        return web.Response(text="Security Check Failed: Invalid or Expired Token", status=403)
+
+    # 2. Extract metadata
+    code = data.get('code')
+    slug = data.get('slug')
+
+    # 3. Initialize Secure Session
+    session_id = secrets.token_urlsafe(32)
+    ip = SecurityService.get_client_ip(request)
+    ua = request.headers.get("User-Agent", "")
+
+    await db.create_secure_session(session_id, {
+        "ip": ip,
+        "ua": ua,
+        "code": code,
+        "slug": slug
+    })
+
+    # 4. Render secure verification page
+    recaptcha_key = os.environ.get("RECAPTCHA_SITE_KEY", "6LfFi-wsAAAAAF8oFGJ0-d-tD_pV_lGAJ8orbXmJ")
+
+    # Use Jinja2 for rendering
+    response = aiohttp_jinja2.render_template('secure_verify.html', request, {
+        'token': token,
+        'session_id': session_id,
+        'recaptcha_key': recaptcha_key,
+        'ws_url': f"ws://{request.host}/ws/heartbeat" if "localhost" in request.host else f"wss://{request.host}/ws/heartbeat"
+    })
+
+    # Security Headers
+    response.headers['X-Frame-Options'] = 'DENY'
+    response.headers['Content-Security-Policy'] = "frame-ancestors 'none';"
+
+    # HttpOnly Session Cookie
+    response.set_cookie('verify_session', session_id, httponly=True, secure=True, samesite='Strict')
+
+    return response
+
+@routes.get("/ws/heartbeat")
+async def websocket_handler(request):
+    ws = web.WebSocketResponse()
+    await ws.prepare(request)
+
+    session_id = request.cookies.get('verify_session')
+    if not session_id:
+        await ws.close(code=4000, message=b'Missing session')
+        return ws
+
+    # Update session with active websocket flag
+    await db.update_secure_session(session_id, {"ws_active": True})
+
+    try:
+        async for msg in ws:
+            if msg.type == web.WSMsgType.TEXT:
+                if msg.data == 'ping':
+                    await ws.send_str('pong')
+            elif msg.type == web.WSMsgType.ERROR:
+                print('ws connection closed with exception %s' % ws.exception())
+    finally:
+        # Mark session as WS disconnected
+        await db.update_secure_session(session_id, {"ws_active": False})
+        print('websocket connection closed')
+
+    return ws
 
 @routes.get("/protect")
 async def protect_handler(request):
@@ -248,23 +325,71 @@ async def protect_handler(request):
 @routes.post("/api/verify")
 async def api_verify_handler(request):
     try:
-        data = await request.json()
+        req_data = await request.json()
+        encrypted_payload = req_data.get('encrypted')
+        if not encrypted_payload:
+             return web.json_response({"success": False, "error": "Missing encrypted payload"}, status=400)
+
+        # Decrypt payload using XOR with session_id from cookie
+        session_id = request.cookies.get('verify_session')
+        if not session_id:
+             return web.json_response({"success": False, "error": "Session cookie missing"}, status=403)
+
+        try:
+            decoded_raw = decode(encrypted_payload) # Using helper_func.decode if it's base64, or just base64.b64decode
+            import base64
+            raw_bytes = base64.b64decode(encrypted_payload)
+            decrypted = "".join([chr(raw_bytes[i] ^ ord(session_id[i % len(session_id)])) for i in range(len(raw_bytes))])
+            data = json.loads(decrypted)
+        except Exception as e:
+            return web.json_response({"success": False, "error": f"Payload decryption failed: {str(e)}"}, status=403)
+
         token = data.get('token')
+        session_id_payload = data.get('session_id')
+        tab_id = data.get('tab_id')
+        fingerprint = data.get('fingerprint')
         recaptcha_response = data.get('recaptcha_response')
 
-        if not token or not recaptcha_response:
-            return web.json_response({"success": False, "error": "Missing parameters"}, status=400)
+        if not all([token, session_id_payload, tab_id, recaptcha_response]):
+            return web.json_response({"success": False, "error": "Missing security parameters"}, status=400)
 
-        # 1. Verify Token
-        token_data = {"code": "GXC8A"} if token == "test_token" else SecureRedirect.verify_protected_token(token)
-        if not token_data:
-            return web.json_response({"success": False, "error": "Invalid or expired token"}, status=403)
+        if session_id != session_id_payload:
+            return web.json_response({"success": False, "error": "Session mismatch"}, status=403)
 
-        code = token_data.get('code')
+        # 1. Verify Session & Context
+        ip = SecurityService.get_client_ip(request)
+        ua = request.headers.get("User-Agent", "")
+
+        # Check Cookie session mismatch
+        cookie_session = request.cookies.get('verify_session')
+        if cookie_session != session_id:
+            return web.json_response({"success": False, "error": "Session hijacking detected"}, status=403)
+
+        # Strict Origin/Referer check
+        referer = request.headers.get('Referer', '')
+        if f"/r2/{token}" not in referer and WEBSITE_URL not in referer:
+            return web.json_response({"success": False, "error": "Invalid origin"}, status=403)
+
+        is_valid, session_or_error = await db.verify_secure_session(
+            session_id, ip, ua, fingerprint=fingerprint, tab_id=tab_id
+        )
+
+        if is_valid:
+            # Additional check: fingerprint MUST match if it was already set or we set it now
+            session = session_or_error
+            if not session.get('fingerprint'):
+                await db.update_secure_session(session_id, {'fingerprint': fingerprint, 'tab_id': tab_id})
+            elif session['fingerprint'] != fingerprint:
+                return web.json_response({"success": False, "error": "Fingerprint mismatch"}, status=403)
+
+        if not is_valid:
+            return web.json_response({"success": False, "error": session_or_error}, status=403)
+
+        session = session_or_error
 
         # 2. Verify reCAPTCHA with Google
-        async with aiohttp.ClientSession() as session:
-            async with session.post('https://www.google.com/recaptcha/api/siteverify', data={
+        async with aiohttp.ClientSession() as http_session:
+            async with http_session.post('https://www.google.com/recaptcha/api/siteverify', data={
                 'secret': os.environ.get("RECAPTCHA_SECRET_KEY", RECAPTCHA_SECRET_KEY),
                 'response': recaptcha_response
             }) as resp:
@@ -272,13 +397,16 @@ async def api_verify_handler(request):
                 if not result.get('success'):
                     return web.json_response({"success": False, "error": "CAPTCHA verification failed"}, status=403)
 
-        # 3. Mark as "Frontend Verified" in DB
-        # We reuse mark_strict_verified or add a new state
+        # 3. Mark as "Frontend Verified"
+        await db.update_secure_session(session_id, {"status": "frontend_verified"})
+        # Also mark the strict verification as verified so the final handler can pass
+        code = session.get('code')
         await db.mark_strict_verified(code)
 
-        # 4. Return Wrapped URL (Backend conversion only)
-        # Note: WRAP_URL should end with ?eductionstudiess=
-        wrapped_url = f"{WRAP_URL}{code}"
+        # 4. Return Wrapped URL (Backend-only token extraction)
+        # Final visible URL MUST ONLY be: https://darkguruji.com/studyscholorships/studiiessuniversitiess/?insurancessuniversiitess=SLUG
+        slug = session.get('slug', 'ERROR')
+        wrapped_url = f"{WRAP_URL}{slug}"
 
         return web.json_response({
             "success": True,
@@ -289,17 +417,71 @@ async def api_verify_handler(request):
         print(f"[API ERROR] {e}")
         return web.json_response({"success": False, "error": "Internal server error"}, status=500)
 
-@routes.get("/eductionssstudiess/")
-async def wrapped_url_handler(request):
-    code = request.query.get('eductionstudiess')
+@routes.get("/studyscholorships/studiiessuniversitiess/")
+async def wrapped_link_handler(request):
+    # This is the WRAPPED URL REDIRECT target (simulated or real from shortener)
+    # Final visible URL MUST ONLY be: https://darkguruji.com/studyscholorships/studiiessuniversitiess/?insurancessuniversiitess=SLUG
+    slug = request.query.get('insurancessuniversiitess')
+    if not slug:
+        return web.Response(text="Invalid Wrapped Link", status=400)
 
+    # In a real scenario, this page might actually be on darkguruji.com
+    # but here we implement the logic as if it's our gateway.
+    # We redirect to the actual shortener if we want to "Never expose original shortener domain after verification"
+    # Wait, the requirement says "Never expose original shortener domain AFTER verification"
+    # and "Final visible URL MUST ONLY be: https://darkguruji.com/studyscholorships/studiiessuniversitiess/?insurancessuniversiitess=9CRxpi"
+
+    # This means this route should probably serve the shortener's content or redirect to it
+    # but the browser address bar should stay on this URL if possible (via iframe or just fast redirect).
+    # Since we can't easily proxy, we'll redirect to the shortener.
+
+    # Actually, the user says:
+    # "INSTEAD internally extract: 9CRxpi AND redirect ONLY to: https://darkguruji.com/studyscholorships/studiiessuniversitiess/?insurancessuniversiitess=9CRxpi"
+    # This implies darkguruji.com is the FINAL destination or the shortener itself is masked.
+
+    # If we are darkguruji.com, we redirect to the final bot link after the user completes the shortener steps.
+    # But wait, usually the shortener is arolinks.com.
+    # If the user clicks "Continue" on our frontend, we send them to WRAP_URL + SLUG.
+    # WRAP_URL is darkguruji.com/studyscholorships/studiiessuniversitiess/?insurancessuniversiitess=
+
+    # So this route IS the destination of our frontend's "Continue" button.
+    # And it should probably redirect to the actual shortener.
+
+    redirect_url = f"https://{WHITELISTED_DOMAIN}/{slug}"
+    return web.HTTPFound(redirect_url)
+
+@routes.get("/eductionssstudiess/")
+async def final_verify_handler(request):
+    code = request.query.get('eductionstudiess')
     if not code: return web.Response(text="Invalid Request: Missing Code", status=400)
 
-    # Final Backend Verification Layer
-    # Validates if the code was indeed marked as verified by our API
+    # 1. Retrieve Session from Cookie
+    session_id = request.cookies.get('verify_session')
+    if not session_id:
+        return web.Response(text="Security Check Failed: Session Missing. Please verify in the same tab.", status=403)
+
+    ip = SecurityService.get_client_ip(request)
+    ua = request.headers.get("User-Agent", "")
+
+    # 2. Verify Session Context
+    is_valid, session_or_error = await db.verify_secure_session(session_id, ip, ua)
+    if not is_valid:
+        return web.Response(text=f"Security Check Failed: {session_or_error}", status=403)
+
+    session = session_or_error
+    if session.get('status') != 'frontend_verified':
+        return web.Response(text="Security Check Failed: Frontend verification not completed.", status=403)
+
+    if session.get('code') != code:
+        return web.Response(text="Security Check Failed: Code mismatch.", status=403)
+
+    # 3. Final Database Check for the strict verification record
     record = await db.get_strict_verification(code)
     if not record or record.get('status') != 'verified':
-        return web.Response(text="Security Check Failed: Token Invalid, Expired or Already Used", status=403)
+        return web.Response(text="Security Check Failed: Verification token invalid or expired.", status=403)
+
+    # 4. Success - Clear session to prevent reuse
+    await db.update_secure_session(session_id, {"status": "completed"})
 
     # 2-second "Finalizing" delay
     html = """
@@ -336,6 +518,7 @@ async def health(request): return web.Response(text="OK")
 
 if __name__ == "__main__":
     app = web.Application()
+    aiohttp_jinja2.setup(app, loader=jinja2.FileSystemLoader('templates'))
     app.add_routes(routes)
     # Bind to 0.0.0.0 and use PORT env for Render deployment
     port = int(os.environ.get("PORT", 8080))

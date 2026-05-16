@@ -1,0 +1,291 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Secure Gateway | AniZoneFlix</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://www.google.com/recaptcha/api.js" async defer></script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600&display=swap');
+        body {
+            font-family: 'Outfit', sans-serif;
+            background: radial-gradient(circle at top right, #1e1b4b, #0f172a);
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 0;
+            overflow: hidden;
+        }
+        .glass {
+            background: rgba(255, 255, 255, 0.03);
+            backdrop-filter: blur(12px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
+        }
+        .progress-bar {
+            height: 4px;
+            background: #38bdf8;
+            width: 0%;
+            transition: width 1s linear;
+            box-shadow: 0 0 15px rgba(56, 189, 248, 0.5);
+        }
+        @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.5; }
+        }
+        .anim-pulse { animation: pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite; }
+        .btn-continue {
+            display: none;
+            background: #38bdf8;
+            color: white;
+            padding: 12px 24px;
+            border-radius: 12px;
+            font-weight: 600;
+            transition: all 0.3s;
+            border: none;
+            cursor: pointer;
+        }
+        .btn-continue:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 20px -5px rgba(56, 189, 248, 0.4);
+        }
+        .btn-continue:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+            transform: none;
+        }
+        .error-overlay {
+            display: none;
+            position: fixed;
+            top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(15, 23, 42, 0.98);
+            z-index: 9999;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            text-align: center;
+            padding: 20px;
+        }
+        .instruction-card {
+            background: rgba(255, 255, 255, 0.02);
+            border: 1px solid rgba(255, 255, 255, 0.05);
+            padding: 1.5rem;
+            border-radius: 1.5rem;
+            text-align: left;
+            margin-bottom: 2rem;
+        }
+    </style>
+</head>
+<body class="p-4">
+    <div id="tab-error" class="error-overlay">
+        <div class="glass p-8 rounded-3xl max-w-sm">
+            <div class="text-red-500 mb-4">
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-16 w-16 mx-auto" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+                </svg>
+            </div>
+            <h2 class="text-xl font-bold text-white mb-2" id="error-title">Security Violation</h2>
+            <p class="text-slate-400 text-sm" id="error-msg">Please use only one tab and keep DevTools closed for verification.</p>
+        </div>
+    </div>
+
+    <div class="glass max-w-2xl w-full p-8 md:p-12 rounded-[2.5rem] text-center relative overflow-hidden">
+        <div class="absolute top-0 left-0 w-full h-1 bg-white/5">
+            <div class="progress-bar" id="progressBar"></div>
+        </div>
+
+        <div class="mb-6 inline-flex p-4 rounded-2xl bg-sky-500/10 text-sky-400">
+            <svg xmlns="http://www.w3.org/2000/svg" class="h-10 w-10" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
+            </svg>
+        </div>
+
+        <h1 class="text-3xl font-bold text-white mb-6">Secure Verification</h1>
+
+        <div class="instruction-card">
+            <h3 class="text-sky-400 font-bold uppercase tracking-wider text-xs mb-4">Follow Below Steps To Verify</h3>
+            <p class="text-slate-400 text-[13px] mb-4">Complete ALL steps directly in your browser:</p>
+            <ol class="text-slate-300 text-sm space-y-2 list-decimal list-inside">
+                <li>Copy the verification link directly from the bot</li>
+                <li>Open Google Chrome</li>
+                <li>Turn OFF all browser extensions, including AdBlock/VPN extensions</li>
+                <li>Use only ONE tab during the entire verification process</li>
+                <li>Stay in the same browser session until completion</li>
+                <li>Do NOT switch network (Wi-Fi/mobile data) while verifying</li>
+                <li>Paste the verification link directly into the address bar</li>
+                <li>Complete every step of the shortener inside the browser</li>
+                <li>Wait for each timer to finish completely</li>
+                <li>Tap Continue on every page</li>
+                <li>Do NOT refresh or close the browser during the process</li>
+                <li>When the final link appears, OPEN it directly — do NOT copy it</li>
+                <li>Wait for the destination page to fully load before exiting</li>
+            </ol>
+            <p class="mt-4 text-red-400/80 text-[11px] italic">Important: Skipping steps, changing tabs, switching devices, using multiple browsers, or copying final URLs may trigger bypass detection and instantly block access.</p>
+        </div>
+
+        <p class="text-slate-400 mb-8 text-sm leading-relaxed" id="status-text">Initializing secure gateway. Please wait 10 seconds...</p>
+
+        <div id="timer-container" class="flex items-center justify-center space-x-3 mb-4">
+            <div class="text-5xl font-bold text-sky-400" id="timer">10</div>
+            <div class="text-slate-500 text-sm font-medium tracking-widest uppercase">Seconds</div>
+        </div>
+
+        <div id="captcha-container" style="display:none;" class="flex justify-center mb-6">
+            <div class="g-recaptcha" data-sitekey="{{ recaptcha_key }}" data-theme="dark" data-callback="onCaptchaSuccess"></div>
+        </div>
+
+        <button id="continue-btn" class="btn-continue w-full py-4 text-lg">CONTINUE</button>
+
+        <div id="loading-dots" class="flex justify-center space-x-2 anim-pulse mt-4">
+            <div class="w-2 h-2 rounded-full bg-sky-400/40"></div>
+            <div class="w-2 h-2 rounded-full bg-sky-400/60"></div>
+            <div class="w-2 h-2 rounded-full bg-sky-400"></div>
+        </div>
+    </div>
+
+    <script>
+        // SECURITY CONFIG
+        const CONFIG = {
+            token: "{{ token }}",
+            session_id: "{{ session_id }}",
+            ws_url: "{{ ws_url }}"
+        };
+
+        // BROWSER FINGERPRINTING
+        async function getFingerprint() {
+            const canvas = document.createElement('canvas');
+            const ctx = canvas.getContext('2d');
+            ctx.textBaseline = "top";
+            ctx.font = "14px 'Arial'";
+            ctx.textBaseline = "alphabetic";
+            ctx.fillStyle = "#f60";
+            ctx.fillRect(125,1,62,20);
+            ctx.fillStyle = "#069";
+            ctx.fillText("AniZoneFlix-Security", 2, 15);
+            ctx.fillStyle = "rgba(102, 204, 0, 0.7)";
+            ctx.fillText("AniZoneFlix-Security", 4, 17);
+            return canvas.toDataURL();
+        }
+
+        // SAME-TAB ENFORCEMENT
+        const BC = new BroadcastChannel('anizoneflix_lock');
+        const SESSION_KEY = 'anizoneflix_active_session';
+        const TAB_ID = Date.now().toString() + Math.random().toString();
+
+        function blockAccess(reason) {
+            document.getElementById('error-msg').textContent = reason;
+            document.getElementById('tab-error').style.display = 'flex';
+            if(window.ws) window.ws.close();
+        }
+
+        BC.onmessage = (e) => {
+            if (e.data.type === 'NEW_TAB' && e.data.id !== TAB_ID) {
+                blockAccess("Multiple tabs detected. Security policy requires single tab.");
+            }
+        };
+
+        if (localStorage.getItem(SESSION_KEY) && localStorage.getItem(SESSION_KEY) !== TAB_ID) {
+            blockAccess("Another active verification session detected.");
+        }
+        localStorage.setItem(SESSION_KEY, TAB_ID);
+        BC.postMessage({ type: 'NEW_TAB', id: TAB_ID });
+
+        // DEVTOOLS DETECTION
+        setInterval(() => {
+            const start = performance.now();
+            debugger;
+            if (performance.now() - start > 100) {
+                blockAccess("Developer tools detected. Access blocked.");
+            }
+        }, 1000);
+
+        // WEBSOCKET HEARTBEAT
+        function initWS() {
+            const ws = new WebSocket(CONFIG.ws_url);
+            window.ws = ws;
+            ws.onopen = () => setInterval(() => ws.readyState === 1 && ws.send('ping'), 5000);
+            ws.onclose = () => {
+                if(!window.verified) blockAccess("Security connection lost. Please refresh.");
+            };
+        }
+        initWS();
+
+        // TIMER & CAPTCHA
+        let timeLeft = 10;
+        const timer = document.getElementById('timer');
+        const timerContainer = document.getElementById('timer-container');
+        const progressBar = document.getElementById('progressBar');
+        const statusText = document.getElementById('status-text');
+        const continueBtn = document.getElementById('continue-btn');
+        const captchaContainer = document.getElementById('captcha-container');
+        const loadingDots = document.getElementById('loading-dots');
+
+        let captchaResponse = null;
+        window.onCaptchaSuccess = (response) => {
+            captchaResponse = response;
+            continueBtn.style.display = 'block';
+        };
+
+        const countdown = setInterval(() => {
+            timeLeft--;
+            timer.textContent = timeLeft;
+            progressBar.style.width = ((10 - timeLeft) * 10) + '%';
+            if (timeLeft <= 0) {
+                clearInterval(countdown);
+                timerContainer.style.display = 'none';
+                statusText.textContent = 'Complete CAPTCHA to continue';
+                captchaContainer.style.display = 'flex';
+                loadingDots.style.display = 'none';
+            }
+        }, 1000);
+
+        // ENCRYPTION & SUBMISSION
+        async function encryptPayload(data) {
+            // Simple XOR for payload masking as a deterrent
+            const key = CONFIG.session_id;
+            const str = JSON.stringify(data);
+            let output = '';
+            for(let i=0; i<str.length; i++) {
+                output += String.fromCharCode(str.charCodeAt(i) ^ key.charCodeAt(i % key.length));
+            }
+            return btoa(output);
+        }
+
+        continueBtn.onclick = async () => {
+            if (!captchaResponse) return;
+            continueBtn.disabled = true;
+            continueBtn.textContent = "VERIFYING...";
+
+            const payload = {
+                token: CONFIG.token,
+                session_id: CONFIG.session_id,
+                tab_id: TAB_ID,
+                fingerprint: await getFingerprint(),
+                recaptcha_response: captchaResponse
+            };
+
+            try {
+                const response = await fetch('/api/verify', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ encrypted: await encryptPayload(payload) })
+                });
+
+                const result = await response.json();
+                if (result.success) {
+                    window.verified = true;
+                    window.location.href = result.wrapped_url;
+                } else {
+                    alert(result.error || "Verification failed.");
+                    location.reload();
+                }
+            } catch (err) {
+                alert("Security Error. Please try again.");
+                continueBtn.disabled = false;
+            }
+        };
+    </script>
+</body>
+</html>

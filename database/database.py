@@ -53,6 +53,7 @@ class AniZoneFlix:
         self.shortener_verifications = self.database['shortener_verifications']
         self.cooldown_data = self.database['cooldowns']
         self.strict_verifications = self.database['strict_verifications']
+        self.secure_sessions = self.database['secure_sessions']
 
 
     # SETTINGS & FEATURE FLAGS - V9 ENGINE
@@ -456,6 +457,56 @@ class AniZoneFlix:
     async def cleanup_strict_verifications(self):
         # Background cleanup for any abandoned or expired records
         await self.strict_verifications.delete_many({
+            'expires_at': {'$lt': time.time()}
+        })
+
+    # SECURE SESSION MANAGEMENT
+    async def create_secure_session(self, session_id, data):
+        await self.secure_sessions.insert_one({
+            '_id': session_id,
+            'ip': data.get('ip'),
+            'ua': data.get('ua'),
+            'fingerprint': data.get('fingerprint', ''),
+            'tab_id': data.get('tab_id', ''),
+            'status': 'pending',
+            'created_at': time.time(),
+            'expires_at': time.time() + 600, # 10 mins
+            'code': data.get('code'),
+            'slug': data.get('slug'),
+            'initial_ip': data.get('ip'),
+            'initial_ua': data.get('ua')
+        })
+
+    async def get_secure_session(self, session_id):
+        record = await self.secure_sessions.find_one({'_id': session_id})
+        if record and time.time() > record.get('expires_at', 0):
+            await self.secure_sessions.delete_one({'_id': session_id})
+            return None
+        return record
+
+    async def update_secure_session(self, session_id, update_data):
+        await self.secure_sessions.update_one(
+            {'_id': session_id},
+            {'$set': update_data}
+        )
+
+    async def verify_secure_session(self, session_id, ip, ua, fingerprint=None, tab_id=None):
+        session = await self.get_secure_session(session_id)
+        if not session: return False, "Session expired or not found"
+
+        if session['ip'] != ip: return False, "IP mismatch"
+        if session['ua'] != ua: return False, "Browser mismatch"
+
+        if fingerprint and session.get('fingerprint') and session['fingerprint'] != fingerprint:
+            return False, "Fingerprint mismatch"
+
+        if tab_id and session.get('tab_id') and session['tab_id'] != tab_id:
+            return False, "Tab mismatch"
+
+        return True, session
+
+    async def cleanup_expired_sessions(self):
+        await self.secure_sessions.delete_many({
             'expires_at': {'$lt': time.time()}
         })
 

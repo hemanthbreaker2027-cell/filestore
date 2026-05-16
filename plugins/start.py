@@ -29,7 +29,7 @@ from config import *
 from helper_func import *
 from database.database import *
 from database.db_premium import *
-from services.security import SecurityService
+from services.security import SecurityService, SecureRedirect
 
 
 BAN_SUPPORT = f"{BAN_SUPPORT}"
@@ -191,21 +191,31 @@ async def short_url(client: Client, message: Message, base64_string):
         # 1. Create a strict verification entry and get a short CODE (GXC8A)
         code = await db.create_strict_verification(user_id, base64_string)
 
-        # 2. Sign a token containing the code
-        from services.security import SecureRedirect
+        # 2. Get Expiry
         expiry = settings.get('session_expiry', 300)
-        token = SecureRedirect.generate_protected_token(code, expiry=expiry)
 
-        # 3. Construct Protected Link: Bot Layer
+        # 3. Create Shortener Link to extract Slug
         web_domain = settings.get('website_url', WEBSITE_URL)
         base_url = web_domain if web_domain.startswith("http") else f"https://{web_domain}"
 
-        # Format: https://yourdomain.com/protect?data=<signed_token>
-        short_link = f"{base_url}/protect?data={token}"
+        # The target for the shortener should be our final verification endpoint
+        target_path = "/eductionssstudiess/?eductionstudiess="
+        final_target = f"{base_url}{target_path}{code}"
+
+        # Call shortener API
+        shortener_link = await get_shortlink(WHITELISTED_DOMAIN, SHORTLINK_API, final_target)
+        slug = SecurityService.extract_slug(shortener_link)
+
+        # 4. Sign a NEW token containing both code AND slug
+        token_data = {"code": code, "slug": slug}
+        secure_token = SecureRedirect.generate_protected_token(token_data, expiry=expiry)
+
+        # 5. Construct Protected Link: Bot Layer (Initial /r2/ entry)
+        initial_link = f"{base_url}/r2/{secure_token}"
 
         buttons = [
             [
-                InlineKeyboardButton(text="⚡️ ˹ ᴅᴏᴡɴʟᴏᴀᴅ ˼ ⚡️", url=short_link),
+                InlineKeyboardButton(text="⚡️ ˹ ᴅᴏᴡɴʟᴏᴀᴅ ˼ ⚡️", url=initial_link),
                 InlineKeyboardButton(text="🛡 ˹ ᴛᴜᴛᴏʀɪᴀʟ ˼ 🛡", url=TUT_VID)
             ],
             [
@@ -222,7 +232,7 @@ async def short_url(client: Client, message: Message, base64_string):
         except Exception as photo_err:
             print(f"Photo reply failed: {photo_err}, falling back to text")
             await message.reply_text(
-                text=SHORT_MSG.format(mention=message.from_user.mention) + f"\n\n🔗 <b>Verification Link:</b> {short_link}",
+                text=SHORT_MSG.format(mention=message.from_user.mention) + f"\n\n🔗 <b>Verification Link:</b> {initial_link}",
                 reply_markup=InlineKeyboardMarkup(buttons),
                 disable_web_page_preview=True
             )
