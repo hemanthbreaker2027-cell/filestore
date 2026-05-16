@@ -99,12 +99,12 @@ class SecurityService:
 class SecureRedirect:
 
     @staticmethod
-    async def generate_protected_token(code: str):
-        settings = await db.get_settings()
-        expiry = settings.get('session_expiry', 300)
+    def generate_protected_token(code: str, expiry: int = 300):
+        # Synchronous JWT generation for easier usage in bot handlers
         payload = {
             "code": code,
-            "exp": int(time.time()) + expiry
+            "exp": int(time.time()) + expiry,
+            "iat": int(time.time())
         }
         return jwt.encode(payload, SECURE_SECRET_KEY, algorithm="HS256")
 

@@ -91,98 +91,17 @@ async def send_files(client: Client, user_id: int, base64_string, messages=None)
         # File auto-delete time in seconds
         FILE_AUTO_DELETE = await db.get_del_timer()
 
-        # STICKER LOGIC MAPPINGS
-        sticker_mappings = {}
-        try:
-            sticker_mappings = await db.get_all_stickers()
-        except Exception as e:
-            print(f"Error fetching sticker mappings: {e}")
-
-        # SEQUENTIAL DELIVERY (V9 Interleaved Engine)
-        # Optimized for Sticker -> Media sequence with enhanced resilience
+        # SEQUENTIAL DELIVERY (V9 Engine)
         semaphore = asyncio.Semaphore(10)
 
         async def deliver_item(msg):
             if not msg or msg.empty: return None
             async with semaphore:
-                # 1. ADMIN PANEL STICKERS (If enabled)
-                if settings.get('stickers_enabled', True):
-                    # We can send a default sticker or one from sticker_mappings if keyword matches
-                    sent_panel_sticker = False
-                    try:
-                        caption_text = (msg.caption or "").lower()
-                        for keyword, sticker_id in sticker_mappings.items():
-                            if keyword in caption_text:
-                                await client.send_sticker(chat_id=user_id, sticker=sticker_id)
-                                sent_panel_sticker = True
-                                break
-                    except: pass
-
-                    if not sent_panel_sticker:
-                        # Fallback default sticker if desired, or skip.
-                        # User requested "send stickers (if enabled)"
-                        pass
-
                 original_caption = msg.caption.html if msg.caption else ""
                 caption = f"{original_caption}\n\n{CUSTOM_CAPTION}" if CUSTOM_CAPTION else original_caption
 
                 # Default reply markup: Keep original buttons if any
                 reply_markup = msg.reply_markup
-
-                # STREAM & DOWNLOAD BUTTONS
-                is_video = False
-                file_name = "Requested File"
-                file_size = 0
-                mime_type = "video/mp4"
-
-                if msg.video:
-                    is_video = True
-                    file_name = msg.video.file_name or "video.mp4"
-                    file_size = msg.video.file_size
-                    mime_type = msg.video.mime_type or "video/mp4"
-                elif msg.document and msg.document.mime_type:
-                    if msg.document.mime_type.startswith('video/') or (msg.document.file_name and msg.document.file_name.lower().endswith(('.mp4', '.mkv', '.avi', '.mov', '.webm'))):
-                        is_video = True
-                        file_name = msg.document.file_name or "file.mkv"
-                        file_size = msg.document.file_size
-                        mime_type = msg.document.mime_type or "video/mp4"
-
-                if is_video and (settings.get('stream_enabled', False) or settings.get('download_enabled', False)):
-                    file_obj = msg.video or msg.document
-                    code = getattr(file_obj, 'file_unique_id', None)
-                    if not code:
-                        import secrets
-                        code = secrets.token_hex(4)
-
-                    file_link = f"https://t.me/{client.username}?start=get-{msg.id * abs(client.db_channel.id)}"
-
-                    await db.shortener_verifications.update_one(
-                        {'_id': code},
-                        {'$set': {
-                            'user_id': str(user_id),
-                            'original_url': file_link,
-                            'file_name': file_name,
-                            'file_size': file_size,
-                            'mime_type': mime_type,
-                            'verified_at': time.time(),
-                            'expires_at': time.time() + 86400
-                        }},
-                        upsert=True
-                    )
-
-                    buttons = []
-                    base_web_url = settings.get('website_url', WEBSITE_URL)
-                    if settings.get('stream_enabled', False):
-                        buttons.append([InlineKeyboardButton("▶ STREAM", url=f"https://{base_web_url}/watch?path={code}")])
-                    if settings.get('download_enabled', False):
-                        buttons.append([InlineKeyboardButton("⬇ DOWNLOAD", url=f"https://{base_web_url}/download/{code}")])
-
-                    if reply_markup and reply_markup.inline_keyboard:
-                        new_kb = list(reply_markup.inline_keyboard)
-                        new_kb.extend(buttons)
-                        reply_markup = InlineKeyboardMarkup(new_kb)
-                    else:
-                        reply_markup = InlineKeyboardMarkup(buttons)
 
                 while True:
                     try:
@@ -274,7 +193,8 @@ async def short_url(client: Client, message: Message, base64_string):
 
         # 2. Sign a token containing the code
         from services.security import SecureRedirect
-        token = SecureRedirect.encrypt({"code": code, "user_id": user_id})
+        expiry = settings.get('session_expiry', 300)
+        token = SecureRedirect.generate_protected_token(code, expiry=expiry)
 
         # 3. Construct Protected Link: Bot Layer
         web_domain = settings.get('website_url', WEBSITE_URL)

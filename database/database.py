@@ -52,7 +52,6 @@ class AniZoneFlix:
         self.secure_tokens = self.database['secure_tokens']
         self.shortener_verifications = self.database['shortener_verifications']
         self.cooldown_data = self.database['cooldowns']
-        self.sticker_data = self.database['stickers']
         self.strict_verifications = self.database['strict_verifications']
 
 
@@ -68,16 +67,13 @@ class AniZoneFlix:
             'core_features': True,
             'shortener_mode': 'one_per_time', # one_per_time or based_time
             'shortener_time': 0, # Time in seconds for based_time mode
-            'stream_enabled': False,
-            'download_enabled': False,
             'verify_timer': 10,
             'website_url': WEBSITE_URL,
             'shortener_domain': WHITELISTED_DOMAIN,
             'wrap_url': WRAP_URL,
             'session_expiry': 300, # 5 minutes
             'shorten_admins': True,
-            'v9_engine': True,
-            'stickers_enabled': True
+            'v9_engine': True
         }
 
         if not settings:
@@ -415,26 +411,6 @@ class AniZoneFlix:
             upsert=True
         )
 
-    # STICKER MAPPING
-    async def add_sticker_mapping(self, keyword: str, sticker_file_id: str, admin_id: int):
-        await self.sticker_data.update_one(
-            {'_id': keyword.lower()},
-            {'$set': {
-                'sticker_file_id': sticker_file_id,
-                'added_by': admin_id,
-                'created_time': time.time()
-            }},
-            upsert=True
-        )
-
-    async def remove_sticker_mapping(self, keyword: str):
-        await self.sticker_data.delete_one({'_id': keyword.lower()})
-
-    async def get_all_stickers(self):
-        docs = await self.sticker_data.find().to_list(length=None)
-        # Return as a dictionary for faster lookup {keyword: file_id}
-        return {doc['_id']: doc['sticker_file_id'] for doc in docs}
-
     # ULTRA STRICT VERIFICATION
     async def create_strict_verification(self, user_id, code):
         import string
@@ -476,6 +452,12 @@ class AniZoneFlix:
             await self.strict_verifications.delete_one({'_id': token})
             return record
         return None
+
+    async def cleanup_strict_verifications(self):
+        # Background cleanup for any abandoned or expired records
+        await self.strict_verifications.delete_many({
+            'expires_at': {'$lt': time.time()}
+        })
 
     # RESTART TASKS
     async def clear_all_bans(self):

@@ -37,20 +37,8 @@ def get_panel_markup(settings):
             InlineKeyboardButton(f"📁 WRAP URL", callback_data="set_val_wrap_url")
         ],
         [
-            InlineKeyboardButton(f"ꜱᴛʀᴇᴀᴍ ꜱʏꜱᴛᴇᴍ {get_badge('stream_enabled')}", callback_data="none"),
-            InlineKeyboardButton(get_status("stream_enabled"), callback_data="tg_stream_enabled")
-        ],
-        [
-            InlineKeyboardButton(f"ᴅᴏᴡɴʟᴏᴀᴅ ꜱʏꜱᴛᴇᴍ {get_badge('download_enabled')}", callback_data="none"),
-            InlineKeyboardButton(get_status("download_enabled"), callback_data="tg_download_enabled")
-        ],
-        [
             InlineKeyboardButton(f"ꜱʜᴏʀᴛᴇɴ ᴀᴅᴍɪɴꜱ {get_badge('shorten_admins')}", callback_data="none"),
             InlineKeyboardButton(get_status("shorten_admins"), callback_data="tg_shorten_admins")
-        ],
-        [
-            InlineKeyboardButton(f"ꜱᴛɪᴄᴋᴇʀꜱ ꜱʏꜱᴛᴇᴍ {get_badge('stickers_enabled')}", callback_data="none"),
-            InlineKeyboardButton(get_status("stickers_enabled"), callback_data="tg_stickers_enabled")
         ],
         [
             InlineKeyboardButton(f"ꜰɪʟᴇ ᴅᴇʟɪᴠᴇʀʏ {get_badge('file_delivery')}", callback_data="none"),
@@ -165,32 +153,3 @@ async def panel_callback(client: Bot, query: CallbackQuery):
     except Exception as e:
         print(f"[PANEL ERROR] {e}")
 
-@Bot.on_message(filters.command('stream') & filters.private & admin)
-async def toggle_stream(client: Bot, message: Message):
-    if len(message.command) < 2:
-        return await message.reply("Usage: /stream on | off")
-
-    toggle = message.command[1].lower()
-    if toggle == "on":
-        await db.update_setting('stream_enabled', True)
-        await message.reply("✅ <b>Sᴛʀᴇᴀᴍɪɴɢ sʏsᴛᴇᴍ ᴀᴄᴛɪᴠᴀᴛᴇᴅ ɢʟᴏʙᴀʟʟʏ!</b>")
-    elif toggle == "off":
-        await db.update_setting('stream_enabled', False)
-        await message.reply("🔴 <b>Sᴛʀᴇᴀᴍɪɴɢ sʏsᴛᴇᴍ ᴅᴇᴀᴄᴛɪᴠᴀᴛᴇᴅ!</b>")
-    else:
-        await message.reply("Invalid toggle. Use 'on' or 'off'.")
-
-@Bot.on_message(filters.command('download') & filters.private & admin)
-async def toggle_download(client: Bot, message: Message):
-    if len(message.command) < 2:
-        return await message.reply("Usage: /download on | off")
-
-    toggle = message.command[1].lower()
-    if toggle == "on":
-        await db.update_setting('download_enabled', True)
-        await message.reply("✅ <b>Dᴏᴡɴʟᴏᴀᴅ sʏsᴛᴇᴍ ᴀᴄᴛɪᴠᴀᴛᴇᴅ ɢʟᴏʙᴀʟʟʏ!</b>")
-    elif toggle == "off":
-        await db.update_setting('download_enabled', False)
-        await message.reply("🔴 <b>Dᴏᴡɴʟᴏᴀᴅ sʏsᴛᴇᴍ ᴅᴇᴀᴄᴛɪᴠᴀᴛᴇᴅ!</b>")
-    else:
-        await message.reply("Invalid toggle. Use 'on' or 'off'.")
