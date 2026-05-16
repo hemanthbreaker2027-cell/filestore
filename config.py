@@ -48,13 +48,26 @@ START_PIC = random.choice(ANIME_BANNERS)
 FORCE_PIC = random.choice(ANIME_BANNERS)
 
 #--------------------------------------------
+SHORTLINK_API = os.environ.get("SHORTLINK_API", "e49643875c2fa34dd6087254e58283d65ffc7748")
+WEBSITE_URL = os.environ.get("WEBSITE_URL", "filestore-7-7hdj.onrender.com")
 TUT_VID = os.environ.get("TUT_VID","https://t.me/anizoneflix")
+VERIFY_BOT_USERNAME = os.environ.get("VERIFY_BOT_USERNAME", "AniZoneFlix_VerifyBot")
+WHITELISTED_DOMAIN = "arolinks.com"
 #--------------------------------------------
+
+SHORT_MSG = (
+    "━━━━━━━━━━━━━━━━━━━\n"
+    "✨ <b>˹ ꜱᴇᴄᴜʀᴇ ʟɪɴᴋ ɢᴇɴᴇʀᴀᴛᴇᴅ ˼</b> ✨\n\n"
+    "🛡 ʜᴇʏ {mention}, ʏᴏᴜʀ ꜰɪʟᴇ ɪꜱ ᴘʀᴏᴛᴇᴄᴛᴇᴅ. ⚡️\n\n"
+    "💎 <b>˹ ᴜɴʟᴏᴄᴋ ɪɴꜱᴛʀᴜᴄᴛɪᴏɴꜱ ˼</b>\n"
+    "<blockquote>1. ᴄʟɪᴄᴋ ᴛʜᴇ sᴇᴄᴜʀᴇ ʟɪɴᴋ ʙᴇʟᴏᴡ.\n"
+    "2. ᴄᴏᴍᴘʟᴇᴛᴇ ᴠᴇʀɪꜰɪᴄᴀᴛɪᴏɴ ɪɴ ᴏᴜʀ sᴇᴘᴀʀᴀᴛᴇ ʙᴏᴛ.</blockquote>\n"
+    "━━━━━━━━━━━━━━━━━━━"
+)
 
 #--------------------------------------------
 HELP_TXT = "<b>⚡️ <blockquote>˹ ᴀɴɪᴢᴏɴᴇꜰʟɪx ʜᴇʟᴘ ᴄᴇɴᴛᴇʀ ˼\n\n💎 ᴛʜɪs ɪs ᴀɴ ᴜʟᴛʀᴀ-ꜰᴀsᴛ ꜰɪʟᴇ ᴛᴏ ʟɪɴᴋ ʙᴏᴛ ᴘᴏᴡᴇʀᴇᴅ ʙʏ @AniZoneFlix\n\n📜 ᴄᴏᴍᴍᴀɴᴅ ʟɪsᴛ:\n├ /start : ɪɢɴɪᴛᴇ ᴛʜᴇ ʙᴏᴛ 🔥\n├ /about : ᴅɪsᴄᴏᴠᴇʀ ᴏᴜʀ ʟᴇɢᴀᴄʏ 🛡\n└ /help : sᴇᴇᴋ ɢᴜɪᴅᴀɴᴄᴇ ✨\n\n🚀 sɪᴍᴘʟʏ ᴄʟɪᴄᴋ ᴀɴʏ ʟɪɴᴋ, ᴊᴏɪɴ ᴛʜᴇ ꜰᴏʀᴄᴇ sᴜʙ ᴄʜᴀɴɴᴇʟs, ᴀɴᴅ ʏᴏᴜ ᴀʀᴇ ʀᴇᴀᴅʏ ᴛᴏ ɢᴏ...!\n\n👑 ᴅᴇᴠᴇʟᴏᴘᴇᴅ ᴡɪᴛʜ ❤️ ʙʏ <a href=https://t.me/AniZoneFlix>ᴀɴɪᴢᴏɴᴇꜰʟɪx</a></blockquote></b>"
 ABOUT_TXT = "<b>🛡 <blockquote>˹ ᴀɴɪᴢᴏɴᴇꜰʟɪx ʟᴇɢᴀᴄʏ ˼\n\n👤 ᴄʀᴇᴀᴛᴏʀ: <a href=https://t.me/AniZoneFlix>ᴀɴɪᴢᴏɴᴇꜰʟɪx</a>\n💎 ꜰᴏᴜɴᴅᴇʀ: @AniZoneFlix\n🌀 ᴀɴɪᴍᴇ: @AniZoneFlix\n🎬 sᴇʀɪᴇs: @AniZoneFlix\n🔞 ᴀᴅᴜʟᴛ: @AniZoneFlix\n🛠 ᴅᴇᴠᴇʟᴏᴘᴇʀ: @AniZoneFlix</blockquote></b>"
-#--------------------------------------------
 #--------------------------------------------
 START_MSG = os.environ.get("START_MESSAGE", "<b>⚡️ ʜᴇʟʟᴏ {mention} ˼\n\n<blockquote>💎 ɪ ᴀᴍ ᴛʜᴇ ᴍᴏsᴛ ᴘᴏᴡᴇʀꜰᴜʟ ꜰɪʟᴇ sᴛᴏʀᴇ ᴇɴɢɪɴᴇ. ɪ ᴄᴀɴ sᴛᴏʀᴇ ʏᴏᴜʀ ᴘʀɪᴠᴀᴛᴇ ꜰɪʟᴇs sᴇᴄᴜʀᴇʟʏ ᴡɪᴛʜ ᴜʟᴛʀᴀ-ꜰᴀsᴛ sᴘᴇᴇᴅ. ⚡️</blockquote></b>")
 FORCE_MSG = os.environ.get("FORCE_SUB_MESSAGE", "⚡️ ʜᴇʟʟᴏ {mention}\n\n<b><blockquote>🛡 ˹ ᴀᴄᴄᴇss ᴅᴇɴɪᴇᴅ ˼\n\n💎 ᴊᴏɪɴ ᴏᴜʀ ᴄʜᴀɴɴᴇʟs ᴀɴᴅ ᴛʜᴇɴ ᴄʟɪᴄᴋ ᴏɴ ʀᴇʟᴏᴀᴅ ʙᴜᴛᴛᴏɴ ᴛᴏ ᴜɴʟᴏᴄᴋ ʏᴏᴜʀ ʀᴇǫᴜᴇsᴛᴇᴅ ꜰɪʟᴇ. 🚀</b></blockquote>")
@@ -79,6 +92,7 @@ CMD_TXT = """🛡 <b><blockquote>˹ ᴀᴅᴍɪɴ ᴄᴏʀᴇ ᴄᴏɴᴛʀᴏʟ
 💎 <b>›› /premium_users :</b> sʜᴏᴡ ᴇʟɪᴛᴇ ᴜsᴇʀs ⭐
 💎 <b>›› /remove_premium :</b> ʀᴇᴍᴏᴠᴇ ᴘʀᴇᴍɪᴜᴍ ᴛɪᴇʀ 📉
 💎 <b>›› /myplan :</b> ᴠɪᴇᴡ ʏᴏᴜʀ ᴅᴇsᴛɪɴʏ 📜
+💎 <b>›› /count :</b> sᴛᴀᴛɪsᴛɪᴄs 📊
 💎 <b>›› /delreq :</b> ᴄʟᴇᴀɴᴜᴘ ᴅᴀᴛᴀʙᴀsᴇ 🧹
 """
 #--------------------------------------------

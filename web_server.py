@@ -11,3 +11,9 @@ async def root_handler(request):
 @routes.get("/health")
 async def health(request):
     return web.Response(text="OK")
+
+async def web_server(bot):
+    app = web.Application()
+    app['bot'] = bot
+    app.add_routes(routes)
+    return app

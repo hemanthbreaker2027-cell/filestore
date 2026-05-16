@@ -178,8 +178,55 @@ async def send_files(client: Client, user_id: int, base64_string, messages=None)
     except Exception as e:
         print(f"Final Error in send_files: {e}")
 
+async def short_url(client: Client, message: Message, base64_string):
+    user_id = message.from_user.id
+    settings = await db.get_settings()
+
+    # 1. Check Daily Limit (Verification Deals)
+    can_verify, limit = await db.check_daily_limit(user_id)
+    if not can_verify:
+        return await message.reply_text(
+            f"<b>❌ <blockquote>˹ Lɪᴍɪᴛ Exᴄᴇᴇᴅᴇᴅ ˼\n\n🛡 Yᴏᴜ ʜᴀᴠᴇ ᴜsᴇᴅ ᴀʟʟ ʏᴏᴜʀ {limit} ᴅᴀɪʟʏ ᴠᴇʀɪꜰɪᴄᴀᴛɪᴏɴ ᴅᴇᴀʟs.\n\n💎 Cᴏᴍᴇ ʙᴀᴄᴋ ᴛᴏᴍᴏʀʀᴏᴡ ᴏʀ ɢᴇᴛ ᴘʀᴇᴍɪᴜᴍ ꜰᴏʀ ᴜɴʟɪᴍɪᴛᴇᴅ ᴀᴄᴄᴇss! 💫</blockquote></b>",
+            reply_markup=InlineKeyboardMarkup([[InlineKeyboardButton("💎 Gᴇᴛ Pʀᴇᴍɪᴜᴍ 💎", callback_data="premium")]])
+        )
+
+    # 2. Create a strict verification entry and get a short CODE (GXC8A)
+    # Token incorporates the user's username for identity-based redirection
+    username = message.from_user.username or "Anon"
+    code = await db.create_strict_verification(user_id, base64_string)
+
+    # 3. Build Redirect Link
+    # Redirect Link incorporates the username-based token
+    final_target = f"https://t.me/{VERIFY_BOT_USERNAME}?start={code}_{username}"
+
+    # Call shortener API
+    shortener_link = await get_shortlink(WHITELISTED_DOMAIN, SHORTLINK_API, final_target)
+
+    if not shortener_link:
+        raise Exception("Failed to generate shortlink")
+
+    # 4. Construct Redirect Link:
+    # The user is sent to the Verification Bot via the shortener.
+    # The Verification Bot will then send the user to our FRONTEND GATEWAY (/r2/token).
+
+    buttons = [
+        [
+            InlineKeyboardButton(text="⚡️ ˹ ᴠᴇʀɪꜰʏ ᴛᴏ ᴅᴏᴡɴʟᴏᴀᴅ ˼ ⚡️", url=shortener_link),
+            InlineKeyboardButton(text="🛡 ˹ ᴛᴜᴛᴏʀɪᴀʟ ˼ 🛡", url=TUT_VID)
+        ]
+    ]
+
+    await message.reply_photo(
+        photo=random.choice(ANIME_BANNERS),
+        caption=SHORT_MSG.format(mention=message.from_user.mention),
+        reply_markup=InlineKeyboardMarkup(buttons),
+    )
+
 async def handle_payload(client: Client, message: Message, basic_payload: str):
     user_id = message.from_user.id
+    settings = await db.get_settings()
+    shortener_enabled = settings.get('shortener_system', True)
+
     # Clean payload and get base64 string
     is_verified_payload = basic_payload.startswith("yu3elk")
     if is_verified_payload:
@@ -187,8 +234,18 @@ async def handle_payload(client: Client, message: Message, basic_payload: str):
     else:
         base64_string = basic_payload
 
-    print(f"[DEBUG] handle_payload: Delivering {base64_string} directly (verification system removed)")
-    return await send_files(client, user_id, base64_string)
+    if not shortener_enabled:
+        return await send_files(client, user_id, base64_string)
+
+    is_premium = await is_premium_user(user_id)
+    is_admin = await db.admin_exist(user_id) or user_id == OWNER_ID
+    shorten_admins = settings.get('shorten_admins', True)
+
+    if is_premium or (is_admin and not shorten_admins):
+        return await send_files(client, user_id, base64_string)
+
+    # Proceed to verification bot hand-off
+    await short_url(client, message, base64_string)
 
 @Client.on_message(filters.command('ping') & filters.private)
 async def ping_command(client: Client, message: Message):
@@ -243,6 +300,21 @@ async def start_command(client: Client, message: Message):
     if len(text) > 7:
         try:
             basic = text.split(" ", 1)[1]
+
+            # ULTRA STRICT VERIFICATION DEEP LINK (Returning from Verification Bot/Frontend)
+            if basic.startswith("verify_"):
+                token = basic.replace("verify_", "")
+                record = await db.consume_strict_verification(token)
+                if record:
+                    # Increment verify count
+                    count = await db.get_verify_count(user_id)
+                    await db.set_verify_count(user_id, count + 1)
+                    # Success! Deliver files
+                    await send_files(client, user_id, record['code'])
+                else:
+                    await message.reply_text("<b>❌ Verification Failed!</b>\n\nYou must complete the full verification flow to access these files.")
+                return
+
             await handle_payload(client, message, basic)
             return
 
@@ -477,6 +549,11 @@ async def list_premium_users_command(client, message):
 
 
 #=====================================================================================##
+
+@Client.on_message(filters.command("count") & filters.private & admin)
+async def total_verify_count_cmd(client, message: Message):
+    total = await db.get_total_verify_count()
+    await message.reply_text(f"Tᴏᴛᴀʟ ᴠᴇʀɪғɪᴇᴅ ᴛᴏᴋᴇɴs ᴛᴏᴅᴀʏ: <b>{total}</b>")
 
 @Client.on_message(filters.command('commands') & filters.private & admin)
 async def bcmd(client: Client, message: Message):
