@@ -49,10 +49,8 @@ FORCE_PIC = random.choice(ANIME_BANNERS)
 
 #--------------------------------------------
 # CODEFLIX VERIFICATION NETWORK CONFIG
-SHORTLINK_API = os.environ.get("SHORTLINK_API", "e49643875c2fa34dd6087254e58283d65ffc7748")
 BASE_URL = os.environ.get("BASE_URL", "https://filestore-7-7hdj.onrender.com")
 VERIFY_BOT_USERNAME = os.environ.get("VERIFY_BOT_USERNAME", "AniZoneFlix_VerifyBot")
-WHITELISTED_DOMAIN = "arolinks.com"
 TUT_VID = os.environ.get("TUT_VID","https://t.me/anizoneflix")
 #--------------------------------------------
 

@@ -57,15 +57,12 @@ class AniZoneFlix:
     # SETTINGS & FEATURE FLAGS
     async def get_settings(self):
         settings = await self.settings_data.find_one({'_id': 'bot_settings'})
-        from config import WHITELISTED_DOMAIN
 
         default_settings = {
             '_id': 'bot_settings',
             'shortener_system': True,
             'file_delivery': True,
             'core_features': True,
-            'shortener_mode': 'one_per_time',
-            'shortener_time': 0,
             'shorten_admins': True,
             'daily_verify_limit': 5
         }

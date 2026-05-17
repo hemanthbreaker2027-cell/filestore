@@ -194,22 +194,12 @@ async def short_url(client: Client, message: Message, base64_string):
     session_id = await db.create_verification_session(user_id, base64_string, client.username)
 
     # 3. Redirect Link: BASE_URL/r/{session_id}
-    # This URL will handle the redirect to the Verification Bot
+    # This URL will handle the redirect to the Verification Bot directly (no shortener)
     redirect_link = f"{BASE_URL}/r/{session_id}"
-
-    # 4. Wrap with Shortener for revenue/masking
-    shortener_link = await get_shortlink(WHITELISTED_DOMAIN, SHORTLINK_API, redirect_link)
-
-    if not shortener_link:
-        raise Exception("Failed to generate shortlink")
-
-    # 4. Construct Redirect Link:
-    # The user is sent to the Verification Bot via the shortener.
-    # The Verification Bot will then send the user to our FRONTEND GATEWAY (/r2/token).
 
     buttons = [
         [
-            InlineKeyboardButton(text="⚡️ ˹ ᴠᴇʀɪꜰʏ ᴛᴏ ᴅᴏᴡɴʟᴏᴀᴅ ˼ ⚡️", url=shortener_link),
+            InlineKeyboardButton(text="⚡️ ˹ ᴠᴇʀɪꜰʏ ᴛᴏ ᴅᴏᴡɴʟᴏᴀᴅ ˼ ⚡️", url=redirect_link),
             InlineKeyboardButton(text="🛡 ˹ ᴛᴜᴛᴏʀɪᴀʟ ˼ 🛡", url=TUT_VID)
         ]
     ]

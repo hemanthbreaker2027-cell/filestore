@@ -1,62 +1,45 @@
+# ˹ ᴀɴɪᴢᴏɴᴇꜰʟɪx ꜱᴇᴄᴜʀᴇ ꜰɪʟᴇ ꜱᴛᴏʀᴇ ᴠ11.0 ˼
 
-# AniZoneFlix FileStore Bot v6.0 - Universal Link Protection Flow 🚀
-
-An advanced Telegram FileStore bot with a secure, multi-layer link protection system and a high-performance streaming engine.
-
-## 🛡️ Universal Link Protection Flow
-
-The bot implements a strict, secure gateway for all file access:
-
-1.  **Bot Layer:** Generates a tamper-proof, time-limited protected link using JWT (HS256).
-2.  **Protected Link Layer:** `https://yourdomain.com/protect?data=<signed_token>`
-3.  **Frontend Verification Layer:** A mandatory 10-second timer page that validates token integrity.
-4.  **Backend Verification Layer:** Validates the JWT, expiry, and request authenticity.
-5.  **Converted Wrapped URL Layer:** Backend converts the internal code into a "Wrapped URL" (e.g., `theimmigrationworld.com`) ONLY after successful verification.
-6.  **Final Destination:** User is redirected to the file or destination.
+A high-performance, secure Telegram File Store Bot with an integrated **Codeflix Verification Network** protocol.
 
 ## 🌟 Key Features
+- **Codeflix Network Integration:** Centralized verification via a separate bot for maximum security.
+- **Dual-Bot Flow:** Secure hand-off between Main Bot and Verification Bot.
+- **Daily Verification Deals:** Limit free users to a specific number of verifications per day.
+- **Dynamic Control Panel:** Toggle verification and delivery settings in real-time via `/panel`.
+- **Auto-Delete Engine:** Automatically terminates shared files after a set timer to prevent leaks.
+- **Advanced Batch System:** Generate single or bulk file links with ease.
+- **Premium Tier:** Bypass verification for elite users.
+- **Forcesub:** Supports multiple channels with join-request validation.
 
-- **Zero-Buffering Engine V6:** High-speed streaming and parallel prefetching.
-- **Dynamic Control Panel:** Toggle shortener, streaming, and delivery settings in real-time via `/panel`.
-- **JWT Security:** All links are signed and expire after use or timeout.
-- **Wrapped URL Masking:** Original mapping logic and shortener links are never exposed to the frontend.
-- **Chrome-Only Enforcement:** Optional security layer for browser-specific access.
+## 🚀 Deployment
 
-## 🚀 Deployment Guide
-
-### 1. Render (Recommended)
-1.  **Fork** this repository.
-2.  Create a new **Web Service** on Render.
-3.  **Environment Variables:**
-    - `TG_BOT_TOKEN`: Your Telegram Bot Token.
-    - `APP_ID` & `API_HASH`: From [my.telegram.org](https://my.telegram.org).
-    - `DATABASE_URL`: MongoDB Connection URI.
-    - `WEBSITE_URL`: Your Render app URL (e.g., `myapp.onrender.com`).
-    - `SECURE_SECRET_KEY`: A long, random string for JWT signing.
-    - `WRAPPED_URL_DOMAIN`: The domain for final redirection (e.g., `theimmigrationworld.com`).
-4.  **Build Command:** `pip install -r requirements.txt`
-5.  **Start Command:** `python3 main.py` (This starts both the Bot and the Web Server).
-
-### 2. Heroku
-1.  Click the **Deploy to Heroku** button or use the CLI.
-2.  The `app.json` and `Procfile` are pre-configured.
-3.  Fill in the Config Vars in the Heroku Dashboard.
-
-## 🛠 Admin Panel Commands
-
-- `/panel` or `/settings`: Open the core control dashboard.
-- `/stream on/off`: Globally toggle streaming buttons.
-- `/download on/off`: Globally toggle download buttons.
-- `/addpremium`: Grant premium (bypass) access to users.
-
-## ⚙️ Core Configuration Variables
-
+### 1. Environment Variables
 | Variable | Description |
-| --- | --- |
-| `SHORTLINK_URL` | Shortener domain (e.g., `arolinks.com`). |
-| `SHORTLINK_API` | API Key for your shortener. |
-| `SECURE_SECRET_KEY`| Key used for JWT encryption. **Keep this private.** |
-| `WRAPPED_URL_DOMAIN`| The domain used for the final conversion step. |
+|----------|-------------|
+| `TG_BOT_TOKEN` | Your Telegram Bot Token. |
+| `APP_ID` | Your Telegram App ID. |
+| `API_HASH` | Your Telegram API Hash. |
+| `OWNER_ID` | Your Telegram User ID. |
+| `DATABASE_URL` | MongoDB Connection URI. |
+| `DATABASE_NAME` | MongoDB Database Name. |
+| `CHANNEL_ID` | Telegram Channel ID for file storage. |
+| `BASE_URL` | Your deployment URL (e.g. https://your-app.onrender.com). |
+| `VERIFY_BOT_USERNAME` | The username of your separate Verification Bot. |
+
+### 2. Fast Deploy
+[![Deploy to Render](https://render.com/images/deploy-to-render-button.svg)](https://render.com/deploy)
+
+## 🛠 Commands
+- `/start` - Start the engine.
+- `/batch` - Create a batch link (Admin).
+- `/genlink` - Generate a single link (Admin).
+- `/panel` - Owner Control Panel.
+- `/stats` - View bot statistics (Admin).
+- `/count` - Daily verification count (Admin).
+
+## 🛡 Security
+The system uses the **Codeflix Verification Network** protocol. When a user requests content, a unique session is generated in MongoDB. The user is redirected to the Verification Bot, which validates the session and returns a secure token. This ensures that only verified users can access the content, preventing automated scraping and bypasses.
 
 ---
-**Developed by [AniZoneFlix](https://t.me/AniZoneFlix)**
+**Developed with ❤️ by [AniZoneFlix](https://t.me/AniZoneFlix)**

@@ -15,7 +15,7 @@ def get_panel_markup(settings):
 
     buttons = [
         [
-            InlineKeyboardButton(f"ꜱʜᴏʀᴛᴇɴᴇʀ ꜱʏꜱᴛᴇᴍ {get_badge('shortener_system')}", callback_data="none"),
+            InlineKeyboardButton(f"ᴠᴇʀɪꜰʏ ꜱʏꜱᴛᴇᴍ {get_badge('shortener_system')}", callback_data="none"),
             InlineKeyboardButton(get_status("shortener_system"), callback_data="tg_shortener_system")
         ],
         [
@@ -49,7 +49,7 @@ async def owner_panel(client: Client, message: Message):
         "━━━━━━━━━━━━━━━━━━━\n"
         "👑 ᴡᴇʟᴄᴏᴍᴇ, ᴋɪɴɢ! ᴍᴀɴᴀɢᴇ ʏᴏᴜʀ ʙᴏᴛ's ᴄᴏʀᴇ ᴀssᴇᴛs ᴡɪᴛʜ ʀᴇᴀʟ-ᴛɪᴍᴇ ᴜᴘᴅᴀᴛᴇs.\n\n"
         "📊 <b>sʏsᴛᴇᴍ sᴛᴀᴛᴜs:</b>\n"
-        f"• sʜᴏʀᴛᴇɴᴇʀ: {'ᴀᴄᴛɪᴠᴇ ⚡' if settings.get('shortener_system', True) else 'ᴅɪsᴀʙʟᴇᴅ 💤'}\n"
+        f"• ᴠᴇʀɪꜰɪᴄᴀᴛɪᴏɴ: {'ᴀᴄᴛɪᴠᴇ ⚡' if settings.get('shortener_system', True) else 'ᴅɪsᴀʙʟᴇᴅ 💤'}\n"
         f"• ᴅᴇʟɪᴠᴇʀʏ: {'sᴛᴀʙʟᴇ ✅' if settings.get('file_delivery', True) else 'ᴘᴀᴜsᴇᴅ ⚠️'}\n"
         f"• ᴄᴏʀᴇ: {'ʜᴇᴀʟᴛʜʏ ✨' if settings.get('core_features', True) else 'ᴍᴀɪɴᴛᴇɴᴀɴᴄᴇ 🛠️'}\n"
         "━━━━━━━━━━━━━━━━━━━"
