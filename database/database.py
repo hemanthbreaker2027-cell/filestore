@@ -51,7 +51,7 @@ class AniZoneFlix:
         self.bypass_data = self.database['bypass_attempts']
         self.settings_data = self.database['settings']
         self.cooldown_data = self.database['cooldowns']
-        self.sessions = self.database['sessions'] # Codeflix Network Collection
+        self.sessions = self.database['sessions']
 
 
     # SETTINGS & FEATURE FLAGS
@@ -64,7 +64,8 @@ class AniZoneFlix:
             'file_delivery': True,
             'core_features': True,
             'shorten_admins': True,
-            'daily_verify_limit': 5
+            'daily_verify_limit': 5, # How many deals per verification
+            'verify_expiry': 86400 # 24 hours
         }
 
         if not settings:
@@ -272,76 +273,51 @@ class AniZoneFlix:
         )
 
 
-    # VERIFICATION MANAGEMENT
-    async def db_verify_status(self, user_id):
-        user = await self.user_data.find_one({'_id': user_id})
-        if user:
-            return user.get('verify_status', default_verify)
-        return default_verify
-
-    async def db_update_verify_status(self, user_id, verify):
-        await self.user_data.update_one({'_id': user_id}, {'$set': {'verify_status': verify}})
-
-    async def get_verify_status(self, user_id):
-        verify = await self.db_verify_status(user_id)
-        return verify
-
-    async def update_verify_status(self, user_id, verify_token="", is_verified=False, verified_time=0, link=""):
-        current = await self.db_verify_status(user_id)
-        current['verify_token'] = verify_token
-        current['is_verified'] = is_verified
-        current['verified_time'] = verified_time
-        current['link'] = link
-        await self.db_update_verify_status(user_id, current)
-
-    # Set verify count
-    async def set_verify_count(self, user_id: int, count: int):
-        await self.sex_data.update_one({'_id': user_id}, {'$set': {'verify_count': count}}, upsert=True)
-
-    # Get verify count
-    async def get_verify_count(self, user_id: int):
+    # VERIFICATION MANAGEMENT (DEALS SYSTEM)
+    async def get_verify_deals(self, user_id: int):
         user = await self.sex_data.find_one({'_id': user_id})
         if user:
-            return user.get('verify_count', 0)
+            return user.get('deals', 0)
         return 0
 
-    # Reset all users' verify counts
-    async def reset_all_verify_counts(self):
-        await self.sex_data.update_many({}, {'$set': {'verify_count': 0}})
+    async def use_deal(self, user_id: int):
+        await self.sex_data.update_one(
+            {'_id': user_id},
+            {'$inc': {'deals': -1}}
+        )
 
-    # Get total verify count
-    async def get_total_verify_count(self):
-        pipeline = [{"$group": {"_id": None, "total": {"$sum": "$verify_count"}}}]
-        result = await self.sex_data.aggregate(pipeline).to_list(length=1)
-        return result[0]["total"] if result else 0
-
-    async def check_daily_limit(self, user_id: int):
+    async def refill_deals(self, user_id: int):
         settings = await self.get_settings()
         limit = settings.get('daily_verify_limit', 5)
+        await self.sex_data.update_one(
+            {'_id': user_id},
+            {'$set': {'deals': limit, 'last_verify': int(time.time())}},
+            upsert=True
+        )
 
-        count = await self.get_verify_count(user_id)
-        if count >= limit:
-            return False, limit
-        return True, limit
+    # Legacy method compatibility
+    async def get_verify_count(self, user_id: int):
+        return await self.get_verify_deals(user_id)
+
+    async def check_daily_limit(self, user_id: int):
+        deals = await self.get_verify_deals(user_id)
+        return deals > 0, deals
 
 
     # CODEFLIX NETWORK - SESSION MANAGEMENT
-    async def create_verification_session(self, user_id, content_id, bot_username):
+    async def create_verification_session(self, user_id, bot_username):
         session_id = str(uuid.uuid4())
         await self.sessions.insert_one({
             "session_id": session_id,
             "user_id": str(user_id),
-            "content_id": content_id,
             "bot_username": bot_username,
             "status": "pending",
-            "expiry": int(time.time() + 300), # 5 minutes
+            "expiry": int(time.time() + 300),
             "secure_token": None
         })
         return session_id
 
     async def get_session_by_token(self, token):
-        # In Codeflix Network, the main bot receives verify_{TOKEN}
-        # We need to find the session where secure_token matches
         return await self.sessions.find_one({"secure_token": token, "status": "verified"})
 
     async def mark_session_used(self, session_id):

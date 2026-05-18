@@ -180,26 +180,16 @@ async def send_files(client: Client, user_id: int, base64_string, messages=None)
 
 async def short_url(client: Client, message: Message, base64_string):
     user_id = message.from_user.id
-    settings = await db.get_settings()
 
-    # 1. Check Daily Limit (Verification Deals)
-    can_verify, limit = await db.check_daily_limit(user_id)
-    if not can_verify:
-        return await message.reply_text(
-            f"<b>❌ <blockquote>˹ Lɪᴍɪᴛ Exᴄᴇᴇᴅᴇᴅ ˼\n\n🛡 Yᴏᴜ ʜᴀᴠᴇ ᴜsᴇᴅ ᴀʟʟ ʏᴏᴜʀ {limit} ᴅᴀɪʟʏ ᴠᴇʀɪꜰɪᴄᴀᴛɪᴏɴ ᴅᴇᴀʟs.\n\n💎 Cᴏᴍᴇ ʙᴀᴄᴋ ᴛᴏᴍᴏʀʀᴏᴡ ᴏʀ ɢᴇᴛ ᴘʀᴇᴍɪᴜᴍ ꜰᴏʀ ᴜɴʟɪᴍɪᴛᴇᴅ ᴀᴄᴄᴇss! 💫</blockquote></b>",
-            reply_markup=InlineKeyboardMarkup([[InlineKeyboardButton("💎 Gᴇᴛ Pʀᴇᴍɪᴜᴍ 💎", callback_data="premium")]])
-        )
+    # Create verification session in shared DB
+    session_id = await db.create_verification_session(user_id, client.username)
 
-    # 2. Create CODEFLIX Network Session
-    session_id = await db.create_verification_session(user_id, base64_string, client.username)
-
-    # 3. Redirect Link: BASE_URL/r/{session_id}
-    # This URL will handle the redirect to the Verification Bot directly (no shortener)
-    redirect_link = f"{BASE_URL}/r/{session_id}"
+    # Construct verification link: t.me/{VERIFY_BOT_USERNAME}?start=access_{MAIN_BOT_USERNAME}_{SESSION_ID}
+    verify_link = f"https://t.me/{VERIFY_BOT_USERNAME}?start=access_{client.username}_{session_id}"
 
     buttons = [
         [
-            InlineKeyboardButton(text="⚡️ ˹ ᴠᴇʀɪꜰʏ ᴛᴏ ᴅᴏᴡɴʟᴏᴀᴅ ˼ ⚡️", url=redirect_link),
+            InlineKeyboardButton(text="⚡️ ˹ ᴠᴇʀɪꜰʏ ᴛᴏ ᴜɴʟᴏᴄᴋ ˼ ⚡️", url=verify_link),
             InlineKeyboardButton(text="🛡 ˹ ᴛᴜᴛᴏʀɪᴀʟ ˼ 🛡", url=TUT_VID)
         ]
     ]
@@ -216,11 +206,7 @@ async def handle_payload(client: Client, message: Message, basic_payload: str):
     shortener_enabled = settings.get('shortener_system', True)
 
     # Clean payload and get base64 string
-    is_verified_payload = basic_payload.startswith("yu3elk")
-    if is_verified_payload:
-        base64_string = basic_payload[6:-1]
-    else:
-        base64_string = basic_payload
+    base64_string = basic_payload
 
     if not shortener_enabled:
         return await send_files(client, user_id, base64_string)
@@ -232,8 +218,15 @@ async def handle_payload(client: Client, message: Message, basic_payload: str):
     if is_premium or (is_admin and not shorten_admins):
         return await send_files(client, user_id, base64_string)
 
-    # Proceed to verification bot hand-off
-    await short_url(client, message, base64_string)
+    # CHECK DEALS SYSTEM
+    can_access, deals = await db.check_daily_limit(user_id)
+    if can_access:
+        # Use a deal and send file
+        await db.use_deal(user_id)
+        return await send_files(client, user_id, base64_string)
+    else:
+        # No deals left, send verification prompt
+        return await short_url(client, message, base64_string)
 
 @Client.on_message(filters.command('ping') & filters.private)
 async def ping_command(client: Client, message: Message):
@@ -295,12 +288,12 @@ async def start_command(client: Client, message: Message):
                 session = await db.get_session_by_token(token)
 
                 if session and session['user_id'] == str(user_id):
-                    # Increment verify count (Deal used)
-                    count = await db.get_verify_count(user_id)
-                    await db.set_verify_count(user_id, count + 1)
+                    # Refill deals for the user
+                    await db.refill_deals(user_id)
 
-                    # Success! Deliver content
-                    await send_files(client, user_id, session['content_id'])
+                    await message.reply_text(
+                        "<b>✅ Verification Success!\n\n🛡 Your daily verification deals have been refilled. You can now access your files. ⚡️</b>"
+                    )
 
                     # Mark session as used
                     await db.mark_session_used(session['session_id'])

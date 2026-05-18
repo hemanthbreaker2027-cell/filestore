@@ -13,16 +13,6 @@ routes = web.RouteTableDef()
 async def root_handler(request):
     return web.Response(text="ᴀɴɪᴢᴏɴᴇꜰʟɪx CODEFLIX NETWORK NODE ᴠ11.0", content_type="text/plain")
 
-@routes.get("/r/{session_id}")
-async def codeflix_redirect_handler(request):
-    # This route handles the redirect from Main Bot to Verification Bot
-    session_id = request.match_info.get('session_id')
-    if not session_id: return web.Response(text="Missing Session ID", status=400)
-
-    # We redirect the user to the Verification Bot with the session_id
-    verify_bot_url = f"https://t.me/{VERIFY_BOT_USERNAME}?start={session_id}"
-    return web.HTTPFound(verify_bot_url)
-
 @routes.get("/v/{secure_token}")
 async def codeflix_return_handler(request):
     # This route handles the return from Verification Bot to Main Bot
@@ -38,7 +28,7 @@ async def codeflix_return_handler(request):
     main_bot_username = session.get('bot_username')
     return_url = f"https://t.me/{main_bot_username}?start=verify_{secure_token}"
 
-    # 3. Simple Futuristic Loading UI before final redirect
+    # 3. Simple Redirect UI
     html = f"""
     <html>
     <head>
