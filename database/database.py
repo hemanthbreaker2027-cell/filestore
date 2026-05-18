@@ -305,7 +305,7 @@ class AniZoneFlix:
 
 
     # CODEFLIX NETWORK - SESSION MANAGEMENT
-    async def create_verification_session(self, user_id, bot_username):
+    async def create_verification_session(self, user_id, bot_username, context="frontend"):
         session_id = str(uuid.uuid4())
         await self.sessions.insert_one({
             "session_id": session_id,
@@ -313,7 +313,8 @@ class AniZoneFlix:
             "bot_username": bot_username,
             "status": "pending",
             "expiry": int(time.time() + 300),
-            "secure_token": None
+            "secure_token": None,
+            "context": context # "frontend" or "api"
         })
         return session_id
 

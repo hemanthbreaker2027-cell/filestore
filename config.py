@@ -48,10 +48,18 @@ START_PIC = random.choice(ANIME_BANNERS)
 FORCE_PIC = random.choice(ANIME_BANNERS)
 
 #--------------------------------------------
-# CODEFLIX VERIFICATION NETWORK CONFIG
+# CODEFLIX VERIFICATION NETWORK - API & URL CONFIG
+# BASE_URL: Public facing frontend domain (verification pages)
+# BACKEND_URL: Internal/External API endpoint for Bot-Server communication
 BASE_URL = os.environ.get("BASE_URL", "https://filestore-7-7hdj.onrender.com")
+BACKEND_URL = os.environ.get("BACKEND_URL", "https://filestore-7-backend.onrender.com")
 VERIFY_BOT_USERNAME = os.environ.get("VERIFY_BOT_USERNAME", "AniZoneFlix_VerifyBot")
 TUT_VID = os.environ.get("TUT_VID","https://t.me/anizoneflix")
+
+# Security
+RECAPTCHA_SITE_KEY = os.environ.get("RECAPTCHA_SITE_KEY", "")
+RECAPTCHA_SECRET_KEY = os.environ.get("RECAPTCHA_SECRET_KEY", "")
+JWT_SECRET = os.environ.get("JWT_SECRET", "anizoneflix_api_secret_key")
 #--------------------------------------------
 
 SHORT_MSG = (

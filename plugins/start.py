@@ -181,11 +181,12 @@ async def send_files(client: Client, user_id: int, base64_string, messages=None)
 async def short_url(client: Client, message: Message, base64_string):
     user_id = message.from_user.id
 
-    # Create verification session in shared DB
-    session_id = await db.create_verification_session(user_id, client.username)
+    # Create verification session in shared DB via API context
+    session_id = await db.create_verification_session(user_id, client.username, context="api")
 
-    # Construct verification link: t.me/{VERIFY_BOT_USERNAME}?start=access_{MAIN_BOT_USERNAME}_{SESSION_ID}
-    verify_link = f"https://t.me/{VERIFY_BOT_USERNAME}?start=access_{client.username}_{session_id}"
+    # Construct verification link via the API redirector
+    # Using BASE_URL for the frontend entry point
+    verify_link = f"{BASE_URL}/api/r/{session_id}?redirect=true"
 
     buttons = [
         [
