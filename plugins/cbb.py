@@ -8,14 +8,13 @@
 # All rights reserved.
 
 from pyrogram import Client 
-from bot import Bot
 from config import *
 from pyrogram.types import Message, InlineKeyboardMarkup, InlineKeyboardButton, CallbackQuery
 from database.database import *
 from helper_func import *
 
-@Bot.on_callback_query(filters.regex(r"^(help|about|start|premium|close|fsub_back|ck|rfs_)"))
-async def cb_handler(client: Bot, query: CallbackQuery):
+@Client.on_callback_query(filters.regex(r"^(help|about|start|premium|close|fsub_back|ck|rfs_)"))
+async def cb_handler(client: Client, query: CallbackQuery):
     data = query.data
 
     if data == "help":

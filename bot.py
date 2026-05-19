@@ -12,7 +12,6 @@
 #
 
 from aiohttp import web
-from plugins import web_server
 import asyncio
 import pyromod.listen
 from pyrogram import Client
@@ -39,11 +38,10 @@ async def daily_reset_task():
     try:
         await db.reset_all_verify_counts()
     except Exception:
-        pass  
+        pass
 
 async def token_cleanup_task():
     try:
-        await db.cleanup_tokens()
         await db.cleanup_strict_verifications()
     except Exception:
         pass
@@ -78,7 +76,9 @@ class Bot(Client):
         self.LOGGER = LOGGER
 
     async def start(self):
+        print("[STARTUP] Initializing Bot...")
         await super().start()
+        print("[STARTUP] Pyrogram super().start() successful.")
         scheduler.start()
         # Automatically unblock all users on restart
         try:
@@ -90,17 +90,31 @@ class Bot(Client):
         self.uptime = get_indian_time()
 
         # Set Bot Commands Automatically
-        await self.set_bot_commands([
-            BotCommand("start", "🚀 Start the bot"),
-            BotCommand("myplan", "🎖️ Check your premium status"),
-            BotCommand("about", "⚠️ About the bot"),
-            BotCommand("help", "❓ Help and commands"),
-            BotCommand("commands", "⚙️ Admin commands list"),
-            BotCommand("auto_delete", "🕒 Set file auto-delete timer (Admin)"),
-            BotCommand("check_auto_delete", "🔍 Check auto-delete timer (Admin)"),
-            BotCommand("batch", "📦 Create a batch link (Admin)"),
-            BotCommand("genlink", "🔗 Generate a single link (Admin)")
-        ])
+        try:
+            await self.set_bot_commands([
+                BotCommand("start", "🚀 Start the bot"),
+                BotCommand("ping", "🏓 Check responsiveness"),
+                BotCommand("myplan", "🎖️ Check your premium status"),
+                BotCommand("about", "⚠️ About the bot"),
+                BotCommand("help", "❓ Help and commands"),
+                BotCommand("commands", "⚙️ Admin commands list"),
+                BotCommand("auto_delete", "🕒 Set file auto-delete timer (Admin)"),
+                BotCommand("check_auto_delete", "🔍 Check auto-delete timer (Admin)"),
+                BotCommand("batch", "📦 Create a batch link (Admin)"),
+                BotCommand("genlink", "🔗 Generate a single link (Admin)"),
+                BotCommand("panel", "🛠️ Owner Control Panel"),
+                BotCommand("stats", "📊 Bot Statistics (Admin)"),
+                BotCommand("users", "👥 Total Users (Admin)"),
+                BotCommand("admins", "👥 List Admins (Admin)"),
+                BotCommand("add_admin", "👑 Add Admin (Owner)"),
+                BotCommand("deladmin", "📉 Remove Admin (Owner)"),
+                BotCommand("addpremium", "💎 Add Premium User (Admin)"),
+                BotCommand("remove_premium", "📉 Remove Premium User (Admin)"),
+                BotCommand("premium_users", "⭐ List Premium Users (Admin)"),
+                BotCommand("count", "📊 Total Verified Tokens Today (Admin)")
+            ])
+        except Exception as e:
+            self.LOGGER(__name__).error(f"Failed to set bot commands: {e}")
 
         try:
             db_channel = await self.get_chat(CHANNEL_ID)
@@ -108,10 +122,8 @@ class Bot(Client):
             test = await self.send_message(chat_id = db_channel.id, text = "Test Message")
             await test.delete()
         except Exception as e:
-            self.LOGGER(__name__).warning(e)
-            self.LOGGER(__name__).warning(f"Make Sure bot is Admin in DB Channel, and Double check the CHANNEL_ID Value, Current Value {CHANNEL_ID}")
-            self.LOGGER(__name__).info("\nBot Stopped. Join https://t.me/AniZoneFlix for support")
-            sys.exit()
+            self.LOGGER(__name__).error(f"CRITICAL: Failed to access DB Channel: {e}")
+            self.LOGGER(__name__).warning(f"Bot will continue to run, but file storage features may fail. Ensure bot is Admin in {CHANNEL_ID}")
 
         self.set_parse_mode(ParseMode.HTML)
         self.LOGGER(__name__).info(f"Bot Running..!\n\nCreated by \nhttps://t.me/AniZoneFlix")
@@ -130,10 +142,13 @@ class Bot(Client):
         self.username = usr_bot_me.username
         self.LOGGER(__name__).info(f"Bot Running..! Made by @AniZoneFlix")
 
-        # Start Web Server
+        # Start Web Server (Late Import to avoid circular dependency)
+        print("[STARTUP] Initializing Web Server...")
+        from plugins import web_server
         app = web.AppRunner(await web_server(self))
         await app.setup()
         await web.TCPSite(app, "0.0.0.0", PORT).start()
+        print(f"[STARTUP] Web Server running on port {PORT}")
 
 
         try: await self.send_message(OWNER_ID, text = f"<b><blockquote> Bᴏᴛ Rᴇsᴛᴀʀᴛᴇᴅ by @AniZoneFlix</blockquote></b>")
@@ -145,9 +160,11 @@ class Bot(Client):
 
     def run(self):
         """Run the bot."""
+        print("[STARTUP] Entering loop.run_forever()...")
         loop = asyncio.get_event_loop()
         loop.run_until_complete(self.start())
         self.LOGGER(__name__).info("Bot is now running. Thanks to @AniZoneFlix")
+        print("[STARTUP] Bot is fully operational.")
         try:
             loop.run_forever()
         except KeyboardInterrupt:

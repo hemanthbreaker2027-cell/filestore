@@ -16,9 +16,9 @@ python-dotenv
 pytz
 requests
 bs4
-shortzy
 aiofiles
 asyncio
+cryptography
 PyJWT
 jinja2
-cryptography
+aiohttp_jinja2

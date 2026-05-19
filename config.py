@@ -48,36 +48,34 @@ START_PIC = random.choice(ANIME_BANNERS)
 FORCE_PIC = random.choice(ANIME_BANNERS)
 
 #--------------------------------------------
-SHORTLINK_API = os.environ.get("SHORTLINK_API", "e49643875c2fa34dd6087254e58283d65ffc7748")
-RECAPTCHA_SITE_KEY = os.environ.get("RECAPTCHA_SITE_KEY", "6LfFi-wsAAAAAF8oFGJ0-d-tD_pV_lGAJ8orbXmJ")
-RECAPTCHA_SECRET_KEY = os.environ.get("RECAPTCHA_SECRET_KEY", "6LfFi-wsAAAAAD3Y2MGrs0mSc5Y_EDjbSeoLOAAs")
-SECURE_SECRET_KEY = os.environ.get("SECURE_SECRET_KEY", "anizoneflix_very_secure_secret_key_v9")
-WEBSITE_URL = os.environ.get("WEBSITE_URL", "filestore-7-7hdj.onrender.com") # e.g. https://yourdomain.com
-JWT_SECRET = os.environ.get("JWT_SECRET", "anizoneflix_secret_key")
+# CODEFLIX VERIFICATION NETWORK - API & URL CONFIG
+# BASE_URL: Public facing frontend domain (verification pages)
+# BACKEND_URL: Internal/External API endpoint for Bot-Server communication
+BASE_URL = os.environ.get("BASE_URL", "https://filestore-7-7hdj.onrender.com")
+BACKEND_URL = os.environ.get("BACKEND_URL", "https://filestore-7-backend.onrender.com")
+VERIFY_BOT_USERNAME = os.environ.get("VERIFY_BOT_USERNAME", "AniZoneFlix_VerifyBot")
 TUT_VID = os.environ.get("TUT_VID","https://t.me/anizoneflix")
 
-# STRICT CONFIG RULES
-WHITELISTED_DOMAIN = "arolinks.com"
-WRAP_URL = "https://darkguruji.com/universtiesstudiess/?insurancessstudiess="
+# Security
+RECAPTCHA_SITE_KEY = os.environ.get("RECAPTCHA_SITE_KEY", "")
+RECAPTCHA_SECRET_KEY = os.environ.get("RECAPTCHA_SECRET_KEY", "")
+JWT_SECRET = os.environ.get("JWT_SECRET", "anizoneflix_api_secret_key")
+#--------------------------------------------
 
 SHORT_MSG = (
     "━━━━━━━━━━━━━━━━━━━\n"
     "✨ <b>˹ ꜱᴇᴄᴜʀᴇ ʟɪɴᴋ ɢᴇɴᴇʀᴀᴛᴇᴅ ˼</b> ✨\n\n"
-    "🛡 ʜᴇʏ {mention}, ʏᴏᴜʀ ꜰɪʟᴇ ɪꜱ ᴘʀᴏᴛᴇᴄᴛᴇᴅ ᴡɪᴛʜ ᴜʟᴛʀᴀ-ꜱᴇᴄᴜʀᴇ ᴇɴᴄʀʏᴘᴛɪᴏɴ. ⚡️\n\n"
+    "🛡 ʜᴇʏ {mention}, ʏᴏᴜʀ ꜰɪʟᴇ ɪꜱ ᴘʀᴏᴛᴇᴄᴛᴇᴅ ʙʏ CODEFLIX NETWORK. ⚡️\n\n"
     "💎 <b>˹ ᴜɴʟᴏᴄᴋ ɪɴꜱᴛʀᴜᴄᴛɪᴏɴꜱ ˼</b>\n"
-    "<blockquote>1. ᴄʟɪᴄᴋ ᴛʜᴇ ꜱᴇᴄᴜʀᴇ ʟɪɴᴋ ʙᴇʟᴏᴡ.\n"
-    "2. ᴡᴀɪᴛ 10 ꜱᴇᴄᴏɴᴅꜱ ꜰᴏʀ ᴛʜᴇ ᴛɪᴍᴇʀ.\n"
-    "3. ᴄᴏᴍᴘʟᴇᴛᴇ ᴛʜᴇ ꜰɪɴᴀʟ ᴠᴇʀɪꜰɪᴄᴀᴛɪᴏɴ ꜱᴛᴇᴘ.</blockquote>\n"
+    "<blockquote>1. ᴄʟɪᴄᴋ ᴛʜᴇ sᴇᴄᴜʀᴇ ʟɪɴᴋ ʙᴇʟᴏᴡ.\n"
+    "2. ᴄᴏᴍᴘʟᴇᴛᴇ ᴠᴇʀɪꜰɪᴄᴀᴛɪᴏɴ ɪɴ ᴏᴜʀ ᴠᴇʀɪꜰʏ ʙᴏᴛ.\n"
+    "3. ᴄʟɪᴄᴋ 'Open Link' ᴛᴏ ʀᴇᴛᴜʀɴ ʜᴇʀᴇ.</blockquote>\n"
     "━━━━━━━━━━━━━━━━━━━"
 )
-
-SHORTENER_PIC = random.choice(ANIME_BANNERS)
-#--------------------------------------------
 
 #--------------------------------------------
 HELP_TXT = "<b>⚡️ <blockquote>˹ ᴀɴɪᴢᴏɴᴇꜰʟɪx ʜᴇʟᴘ ᴄᴇɴᴛᴇʀ ˼\n\n💎 ᴛʜɪs ɪs ᴀɴ ᴜʟᴛʀᴀ-ꜰᴀsᴛ ꜰɪʟᴇ ᴛᴏ ʟɪɴᴋ ʙᴏᴛ ᴘᴏᴡᴇʀᴇᴅ ʙʏ @AniZoneFlix\n\n📜 ᴄᴏᴍᴍᴀɴᴅ ʟɪsᴛ:\n├ /start : ɪɢɴɪᴛᴇ ᴛʜᴇ ʙᴏᴛ 🔥\n├ /about : ᴅɪsᴄᴏᴠᴇʀ ᴏᴜʀ ʟᴇɢᴀᴄʏ 🛡\n└ /help : sᴇᴇᴋ ɢᴜɪᴅᴀɴᴄᴇ ✨\n\n🚀 sɪᴍᴘʟʏ ᴄʟɪᴄᴋ ᴀɴʏ ʟɪɴᴋ, ᴊᴏɪɴ ᴛʜᴇ ꜰᴏʀᴄᴇ sᴜʙ ᴄʜᴀɴɴᴇʟs, ᴀɴᴅ ʏᴏᴜ ᴀʀᴇ ʀᴇᴀᴅʏ ᴛᴏ ɢᴏ...!\n\n👑 ᴅᴇᴠᴇʟᴏᴘᴇᴅ ᴡɪᴛʜ ❤️ ʙʏ <a href=https://t.me/AniZoneFlix>ᴀɴɪᴢᴏɴᴇꜰʟɪx</a></blockquote></b>"
 ABOUT_TXT = "<b>🛡 <blockquote>˹ ᴀɴɪᴢᴏɴᴇꜰʟɪx ʟᴇɢᴀᴄʏ ˼\n\n👤 ᴄʀᴇᴀᴛᴏʀ: <a href=https://t.me/AniZoneFlix>ᴀɴɪᴢᴏɴᴇꜰʟɪx</a>\n💎 ꜰᴏᴜɴᴅᴇʀ: @AniZoneFlix\n🌀 ᴀɴɪᴍᴇ: @AniZoneFlix\n🎬 sᴇʀɪᴇs: @AniZoneFlix\n🔞 ᴀᴅᴜʟᴛ: @AniZoneFlix\n🛠 ᴅᴇᴠᴇʟᴏᴘᴇʀ: @AniZoneFlix</blockquote></b>"
-#--------------------------------------------
 #--------------------------------------------
 START_MSG = os.environ.get("START_MESSAGE", "<b>⚡️ ʜᴇʟʟᴏ {mention} ˼\n\n<blockquote>💎 ɪ ᴀᴍ ᴛʜᴇ ᴍᴏsᴛ ᴘᴏᴡᴇʀꜰᴜʟ ꜰɪʟᴇ sᴛᴏʀᴇ ᴇɴɢɪɴᴇ. ɪ ᴄᴀɴ sᴛᴏʀᴇ ʏᴏᴜʀ ᴘʀɪᴠᴀᴛᴇ ꜰɪʟᴇs sᴇᴄᴜʀᴇʟʏ ᴡɪᴛʜ ᴜʟᴛʀᴀ-ꜰᴀsᴛ sᴘᴇᴇᴅ. ⚡️</blockquote></b>")
 FORCE_MSG = os.environ.get("FORCE_SUB_MESSAGE", "⚡️ ʜᴇʟʟᴏ {mention}\n\n<b><blockquote>🛡 ˹ ᴀᴄᴄᴇss ᴅᴇɴɪᴇᴅ ˼\n\n💎 ᴊᴏɪɴ ᴏᴜʀ ᴄʜᴀɴɴᴇʟs ᴀɴᴅ ᴛʜᴇɴ ᴄʟɪᴄᴋ ᴏɴ ʀᴇʟᴏᴀᴅ ʙᴜᴛᴛᴏɴ ᴛᴏ ᴜɴʟᴏᴄᴋ ʏᴏᴜʀ ʀᴇǫᴜᴇsᴛᴇᴅ ꜰɪʟᴇ. 🚀</b></blockquote>")
