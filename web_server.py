@@ -18,21 +18,34 @@ async def root_handler(request):
 
 @routes.get("/api/r/{session_id}")
 async def api_r_handler(request):
+    # This route handles the user redirect from Main Bot to Verification Bot
+    # Redirects to Verification Bot via BASE_URL API to maintain domain abstraction
     session_id = request.match_info.get('session_id')
     if not session_id: return web.json_response({"error": "Missing Session ID"}, status=400)
-    target = f"https://t.me/{VERIFY_BOT_USERNAME}?start={session_id}"
-    if request.query.get('redirect') == 'true': return web.HTTPFound(target)
+
+    # User is redirected to: t.me/{verify_bot}?start=access_{main_bot}_{session_id}
+    bot = request.app.get('bot')
+    main_bot = bot.username if bot else "bot"
+    target = f"https://t.me/{VERIFY_BOT_USERNAME}?start=access_{main_bot}_{session_id}"
+
+    if request.query.get('redirect') == 'true':
+        return web.HTTPFound(target)
     return web.json_response({"target_url": target})
 
 @routes.get("/api/v/{secure_token}")
 async def api_v_handler(request):
+    # This route handles the return from Verification Bot
     secure_token = request.match_info.get('secure_token')
     if not secure_token: return web.json_response({"error": "Missing Token"}, status=400)
+
     session = await db.get_session_by_token(secure_token)
     if not session: return web.json_response({"error": "Invalid Token"}, status=403)
+
     bot_username = session.get('bot_username')
     return_url = f"https://t.me/{bot_username}?start=verify_{secure_token}"
-    if request.query.get('redirect') == 'true': return web.HTTPFound(return_url)
+
+    if request.query.get('redirect') == 'true':
+        return web.HTTPFound(return_url)
     return web.json_response({"return_url": return_url, "bot": bot_username})
 
 @routes.get("/health")
@@ -40,6 +53,8 @@ async def health(request): return web.Response(text="OK")
 
 async def web_server(bot):
     app = web.Application()
+    # Initialize Jinja2 (required for other plugins even if not used here)
+    aiohttp_jinja2.setup(app, loader=jinja2.FileSystemLoader('templates'))
     app['bot'] = bot
     app.add_routes(routes)
     return app

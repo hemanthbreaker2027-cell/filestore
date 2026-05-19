@@ -19,3 +19,6 @@ bs4
 aiofiles
 asyncio
 cryptography
+PyJWT
+jinja2
+aiohttp_jinja2

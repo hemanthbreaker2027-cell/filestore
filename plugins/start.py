@@ -185,7 +185,7 @@ async def short_url(client: Client, message: Message, base64_string):
     session_id = await db.create_verification_session(user_id, client.username, context="api")
 
     # Construct verification link via the API redirector
-    # Using BASE_URL for the frontend entry point
+    # User is sent to the gateway which handles the Bot-to-Bot hand-off
     verify_link = f"{BASE_URL}/api/r/{session_id}?redirect=true"
 
     buttons = [
