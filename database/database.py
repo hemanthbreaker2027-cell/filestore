@@ -64,8 +64,8 @@ class AniZoneFlix:
             'file_delivery': True,
             'core_features': True,
             'shorten_admins': True,
-            'daily_verify_limit': 5, # How many deals per verification
-            'verify_expiry': 86400 # 24 hours
+            'daily_verify_limit': 5,
+            'verify_expiry': 86400
         }
 
         if not settings:
@@ -287,7 +287,7 @@ class AniZoneFlix:
         )
 
     async def refill_deals(self, user_id: int):
-        settings = await self.get_settings()
+        settings = await db.get_settings()
         limit = settings.get('daily_verify_limit', 5)
         await self.sex_data.update_one(
             {'_id': user_id},
@@ -295,40 +295,26 @@ class AniZoneFlix:
             upsert=True
         )
 
-    # Legacy method compatibility
-    async def get_verify_count(self, user_id: int):
-        return await self.get_verify_deals(user_id)
-
     async def check_daily_limit(self, user_id: int):
         deals = await self.get_verify_deals(user_id)
         return deals > 0, deals
 
 
     # CODEFLIX NETWORK - SESSION MANAGEMENT
-    async def create_verification_session(self, user_id, bot_username, context="frontend"):
+    async def create_verification_session(self, user_id, bot_username):
         session_id = str(uuid.uuid4())
         await self.sessions.insert_one({
             "session_id": session_id,
             "user_id": str(user_id),
             "bot_username": bot_username,
             "status": "pending",
-            "expiry": int(time.time() + 300),
-            "secure_token": None,
-            "context": context # "frontend" or "api"
+            "expiry": int(time.time() + 600),
+            "secure_token": None
         })
         return session_id
 
     async def get_session_by_token(self, token):
         return await self.sessions.find_one({"secure_token": token, "status": "verified"})
-
-    async def mark_session_used(self, session_id):
-        await self.sessions.update_one(
-            {"session_id": session_id},
-            {"$set": {"status": "used"}}
-        )
-
-    async def cleanup_sessions(self):
-        await self.sessions.delete_many({"expiry": {"$lt": time.time()}})
 
 
     # RESTART TASKS
