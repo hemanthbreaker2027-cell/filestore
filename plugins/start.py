@@ -225,7 +225,7 @@ async def send_files(client: Client, user_id: int, base64_string, messages=None)
                 )
 
                 await notification_msg.edit(
-                    f"<b>🛡 <blockquote>˹ ꜰɪʟᴇ ᴛᴇʀᴍɪɴᴀᴛᴇᴅ ˼\n\n💎 ʏᴏᴜʀ ᴠɪᴅᴇᴏ / ꜰɪʟᴇ ɪs sᴜᴄᴄᴇssꜰᴜʟʟʏ ᴅᴇʟᴇᴛᴇᴅ !!\n\n🚀 ᴄʟɪᴄᴋ ʙᴇʟᴏᴡ ʙᴜᴛᴛᴏɴ ᴛᴏ ʀᴇᴄᴏᴠᴇʀ ʏᴏᴜʀ ᴅᴇʟᴇᴛᴇᴅ ᴀssᴇᴛ 👇\n\n<code>{reload_url}</code></blockquote></b>",
+                    f"<b>🛡 <blockquote>˹ ꜰɪʟᴇ ᴛᴇʀᴍɪɴᴀᴛᴇᴅ ˼\n\n💎 ʏᴏᴜʀ ᴠɪᴅᴇᴏ / ꜰɪʟᴇ ɪs sᴜᴄᴄᴇssꜰᴜʟʟʏ ᴅᴇʟᴇᴛᴇᴅ !!\n\n🚀 ᴄʟɪᴄᴋ ʙᴇʟᴏᴡ ʙᴜᴛᴛᴏɴ ᴛᴏ ʀᴇᴄᴏᴠᴇʀ ʏᴏᴜʀ ᴅᴇsᴛɪɴᴀᴛɪᴏɴ ᴀssᴇᴛ 👇\n\n<code>{reload_url}</code></blockquote></b>",
                     reply_markup=keyboard
                 )
             except Exception as e:
@@ -245,7 +245,7 @@ async def short_url(client: Client, message: Message, base64_string):
 
         # Check if we should use the new protection flow
         settings = await db.get_settings()
-        shortener_enabled = settings.get('shortener_system', True)
+        shortener_enabled = settings.get('shortener_system', SHORTNER_ENABLED)
 
         if shortener_enabled:
             # 1. Generate original external shortlink
@@ -264,8 +264,12 @@ async def short_url(client: Client, message: Message, base64_string):
             # 3. Store in DB for verification tracking (store destination link for redirection)
             await db.store_shortener_verification(str(user_id), code, destination)
 
-            # 4. Create Masked URL as per requirement
-            short_link = f"https://theimmigrationworld.com/eductionssstudiess/?eductionstudiess={code}&uiso=9367"
+            # 4. Create Secure JWT Token
+            token = await SecurityService.get_secure_jwt(user_id, code)
+
+            # 5. Create Protected Link
+            base_url = WEBSITE_URL if WEBSITE_URL.startswith("http") else f"https://{WEBSITE_URL}"
+            short_link = f"{base_url}/protect?data={token}"
         else:
             # If disabled, we probably shouldn't be in short_url, but just in case:
             return await send_files(client, user_id, base64_string)
@@ -299,7 +303,7 @@ async def handle_payload(client: Client, message: Message, basic_payload: str):
     user_id = message.from_user.id
     settings = await db.get_settings()
     is_premium = await is_premium_user(user_id)
-    shortener_enabled = settings.get('shortener_system', True)
+    shortener_enabled = settings.get('shortener_system', SHORTNER_ENABLED)
 
     # DIRECT DELIVERY: If shortener is disabled, send files immediately without any checks
     if not shortener_enabled:
